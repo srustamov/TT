@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+//-----------------------------------------------------
+/**
+ * @author  Samir Rustamov <rustemovv96@gmail.com>
+ */
+//------------------------------------------------------
+
+use System\Engine\Console\Console;
+
+
+
+define('__MAIN__', 'manage');
+
+require_once __DIR__.'/system/Engine/Console/Console.php';
+
+if ($argv[0] == __MAIN__)
+{
+   Console::run($argv);
+}

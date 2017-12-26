@@ -1,0 +1,31 @@
+APP_DEBUG = TRUE
+
+APP_NAME  = TT
+
+APP_KEY = QTGwXUQxCIytgF7csCdcELBbM9QC+eJB9WzYT6pk5cyT8OO+vnaoDw
+
+LOCALE    = en
+
+BASE_URL  = http://localhost:8000
+
+
+
+DB_HOST = localhost
+DB_NAME =
+DB_USER = root
+DB_PASS =
+DB_CHARSET = utf8
+DB_PREFIX =
+DB_FETCHMOD = object
+
+SESSION_DRIVER = file
+
+
+MAIL_HOST = ssl://mail.gmail.com
+MAIL_PORT = 465
+MAIL_USER = example@gmail.com
+MAIL_PASS = secret
+MAIL_SMTP_SECURE = tls
+MAIL_CHARSET = UTF-8
+MAIL_HTML = TRUE
+MAIL_SHOW_ERROR = 0
