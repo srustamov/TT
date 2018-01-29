@@ -13,15 +13,13 @@ BASE_URL  = http://localhost:8000
 DB_HOST = localhost
 DB_NAME =
 DB_USER = root
-DB_PASS =
+DB_PASS = 
 DB_CHARSET = utf8
 DB_PREFIX =
-DB_FETCHMOD = object
 
 SESSION_DRIVER = file
 
-
-MAIL_HOST = ssl://mail.gmail.com
+MAIL_HOST = ssl://smtp.gmail.com
 MAIL_PORT = 465
 MAIL_USER = example@gmail.com
 MAIL_PASS = secret

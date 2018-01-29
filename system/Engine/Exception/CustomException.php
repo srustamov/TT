@@ -15,9 +15,33 @@ class CustomException extends \Exception
 
     public function __construct($e)
     {
+
         parent::__construct();
+
         static::writeLog($e);
-        import(SYSDIR . 'Engine/Exception/views/exception.php');
+
+        $_debug = setting('APP_DEBUG',false);
+
+        if($_debug && strtolower($_debug) == 'true')
+        {
+          if(!InConsole())
+          {
+            if(file_exists(SYSDIR . 'Engine/Exception/views/exception.php'))
+            {
+              return require_once(SYSDIR . 'Engine/Exception/views/exception.php');
+            }
+          }
+          else
+          {
+            echo $e->getMessage();
+          }
+
+        }
+        else
+        {
+          http_response_code( 500 );
+        }
+
     }
 
 

@@ -365,7 +365,7 @@ class Database extends Connection
 
       foreach ($set as $key => $value)
       {
-          $this->set[] = $value . ' = ? ';
+          $this->set[] = $value . " =? ";
       }
 
       return $this;
@@ -459,11 +459,11 @@ class Database extends Connection
     public function delete()
     {
 
-      $query = preg_replace("/SELECT.*FROM {$this->table}/", '', $this->getQueryString() , 1);
+      $query = preg_replace("/SELECT.*FROM/", 'DELETE FROM', $this->getQueryString() , 1);
 
-      static::$queryString =  $this->normalizeQueryString("DELETE {$this->table} {$query}");
+      static::$queryString =  $this->normalizeQueryString($query);
 
-      $statement = static::$connect->prepare("DELETE FROM {$this->table}  {$query}");
+      $statement = static::$connect->prepare($query);
 
       try
       {

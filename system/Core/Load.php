@@ -76,17 +76,5 @@ class Load
 
 
 
-    public static function setting($item,$default = null)
-    {
-
-      if(is_null(self::$settings))
-      {
-        static::$settings = parse_ini_file(BASEDIR.'/.settings');
-      }
-
-      return static::$settings[$key] ?? $default;
-    }
-
-
 
 }

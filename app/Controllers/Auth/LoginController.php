@@ -26,7 +26,7 @@ class LoginController extends Controller
 
 
 
-		public function PostLogin(Request $request)
+		public function login(Request $request)
 		{
 
 			$validation =  Validator::make($request->all(),[

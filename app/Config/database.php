@@ -20,7 +20,6 @@ return array(
 
                 "charset"   => setting('DB_CHARSET'),
 
-                "fetch_mod" => setting('DB_FETCHMOD'),
           ),
 
           /*
@@ -29,7 +28,7 @@ return array(
 
                 "username"  => 'root',
 
-                "password"  => 'samir96',
+                "password"  => '',
 
                 "dbname"    => 'auth',
 
@@ -37,7 +36,6 @@ return array(
 
                 "charset"   => 'utf8',
 
-                "fetch_mod" => 'array',
            ),
            */
 

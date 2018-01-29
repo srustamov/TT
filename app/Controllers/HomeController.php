@@ -9,7 +9,7 @@
 
 use App\Controllers\Controller;
 use System\Libraries\Request;
-use System\Facades\Language;
+
 
 
 
@@ -29,9 +29,9 @@ class HomeController extends Controller
     {
       if(in_array($language,['az','en','tr']))
       {
-        Language::set($language);
+        \Lang::set($language);
       }
-      
+
       return redirect()->back();
     }
 

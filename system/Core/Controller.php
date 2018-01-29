@@ -62,9 +62,12 @@ class Controller
 
     public function middleware()
     {
-      if(func_num_args()  > 0) {
+      if(func_num_args()  > 0)
+      {
         $args = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-        foreach ($args as $extension) {
+
+        foreach ($args as $extension)
+        {
           Middleware::init($extension);
         }
       }

@@ -7,6 +7,15 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title><?php echo setting('APP_NAME'); ?></title>
     <style>
+        *{
+          padding: 0;
+          margin: 0;
+          box-sizing: border-box;
+          -webkit-box-sizing:border-box;
+          -moz-box-sizing:border-box;
+          list-style: none;
+          text-decoration: none;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -47,6 +56,7 @@
     <span><a href="https://github.com/SamirRustamov/TT" target="_blank">GITHUB</a></span>
     <span><a href="/home">HOME</a></span>
 </div>
+
 <?php echo benchmark_panel(); ?>
 
 <?php if(isset($error->auth)): ?>

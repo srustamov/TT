@@ -16,7 +16,7 @@ return array(
 |
 */
 
-  'cache_path'      => storage_dir('cache/views'),
+  'cache_path'      => path('cache/views','storage'),
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +46,7 @@ return array(
 */
 
 
-  '404_Page'       => app_dir('Views/error/404.php'),
+  '404_Page'       => path('Views/errors/404.php','app'),
 
 
 /*

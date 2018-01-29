@@ -26,6 +26,5 @@ return array(
     'Validator' => System\Facades\Validator::class ,
     'Url' => System\Facades\Url::class ,
     'OpenSsl' => System\Facades\OpenSsl::class ,
-    'Console' => System\Engine\Console\Console::class ,
     'Auth' => System\Facades\Auth::class ,
 );

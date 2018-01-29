@@ -30,7 +30,7 @@ return array(
     | Session Files Location
     |---------------------------------------------------------
     */
-    'files_location'   => storage_dir('sessions'),
+    'files_location'   => path('sessions','storage'),
 
 
 

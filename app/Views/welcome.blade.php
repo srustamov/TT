@@ -5,8 +5,17 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <title>{!!setting('APP_NAME') !!}</title>
+    <title>{{ setting('APP_NAME') }}</title>
     <style>
+        *{
+          padding: 0;
+          margin: 0;
+          box-sizing: border-box;
+          -webkit-box-sizing:border-box;
+          -moz-box-sizing:border-box;
+          list-style: none;
+          text-decoration: none;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -35,7 +44,6 @@
         }
 
         span a {
-            text-decoration: none;
             color: rgb(45, 55, 48);
             cursor: pointer;
         }
@@ -43,15 +51,15 @@
 </head>
 <body>
 <div id="container">
-    <span id="welcome">{!! setting('APP_NAME') !!}</span>
+    <span id="welcome">{{ setting('APP_NAME') }}</span>
     <span><a href="https://github.com/SamirRustamov/TT" target="_blank">GITHUB</a></span>
-    <span><a href="/home">HOME</a></span>
+    <span><a href="{{base_url('/home')}}">HOME</a></span>
 </div>
-{!! benchmark_panel() !!}
 @if (isset($error->auth))
   <script type="text/javascript">
     alert("{{$error->auth}}");
   </script>
 @endif
+@benchmark_panel()
 </body>
 </html>

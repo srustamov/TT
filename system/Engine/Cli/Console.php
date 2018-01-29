@@ -1,4 +1,4 @@
-<?php namespace System\Engine\Console;
+<?php namespace System\Engine\Cli;
 
 //-------------------------------------------------------------
 /**
@@ -6,18 +6,6 @@
  * @link    https://github.com/SamirRustamov/TT
  */
 //-------------------------------------------------------------
-
-
-
-
-
-if (!defined('BASEDIR'))
-{
-  define('BASEDIR',dirname(dirname(dirname(__DIR__))));
-}
-
-require_once("public/index.php");
-
 
 
 use DB;
@@ -40,12 +28,6 @@ class Console
     {
         self::$instance = new static;
 
-        $argv = array_map(function($item)
-        {
-          return strtolower(trim($item));
-        },
-        $argv);
-
 
         if (isset( $argv[ 1 ] ))
         {
@@ -63,13 +45,13 @@ class Console
                 self::$instance->runServer ( $manage );
                 break;
             case 'create:controller':
-                self::$instance->createController ( $manage );
+                self::$instance->create ( $manage );
                 break;
             case 'create:model':
-                self::$instance->createModel ( $manage );
+                self::$instance->create ( $manage );
                 break;
             case 'create:middleware':
-                self::$instance->createMiddleware ( $manage );
+                self::$instance->create ( $manage );
                 break;
             case 'session:table':
                 self::$instance->createSessionTable($manage);
@@ -77,10 +59,10 @@ class Console
             case 'users:table':
                 self::$instance->userTableCreate();
                 break;
-            case 'cache:views':
+            case 'view:cache':
                 self::$instance->clearViewCache();
                 break;
-            case 'cache:configs':
+            case 'config:cache':
                 self::$instance->clearConfigsCacheOrCreate($manage[1] ?? null);
                 break;
             case 'key:generate':
@@ -103,11 +85,15 @@ class Console
         $this->print ( "green" , "create:middleware [Middleware Name]\n\n" );
         $this->print ( "green" , "session:table --create [tableName] (Database Migration Session table) \n\n" );
         $this->print ( "green" , "users:table (Database Migration users table) \n\n" );
-        $this->print ( "green" , "cache:views (Views cache file all clear)\n\n" );
-        $this->print ( "green" , "cache:configs (Configs cache file all clear)\n\n" );
-        $this->print ( "green" , "cache:configs --create (Configs  files all cache)\n\n" );
+        $this->print ( "green" , "view:cache (View cache files all clear)\n\n" );
+        $this->print ( "green" , "config:cache (Configs cache file all clear)\n\n" );
+        $this->print ( "green" , "config:cache --create (Configs  files all cache)\n\n" );
         $this->print ( "green" , "key:generate \n\n" );
     }
+
+
+
+
 
 
     private function print( $style , $text )
@@ -131,9 +117,12 @@ class Console
             }
         }
 
-        if (php_sapi_name() != 'cli') {
+        if (php_sapi_name() != 'cli')
+        {
           self::$message .= (self::$support ? $styles[ $style ] : '' ) . $text . ( self::$support ? $styles[ 'reset' ] : '');
-        } else {
+        }
+        else
+        {
           echo ( self::$support ? $styles[ $style ] : '' ) . $text . ( self::$support ? $styles[ 'reset' ] : '' );
         }
 
@@ -209,104 +198,104 @@ class Console
     }
 
 
-
-    private function createController ( array $manage )
+    private function create($manage)
     {
-        if (isset( $manage[ 1 ] )) {
-            if (!file_exists ( 'app/Controllers/' . $manage[ 1 ] . '.php' )) {
-                $controller = touch ( 'app/Controllers/' . $manage[ 1 ] . '.php' );
-                $namespace = "namespace App\\Controllers";
-                if (strpos ( $manage[ 1 ] , '/' )) {
-                    $_C = explode ( '/' , $manage[ 1 ] );
-                    $name = ucfirst ( array_pop ( $_C ) );
-                    if (count ( $_C ) > 0) {
-                        $namespace .= '\\' . implode ( '\\' , $_C );
-                    }
-                } else {
-                    $name = ucfirst ( $manage[ 1 ] );
-                }
 
-                if ($controller) {
-                    if ($file = fopen ( 'app/Controllers/' . $manage[ 1 ] . '.php' , 'w' )) {
-                        fwrite ( $file , "<?php $namespace;   \n\n\nuse App\\Controllers\\Controller;\n\n\nclass $name extends Controller\n{\n\n\t\tpublic function index(){}\n\n}" );
-                        fclose ( $file );
-                    }
+      list($create,$type) = explode(':',$manage[0],2);
 
-                    $this->print ( "success" , "\nCreate $name controller successfully\n\n" );
-                }
-            } else {
-                $this->print ( "error" , "\nThe file was already created\n\n" );
+      $type = ucfirst($type);
+
+      if(!isset($manage[1]))
+      {
+        return $this->print ( "error" , "\nPlease enter {$type} name \n\n" );
+      }
+
+      $name = $manage[1];
+
+      $namespace = $type == 'Middleware' ? "namespace App\\{$type}" : "namespace App\\{$type}"."s";
+
+      if (strpos ( $name , '/' ))
+      {
+          $_file = explode ( '/' , $manage[ 1 ] );
+
+          $name =  array_pop ( $_file );
+
+          if (count ( $_file ) > 0)
+          {
+              $namespace .= '\\' . implode ( '\\' , $_file );
+          }
+      }
+
+
+      switch ($type)
+      {
+        case 'Controller':
+          $type = 'Controllers';
+          $write_data =  "<?php $namespace;   \n\n\nuse App\\Controllers\\Controller;\n\n\nclass $name extends Controller\n{\n\n\t\tpublic function index(){}\n\n}";
+          break;
+
+        case 'Model':
+          $write_data =  "<?php $namespace;   \n\n\nuse System\\Core\\Model;\n\n\nclass $name extends Model\n{\n\n\t protected \$table;\n\n\n}";
+          $type = 'Models';
+          break;
+
+        case 'Middleware':
+          $type = 'Middleware';
+          $write_data = "<?php  {$namespace};  \n\n\nclass {$name}\n{\n\n\t public function handle(\$request,\$options){}\n\n}";
+          break;
+
+        default:
+          return $this->print ( "error" , "\nCreate {$type} name undefained. Please use type ['controller,model,middleware']\n\n" );;
+          break;
+      }
+
+
+      if (!file_exists ( "app/{$type}/" . $manage[ 1 ]. '.php' ))
+      {
+
+
+          $_ = explode('/',$manage[1]);
+
+          if(count($_) > 1)
+          {
+            array_pop($_);
+
+            if(count($_) > 1)
+            {
+              $__ = $_;
+              $path = '';
+              foreach ($_ as $dir)
+              {
+                $path .= array_shift($__).'/';
+
+                @mkdir(path($type.'/'.$path,'app'));
+              }
             }
-        } else {
-            $this->print ( "error" , "\nPlease enter Controller name \n\n" );
-        }
-    }
-
-
-
-    private function createModel ( array $manage )
-    {
-        if (isset( $manage[ 1 ] )) {
-            if (!file_exists ( 'app/Models/' . $manage[ 1 ] . '.php' )) {
-                $model = touch ( 'app/Models/' . $manage[ 1 ] . '.php' );
-                $namespace = "namespace App\\Models";
-                if (strpos ( $manage[ 1 ] , '/' )) {
-                    $_C = explode ( '/' , $manage[ 1 ] );
-                    $name = ucfirst ( array_pop ( $_C ) );
-                    if (count ( $_C ) > 0) {
-                        $namespace .= '\\' . implode ( '\\' , $_C );
-                    }
-                } else {
-                    $name = ucfirst ( $manage[ 1 ] );
-                }
-
-                if ($model) {
-                    if ($file = fopen ( 'app/Models/' . $manage[ 1 ] . '.php' , 'w' )) {
-                        fwrite ( $file , "<?php  {$namespace};  \n\n\nuse System\\Core\\Model;\n\n\nclass {$name} extends Model\n{\n\n\t protected \$table;\n\n\t protected \$fillable =  [];\n\n\n}" );
-                        fclose ( $file );
-                    }
-                    $this->print ( "success" , "\nCreate {$name} Model successfully\n" );
-                }
-            } else {
-                $this->print ( "error" , "\nThe file  was already created\n\n" );
+            else
+            {
+              @mkdir(path($type.'/'.implode('/',$_),'app'));
             }
-        } else {
-            $this->print ( "error" , "\nPlease enter Model name\n\n" );
-        }
-    }
 
-    /**
-     * @param array $manage
-     */
-    private function createMiddleware ( array $manage )
-    {
-        if (isset( $manage[ 1 ] )) {
-            if (!file_exists ( 'app/Middleware/' . $manage[ 1 ] . '.php' )) {
-                $middleware = touch ( 'app/Middleware/' . $manage[ 1 ] . '.php' );
-                $namespace = "namespace App\\Middleware";
-                if (strpos ( $manage[ 1 ] , '/' )) {
-                    $_C = explode ( '/' , $manage[ 1 ] );
-                    $name = ucfirst ( array_pop ( $_C ) );
-                    if (count ( $_C ) > 0) {
-                        $namespace .= '\\' . implode ( '\\' , $_C );
-                    }
-                } else {
-                    $name = ucfirst ( $manage[ 1 ] );
-                }
+          }
 
-                if ($middleware) {
-                    if ($file = fopen ( 'app/Middleware/' . $manage[ 1 ] . '.php' , 'w' )) {
-                        fwrite ( $file , "<?php  {$namespace};  \n\n\nclass {$name}\n{\n\n\t public function handle(\$request,\$options){}\n\n}" );
-                        fclose ( $file );
-                    }
-                    $this->print ( "success" , "\nCreate {$name} Middleware successfully\n" );
-                }
-            } else {
-                $this->print ( "error" , "\nThe file  was already created\n\n" );
-            }
-        } else {
-            $this->print ( "error" , "\nPlease enter middleware name\n\n" );
-        }
+          $file = @touch ("app/{$type}/{$manage[1]}.php");
+
+          if ($file)
+          {
+              try
+              {
+                file_put_contents("app/{$type}/$manage[1].php", $write_data );
+
+                return $this->print ( "success" , "\nCreate $name controller successfully\n\n" );
+              }
+              catch (\Exception $e) {}
+          }
+          return $this->print ( "success" , "\nCreate file failed\n\n" );
+      }
+      else
+      {
+          $this->print ( "error" , "\nThe file was already created\n\n" );
+      }
     }
 
 
@@ -351,17 +340,22 @@ class Console
 
     private static function clearViewCache()
     {
-      $view_cache_files = glob(BASEDIR.'/storage/cache/views/*');
-      $html_cache_files = glob(BASEDIR.'/storage/cache/html/*');
 
-      foreach ([$view_cache_files,$html_cache_files] as $readdir)
+      foreach (glob(BASEDIR.'/storage/cache/views/*') as $readdir)
       {
         foreach($readdir as $file)
         {
             if (is_file($file))
             {
+              if(@unlink($file))
+              {
                 echo "Delete: [{$file}]\n";
-                @unlink($file);
+              }
+              else
+              {
+                $this->print('error','Delete failed:['.$file.']');
+              }
+
             }
         }
       }
@@ -376,22 +370,23 @@ class Console
     {
       if($subcommand == '--create')
       {
-        if(!app('cache')->has('__app_configs'))
+        if(!file_exists(path('system/configs','storage')))
         {
             $configsArray = [];
 
-            foreach (glob(APPDIR.'/Config/*') as $file)
+            foreach (glob(APPDIR.'/Config/*.php') as $file)
             {
                 $configsArray[substr(basename($file),0,-4)] = require $file;
             }
 
-            app('cache')->forever('__app_configs',$configsArray);
+            file_put_contents(path('storage/system/configs'),serialize($configsArray));
+
         }
-        return self::$instance->print('green',"\n\nConfigs cache successfully \n\n");
+        return self::$instance->print('green',"\n\nConfigs cached successfully \n\n");
       }
       else
       {
-        app('cache')->forget('__app_configs');
+        @unlink(path('storage/system/configs'));
 
         return self::$instance->print('green',"\n\nCache configs clear successfully \n\n");
       }
@@ -404,7 +399,8 @@ class Console
     private function userTableCreate()
     {
 
-      try {
+      try
+      {
 
          DB::pdo()->query("CREATE TABLE IF NOT EXISTS users (
                         id int(11) NOT NULL AUTO_INCREMENT,
@@ -420,11 +416,16 @@ class Console
                 )");
         return $this->print('green',"\nusers table created successfully\n\n");
 
-      } catch (\PDOException $e) {
-        if($e->getCode() == "42S01") {
+      }
+      catch (\PDOException $e)
+      {
+        if($e->getCode() == "42S01")
+        {
           $this->print('error',"\n\n users table or view already exists\n");
           $this->print('red',"\n \n");
-        }else {
+        }
+        else
+        {
           $this->print('error',"\n\n {$e->getmessage()}\n");
           $this->print('red',"\n \n");
         }
@@ -435,7 +436,8 @@ class Console
 
     public static function command($command,$shell = false)
     {
-      if($shell == true) {
+      if($shell == true)
+      {
           return shell_exec($command);
       }
 

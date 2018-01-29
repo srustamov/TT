@@ -6,15 +6,11 @@
  */
 //------------------------------------------------------
 
-use System\Engine\Console\Console;
+
+define('BASEDIR',__DIR__);
 
 
+require_once __DIR__.'/public/index.php';
 
-define('__MAIN__', 'manage');
 
-require_once __DIR__.'/system/Engine/Console/Console.php';
-
-if ($argv[0] == __MAIN__)
-{
-   Console::run($argv);
-}
+System\Engine\Cli\Console::run($argv);

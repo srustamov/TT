@@ -49,7 +49,17 @@ Download Project
   root@samir  ~/Desktop/www/TT# php manage users:table
 ```
 
-* Template Engine and Html cache clear:
+* Template Engine cache clear:
 ```
-  root@samir  ~/Desktop/www/TT# php manage cache:views
+  root@samir  ~/Desktop/www/TT# php manage view:cache
+```
+
+* Config cache clear:
+```
+  root@samir  ~/Desktop/www/TT# php manage config:cache
+```
+
+* Create cache config files:
+```
+  root@samir  ~/Desktop/www/TT# php manage config:cache --create
 ```

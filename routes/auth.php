@@ -13,8 +13,8 @@
 */
 Route::group('/auth',function($auth){
   $auth->get('/login','Auth/LoginController@showlogin');
-  $auth->post('/login','Auth/LoginController@Postlogin');
+  $auth->post('/login','Auth/LoginController@login');
   $auth->get('/register','Auth/RegisterController@showregister');
-  $auth->post('/register','Auth/RegisterController@PostRegister');
+  $auth->post('/register','Auth/RegisterController@register');
   $auth->get('/logout','Auth/LoginController@logout');
 });

@@ -35,7 +35,7 @@
    chdir(BASEDIR.DS);
 //--------------------------------------------------------------
 //
-   require SYSDIR.'autoload.php';
+   require_once SYSDIR.'autoload.php';
 
    require_once SYSDIR.'Engine/Kernel.php';
 //

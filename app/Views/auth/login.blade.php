@@ -9,8 +9,8 @@
     position: relative;
     min-height: 30px;
     line-height: 30px;
-    animation: pop 1s infinite;
-    -webkit-animation:pop 1s infinite;
+    animation: 'pop' 1s infinite;
+    -webkit-animation:'pop' 1s infinite;
     font-weight:normal;
 
   }
@@ -33,6 +33,8 @@
       zoom:100%;
     }
   }
+
+
   @keyframes "pop" {
     50%{
       zoom:103%
@@ -79,10 +81,10 @@
               <div class="form-group">
                 <label for="">Password</label>
                 <input type="password" class="form-control" name="password" placeholder="Password">
-                @if (isset($error->errorpassword[0]))
+                @if (isset($error->password[0]))
                 <strong class="text-danger custom">
                   <span onclick="this.parentNode.style.display = 'none';">x</span>
-                  {{$error->error['password'][0]}}
+                  {{$error->password[0]}}
                 </strong>
                 @endif
               </div>

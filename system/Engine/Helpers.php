@@ -73,13 +73,12 @@ function config( String $extension, $default = null)
 
     if(is_null($configs))
     {
-        if(app('cache')->has('__app_configs'))
+        if(file_exists(path('storage/system/configs')))
         {
-          $configs = app('cache')->get('__app_configs');
+          $configs = unserialize(file_get_contents(path('storage/system/configs')));
         }
         else
         {
-
           return System\Core\Load::config($extension, $default);
         }
     }
@@ -124,6 +123,76 @@ function config( String $extension, $default = null)
 }
 
 
+function set_settings_variable()
+{
+
+  if(filemtime(path('storage/system/settings')) < filemtime(path('.settings')))
+  {
+        $_auto_detect = ini_get('auto_detect_line_endings');
+
+        ini_set('auto_detect_line_endings',1);
+
+        $lines = file(BASEDIR.'/.settings',FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+        ini_set('auto_detect_line_endings',$_auto_detect);
+
+        $_settings = [];
+
+        foreach ($lines as $line)
+        {
+          $line = trim($line);
+
+          if(isset($line[0]) && $line[0] === '#') continue;
+
+          if(strpos($line,'=') !== false)
+          {
+            list($name,$value) = array_map('trim',explode('=',$line,2));
+
+            if(preg_match('/\s+/',$value) > 0)
+            {
+              show_error("setting variable value containing spaces must be surrounded by quotes");
+            }
+
+            $_settings[$name] = $value;
+          }
+        }
+
+
+
+        foreach ($_settings as $key => $value)
+        {
+          if(strpos($value,'$') !== false)
+          {
+            $value = preg_replace_callback('/\${([a-zA-Z0-9_\-.]+)}/',
+            function($m) use ($_settings)
+            {
+              return $_settings[$m[1]] ?? "${".$m[1]."}";
+            },
+            $value);
+          }
+
+          $_ENV[$key] = $value;
+        }
+
+        file_put_contents(path('storage/system/settings'),serialize($_ENV));
+
+      }
+      else
+      {
+        $_settings = unserialize(file_get_contents(path('storage/system/settings')));
+
+        foreach ($_settings as $key => $value)
+        {
+          $_ENV[$key] = $value;
+        }
+
+      }
+
+
+
+}
+
+
 /**
  * @param $key
  * @param null $default
@@ -131,14 +200,7 @@ function config( String $extension, $default = null)
  */
 function setting( $key, $default = null)
 {
-    static $settings;
-
-    if(is_null($settings))
-    {
-        $settings = parse_ini_file(BASEDIR.'/.settings');
-    }
-
-    return $settings[$key] ?? $default;
+   return $_ENV[$key] ?? $default;
 }
 
 
@@ -177,7 +239,7 @@ function import_dir_files( $dir)
  */
 function storage_dir( $path = '')
 {
-    return BASEDIR.'/storage/'.$path;
+    return path($path,'storage');
 }
 
 
@@ -187,7 +249,7 @@ function storage_dir( $path = '')
  */
 function app_dir( $path = '')
 {
-    return APPDIR.$path;
+    return path($path,'app');
 }
 
 
@@ -197,7 +259,7 @@ function app_dir( $path = '')
  */
 function system_dir( $path = '')
 {
-    return SYSDIR.$path;
+    return path($path,'system');
 }
 
 
@@ -207,7 +269,13 @@ function system_dir( $path = '')
  */
 function public_dir( $path = '')
 {
-    return BASEDIR.'/public/'.$path;
+    return path($path,'public');
+}
+
+
+function path($path,$path_name = null)
+{
+  return BASEDIR.DS.(is_null($path_name) ? '' : ltrim($path_name.DS,'/')).ltrim($path,'/');
 }
 
 
@@ -238,11 +306,22 @@ function abort( Int $http_code)
  */
 function show_error( $message, $file = 'undefained', $line = 'undefained')
 {
-    if(setting('APP_DEBUG',false))
+
+    if(setting('APP_DEBUG',false) == true)
     {
         if($message instanceof Exception)
         {
-            $message = $message->getMessage();
+
+            $_message = $message->getMessage();
+            $file     = $message->getFile();
+            $line     = $message->getLine();
+
+            $file = preg_replace('/\[(.*?)\]/', '<span style="color:#990000;">$1</span>', $file);
+            $line = preg_replace('/\[(.*?)\]/', '<span style="color:#990000;">$1</span>', $file);
+        }
+        else
+        {
+          $_message = $message;
         }
 
         $style  = 'border:solid 1px #E1E4E5;';
@@ -254,10 +333,10 @@ function show_error( $message, $file = 'undefained', $line = 'undefained')
         $style .= 'text-align:left;';
         $style .= 'font-size:14px;';
 
-        $message = preg_replace('/\[(.*?)\]/', '<span style="color:#990000;">$1</span>', $message);
+        $_message = preg_replace('/\[(.*?)\]/', '<span style="color:#990000;">$1</span>', $_message);
 
         $str  = "<div style=\"$style\">";
-        $str .= $message;
+        $str .= $_message;
         $str .= '</div>';
 
         exit($str);
@@ -306,21 +385,6 @@ function InConsole()
 }
 
 
-function configs_cached()
-{
-    if(!app('cache')->has('app_configs'))
-    {
-        $configsArray = [];
-
-        foreach (glob(APPDIR.'/Config/*') as $file)
-        {
-            $configsArray[substr(basename($file),0,-4)] = require $file;
-        }
-
-        app('cache')->forever('app_configs',$configsArray);
-    }
-
-}
 
 
 /**
@@ -337,92 +401,104 @@ function elapsed_time( $start, $finish)
 
 function benchmark_panel()
 {
+  if (!InConsole())
+  {
+     if(setting('APP_DEBUG') && !app('http')->isAjax())
+     {
+       ob_start();
 
-    $style  = 'max-height: 400px;margin:0;overflow: auto;z-index:99999999999999;';
-    $style .= 'background-color: #1f1d1d;color:white;';
-    $style .= 'position: fixed;bottom: 0;';
-    $style .= 'padding:0 0 5px 0;box-sizing: border-box;';
-    $style .= 'font-family: monospace;font-size: 14px;min-width:calc(100% - 40px);display:none';
-    $array = [
-        'Total time' => elapsed_time(APP_START,microtime(true)),
-        'Memory usage' => (int)(memory_get_usage()/1024)." kb",
-        'Peak Memory usage' => (int)(memory_get_peak_usage()/1024)." kb",
-        //'CPU' => var_dump(sys_getloadavg()),
-        'Load files' => count(get_required_files()),
-        'Controller' => @$_SERVER['CALLED_CONTROLLER'],
-        'Action' => @$_SERVER['CALLED_METHOD'],
-        'Request Method' => $_SERVER['REQUEST_METHOD'],
-        'Request Uri' => $_SERVER['REQUEST_URI'],
-        'Document root' => basename($_SERVER['DOCUMENT_ROOT']),
-        'Locale' => app('lang')->locale(),
-        'PHP SELF' => $_SERVER['PHP_SELF'],
-        'REMOTE ADDR' => $_SERVER['REMOTE_ADDR'],
-        'REMOTE PORT' => $_SERVER['REMOTE_PORT'],
-        'SERVER PROTOCOL' => $_SERVER['SERVER_PROTOCOL'],
-        'SERVER SOFTWARE' => $_SERVER['SERVER_SOFTWARE'],
-    ];
-    ?>
-    <span id="bench" style="<?=$style?>">
-      <p title="Http status" style="background-color: #2b542c;color:white;height:30px;line-height:30px;">
-        &nbsp HTTP status <?=http_response_code()?>&nbsp
-       <span style="padding:0 10px;float: right;color: white;font-weight: bold"><?=setting('APP_NAME','TT')?></span>
-      </p>
-      <p><span style="color:green"> root@<?=setting('APP_NAME','TT')?></span>:~<span style="color:red">#</span> benchmark</p>
-      <table>
-        <tr>
-        <th>
-          +--------------------------------------------<br />
-          +       Name                                 <br />
-          +--------------------------------------------<br />
-        </th>
-        <th>
-          +--------------------------------------------<br />
-          +       Value                                <br />
-          +--------------------------------------------<br />
-        </th>
-        </tr>
-          <?php foreach($array as $name => $value): ?>
-              <tr>
-         <td>
-           +<i style="color:rgb(190, 49, 3)"><?=$name?></i><br />
-           +--------------------------------------------<br />
-         </td>
-          <td>
-           + <i style="color:green"><?=$value?></i><br />
-           +--------------------------------------------<br />
-          </td>
-        </tr>
-          <?php endforeach; ?>
-      </table>
-     </span>
-    <span  onclick="bencht(this)" style="background-color:black;color:white;width:40px;
-     display:inline-block;position: fixed;bottom: 0;right: 0;
-     font-size: 20px;font-weight: bold;text-align: center;cursor: pointer;line-height:40px;">B</span>
-    <script>
-        var bench = document.getElementById("bench");
+       $style  = 'max-height: 400px;margin:0;overflow: auto;z-index:99999999999999;';
+       $style .= 'background-color: #1f1d1d;color:white;';
+       $style .= 'position: fixed;bottom: 0;';
+       $style .= 'padding:0 0 5px 0;box-sizing: border-box;';
+       $style .= 'font-family: monospace;font-size: 14px;min-width:calc(100% - 40px);display:none';
+       $array = [
+           'Total time'       => elapsed_time(APP_START,microtime(true)),
+           'Memory usage'     => (int) (memory_get_usage()/1024)." kb",
+           'Peak Memory usage'=> (int) (memory_get_peak_usage()/1024)." kb",
+           'Load files'       => count(get_required_files()),
+           'Controller'       => $_SERVER['CALLED_CONTROLLER'] ?? '',
+           'Action'           => $_SERVER['CALLED_METHOD'] ?? '',
+           'Request Method'   => $_SERVER['REQUEST_METHOD'],
+           'Request Uri'      => $_SERVER['REQUEST_URI'],
+           'Document root'    => basename($_SERVER['DOCUMENT_ROOT']),
+           'Locale'           => app('lang')->locale(),
+           'PHP SELF'         => $_SERVER['PHP_SELF'],
+           'REMOTE ADDR'      => $_SERVER['REMOTE_ADDR'],
+           'REMOTE PORT'      => $_SERVER['REMOTE_PORT'],
+           'SERVER PROTOCOL'  => $_SERVER['SERVER_PROTOCOL'],
+           'SERVER SOFTWARE'  => $_SERVER['SERVER_SOFTWARE'],
+       ];
+       ?>
+       <span id="__bench" style="<?php echo $style?>">
+         <p title="Http status" style="background-color: #2b542c;color:white;height:30px;line-height:30px;">
+           &nbsp HTTP status <?php echo http_response_code() ?>&nbsp
+          <span style="padding:0 10px;float: right;color: white;font-weight: bold"><?=setting('APP_NAME','TT')?></span>
+         </p>
+         <p><span style="color:green"> root@<?php echo setting('APP_NAME','TT')?></span>:~<span style="color:red">#</span> benchmark</p>
+         <table>
+           <tr>
+           <th>
+             +--------------------------------------------<br />
+             + Name                                       <br />
+             +--------------------------------------------<br />
+           </th>
+           <th>
+             +--------------------------------------------<br />
+             + Value                                      <br />
+             +--------------------------------------------<br />
+           </th>
+           </tr>
+           <?php foreach($array as $name => $value): ?>
+           <tr>
+            <td>
+              +<i style="color:rgb(190, 49, 3)"><?=$name?></i><br />
+              +--------------------------------------------<br />
+            </td>
+             <td>
+              + <i style="color:green"><?=$value?></i><br />
+              +--------------------------------------------<br />
+             </td>
+           </tr>
+           <?php endforeach; ?>
+         </table>
+        </span>
+       <span  onclick="bencht(this)" style="background-color:black;color:white;width:40px;
+        display:inline-block;position: fixed;bottom: 0;right: 0;
+        font-size: 20px;font-weight: bold;text-align: center;cursor: pointer;line-height:40px;">B</span>
+       <script>
+           var bench = document.getElementById("__bench");
 
-        if(bench.style.display != "none") {
-            bench.nextElementSibling.style.height    = bench.offsetHeight+"px";
-            bench.nextElementSibling.style.lineHeight = bench.offsetHeight+"px";
-            bench.firstElementChild.style.lineHeight = bench.offsetHeight+"px";
+           if(bench.style.display != "none")
+           {
+               bench.nextElementSibling.style.height    = bench.offsetHeight+"px";
+               bench.nextElementSibling.style.lineHeight = bench.offsetHeight+"px";
+               bench.firstElementChild.style.lineHeight = bench.offsetHeight+"px";
+           }
+           function bencht($this)
+           {
+               if(bench.style.display != "none")
+               {
+                   $this.style.height = "40px";
+                   $this.innerHTML = "B";
+                   bench.style.display = "none";
+               }
+               else
+               {
+                   $this.innerHTML = "X";
+                   bench.style.display = "inline-block";
+                   $this.style.height = bench.offsetHeight+"px";
+               }
+           }
+       </script>
+       <?php
+       $__bench = ob_get_contents();ob_end_clean();
 
-        }
-        function bencht($this) {
+       return $__bench;
+     }
+  }
 
-            if(bench.style.display != "none")
-            {
-                $this.style.height = "40px";
-                $this.innerHTML = "B";
-                bench.style.display = "none";
-            }
-            else
-            {
-                $this.innerHTML = "X";
-                bench.style.display = "inline-block";
-                $this.style.height = bench.offsetHeight+"px";
-            }
-        }
-    </script>'
-    <?php
+  return true;
+
 
 }

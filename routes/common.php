@@ -22,9 +22,3 @@ Route::get('/',function(){
 Route::get('/home','HomeController@index');
 
 Route::get('/language/{language}','HomeController@changeLanguage')->pattern(['langauge' => '[a-z]+']);
-
-
-
-
-
-Route::get('/api/v1/user/{token}','Api/ApiController@response');

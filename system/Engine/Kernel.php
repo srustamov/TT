@@ -4,6 +4,9 @@
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/SamirRustamov/TT
  */
+error_reporting(E_ALL);
+
+ini_set('display_errors',0);
 
 use System\Engine\Exception\CustomException;
 
@@ -15,39 +18,16 @@ if (!version_compare(PHP_VERSION, 7, '>='))
 
 
 //------------------------------------------------
-require_once(SYSDIR . 'Engine/Helpers.php');
+require_once(SYSDIR.'Engine/Helpers.php');
 //------------------------------------------------
 
+set_settings_variable();
 
-switch (setting('APP_DEBUG',false))
+
+set_exception_handler(function ($e)
 {
-    case false:
-        error_reporting(0);
-        ini_set('display_errors', 0);
-        set_exception_handler(function ($e)
-        {
-            CustomException::writeLog($e);
-        });
-        break;
-    case true:
-        error_reporting(E_ALL);
-        ini_set('display_errors', 1);
-        $whoops = new Whoops\Run;
-        $whoops->pushHandler(new Whoops\Handler\PrettyPageHandler);
-        $whoops->register();
-        break;
-    default:
-        error_reporting(0);
-        ini_set('display_errors', 0);
-        set_exception_handler(function ($e)
-        {
-            CustomException::writeLog($e);
-        });
-        break;
-}
-
-
-
+    return CustomException::handler($e);
+});
 
 
 
@@ -64,13 +44,11 @@ setlocale(LC_ALL, config('datetime.setLocale'));
 
 date_default_timezone_set(config('datetime.time_zone', 'UTC'));
 
-$aliases = config('aliases',[]);
 
-foreach ($aliases as $key => $value)
+foreach (config('aliases',[]) as $key => $value)
 {
     class_alias($value, $key);
 }
-
 
 
 //------------------------------------------------
@@ -80,13 +58,4 @@ import_dir_files(BASEDIR.'/routes');
 
 
 
-
-if (!InConsole())
-{
-     Route::init();
-
-     if(setting('APP_DEBUG') && !request()->ajax())
-     {
-       echo benchmark_panel();
-     }
-}
+if (!InConsole()) Route::init();

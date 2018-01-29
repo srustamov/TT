@@ -17,17 +17,9 @@ use Windwalker\Edge\Loader\EdgeFileLoader;
 
 class View
 {
-    protected $no_cache_replacment = [
-        // '[['          => '<?php echo htmlspecialchars(',
-        // ']]'          => ',ENT_QUOTES);? >',
-        // '[!!'         => '< ? php echo ',
-        // '!!]'         => ';? >',
-        '@nocache'    => '<?php ',
-        '@endnocache' => ' ?>'
-    ];
 
 
-    protected $html_cache_path    = 'storage/cache/html/';
+
 
     protected $file;
 
@@ -35,7 +27,6 @@ class View
 
     protected $cache = true;
 
-    protected $htmlCache = false;
 
 
     public function render(String $file, $_data = [], $cache = true)
@@ -62,51 +53,7 @@ class View
     }
 
 
-    public function htmlCache()
-    {
-        $this->htmlCache  = true;
-    }
 
-
-    private function renderHtmlCache()
-    {
-        $auth = app('auth')->check() ? 'auth' : 'guest';
-        $file = $this->html_cache_path. md5($this->file .app('lang')->locale(). $auth).'.php';
-        if (file_exists($file))
-        {
-          if(filemtime($file) >= filemtime(APPDIR.'Views/'.str_replace('.','/',$this->file).'.blade.php'))
-            return $file;
-        }
-        return false;
-    }
-
-
-    private function writeHtmlCache($content)
-    {
-        $content = str_replace(
-                         array_keys($this->no_cache_replacment),
-                         array_values($this->no_cache_replacment),
-                         $content
-                       );
-
-        $auth       = app('auth')->check() ? 'auth' : 'guest';
-
-        $cache_file = $this->html_cache_path. md5($this->file.app('lang')->locale().$auth).'.php';
-
-        if (!is_dir(dirname($cache_file)))
-    		{
-    			mkdir(dirname($cache_file), 0755, true);
-    		}
-
-        return file_put_contents($cache_file, $content);
-
-    }
-
-
-    private function htmlCacheNormalize()
-    {
-
-    }
 
 
     public function __destruct()
@@ -122,14 +69,6 @@ class View
             }
         }
 
-        if ($this->htmlCache)
-        {
-            if ($file = $this->renderHtmlCache())
-            {
-                extract($this->data);
-                return require_once $file;
-            }
-        }
 
 
         $loader = new EdgeFileLoader(array( APPDIR.'Views' ));
@@ -150,39 +89,16 @@ class View
         if($extension = config('blade.extension'))
         {
           $extension = '\\'.trim($extension,'\\');
-          
+
           $edge->addExtension(new $extension);
         }
 
 
 
 
-        if(!$this->htmlCache)
-        {
-            $compiler = $edge->getCompiler();
-
-            $compiler->directive('nocache',function(){
-                return '<?php ';
-            });
-            $compiler->directive('endnocache',function(){
-                return ' ?>';
-            });
-
-        }
-
         $content = $edge->render($this->file, $this->data);
 
-        if ($this->htmlCache)
-        {
-            if ($this->writeHtmlCache($content))
-            {
-                if ($file = $this->renderHtmlCache())
-                {
-                    extract($this->data);
-                    return require_once $file;
-                }
-            }
-        }
+
         echo $content;
     }
 

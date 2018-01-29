@@ -27,7 +27,7 @@ class RegisterController extends Controller
 
 
 
-		public function PostRegister(Request $request)
+		public function register(Request $request)
 		{
 
 			$post_data  = $request->all();
@@ -40,9 +40,12 @@ class RegisterController extends Controller
 				'password_configuration' => 'required|min:6|confirm:password'
 			]);
 
-			if($validation == false) {
+			if($validation == false)
+			{
 				return redirect('/auth/register')->withError(Validator::messages());
-			}else {
+			}
+			else
+			{
 				if(
 					User::create([
 						'name' => $post_data['name'],
@@ -52,7 +55,9 @@ class RegisterController extends Controller
 				)
 				{
 					return redirect('auth/login')->withSuccess(['register_success' => 'Register successfully']);
-				}else {
+				}
+				else
+				{
 					return redirect('auth/register')->withError(['error_register' =>  'User register error occurred.Please try again']);
 				}
 			}

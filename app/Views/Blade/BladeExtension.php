@@ -15,6 +15,7 @@ class BladeExtension implements EdgeExtensionInterface
 	{
 		return array(
 			'lang' => array($this, 'lang'),
+			'benchmark_panel' => array($this, 'benchmark_panel'),
 		);
 	}
 
@@ -31,6 +32,11 @@ class BladeExtension implements EdgeExtensionInterface
 	public function lang()
 	{
 		return "<?php echo lang".implode(',',func_get_args())."; ?>";
+	}
+
+	public function benchmark_panel()
+	{
+		return "<?php echo benchmark_panel(); ?>";
 	}
 
 }
