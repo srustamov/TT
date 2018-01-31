@@ -8,6 +8,7 @@ use Hash;
 
 
 
+
 class RegisterController extends Controller
 {
 
