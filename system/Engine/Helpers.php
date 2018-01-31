@@ -126,7 +126,7 @@ function config( String $extension, $default = null)
 function set_settings_variable()
 {
 
-  if(filemtime(path('storage/system/settings')) < filemtime(path('.settings')))
+  if(file_exists(path('storage/system/settings')) && filemtime(path('storage/system/settings')) < filemtime(path('.settings')))
   {
         $_auto_detect = ini_get('auto_detect_line_endings');
 

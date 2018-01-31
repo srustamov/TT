@@ -123,6 +123,28 @@ class Request
   }
 
 
+  public function only($data):Array
+  {
+    $data = implode(',',$data);
+
+    $return  = [];
+
+    foreach ($data as $key)
+    {
+      $return[] = $this->{$key};
+    }
+
+    return $return;
+
+  }
+
+
+  public function validate(Array $roles):Bool
+  {
+    return app('validator')->make($this->all(),$roles);
+  }
+
+
 
 
 }

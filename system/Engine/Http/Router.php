@@ -117,13 +117,29 @@ class Router
     }
 
 
+    public static function prefix($prefix)
+    {
+      static::$prefix = $prefix;
+      return (new static);
+    }
+
     /**
      * @param $prefix
      * @param $callback
      */
-    public static function group($prefix, $callback)
+    public static function group($prefix , $callback =  null)
     {
+
+      
+      if(is_null($callback))
+      {
+        $callback = $prefix;
+
+        $prefix = static::$prefix;
+      }
+
       $requestUri = self::getrequestUri();
+
       $prefixUri  = strtolower(static::$prefix . $prefix);
 
       if ($prefixUri === substr($requestUri, 0, strlen($prefix)))
@@ -132,6 +148,8 @@ class Router
         call_user_func($callback,new Router);
         static::$prefix  = substr(static::$prefix, 0, strlen(static::$prefix) - strlen($prefix));
       }
+
+
     }
 
 
@@ -278,7 +296,6 @@ class Router
 
         if ($_SERVER['REQUEST_METHOD'] == 'HEAD')
         {
-            ob_start();
             $method = 'GET';
         }
         elseif ($_SERVER['REQUEST_METHOD'] == 'POST')

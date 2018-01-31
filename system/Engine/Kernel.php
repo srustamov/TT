@@ -26,7 +26,7 @@ set_settings_variable();
 
 set_exception_handler(function ($e)
 {
-    return CustomException::handler($e);
+    CustomException::handler($e);
 });
 
 
@@ -37,7 +37,7 @@ import(SYSDIR.'Core/Helpers.php');
 
 
 //------------------------------------------------
-import_dir_files(APPDIR."/Helpers");
+import_dir_files(APPDIR."Helpers");
 //------------------------------------------------
 
 setlocale(LC_ALL, config('datetime.setLocale'));

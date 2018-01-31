@@ -11,6 +11,8 @@
 |  Web Routes
 |---------------------------------------------
 */
+
+
 Route::group('/auth',function($auth){
   $auth->get('/login','Auth/LoginController@showlogin');
   $auth->post('/login','Auth/LoginController@login');

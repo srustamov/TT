@@ -33,13 +33,14 @@ class LoginController extends Controller
 				'email'    => 'required|email',
 				'password' => 'required|min:6'
 			]);
+
 			if($validation == false)
 			{
 				return redirect('auth/login')->withError(Validator::messages());
 			}
 			else
 			{
-					if(Auth::attempt(['email' => $request->email,'password' => $request->password ],$request->post('remember')))
+					if(Auth::attempt($request->only('email,password'),$request->remember))
 					{
 						return redirect('home');
 					}
@@ -54,8 +55,7 @@ class LoginController extends Controller
 
 		public function logout()
 		{
-			Auth::guard('user')->logout();
-		  return redirect()->back();
+			return Auth::guard('user')->logout()->redirect()->back();
 		}
 
 

@@ -24,30 +24,28 @@ class AdminLoginController extends Controller
 
 
 
-		public function PostLogin(Request $request)
+		public function login(Request $request)
 		{
-			$post_data  = $request->all();
 
-
-			$validation =  Validator::make($post_data,[
+			$validation =  Validator::make($request->all(),[
 				'email'    => 'required|email',
 				'password' => 'required|min:6'
 			]);
-			if($validation == false) {
-				return redirect('admin/login')->withError(Validator::messages());
-			}else {
-				$control = Auth::guard('admin')->attempt([
-					'email' => $post_data['email'],
-					'password' => $post_data['password']
-				  ],$request->post('remember'));
 
-					if($control->user){
+			if($validation == false)
+			{
+				return redirect('admin/login')->withError(Validator::messages());
+			}
+			else
+			{
+
+					if(Auth::guard('admin')->attempt(['email' => $request->email,'password' => $request->password],$request->post('remember')))
+					{
 						return redirect('admin/dashboard');
-					}elseif ($control->many_attempts) {
-						return redirect('admin/login')->withError([
-							'login_incorrect' => 'Cox giris cehdi.'.$control->many_attempts.' saniye sonra yeniden cehd edin']);
-					}else{
-						return redirect('admin/login')->withError(['login_incorrect' =>'Login or password incorrect']);
+					}
+					else
+					{
+						return redirect('admin/login')->withError(['login_incorrect' =>Auth::getMessage()]);
 					}
 				}
 
@@ -57,8 +55,7 @@ class AdminLoginController extends Controller
 
 		public function logout()
 		{
-			Auth::guard('admin')->logout();
-		  return redirect()->back();
+			return Auth::guard('admin')->logout()->redirect()->back();
 		}
 
 

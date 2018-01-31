@@ -259,9 +259,10 @@ class Authentication
     {
       Auth_Session::delete(function ($session)
       {
-          $subject = array_keys($session->all());
+
           $data    = array();
-          foreach ($subject as $key => $value)
+
+          foreach (array_keys($session->all()) as $key => $value)
           {
             if (preg_match("/".static::$guard."_(.*)/", $value))
             {
@@ -276,12 +277,19 @@ class Authentication
         Auth_Cookie::forget('remember_'.static::$guard);
       }
 
-      return $this->guest();
     }
     catch(\Exception $e)
     {
-      return false;
+      Auth_Session::destroy();
     }
+
+    return $this;
+  }
+
+
+  public function redirect(...$args)
+  {
+    return redirect(...$args);
   }
 
 

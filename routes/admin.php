@@ -15,4 +15,9 @@ use System\Engine\Console\Console;
 |---------------------------------------------
 */
 
-Route::get('/admin','Backend/AdminController@dashboard')->middleware('auth:admin|login');
+
+Route::get('/admin/login','Auth/AdminLoginController@showlogin');
+
+Route::post('/admin/login','Auth/AdminLoginController@login');
+
+Route::get('/admin','Backend/AdminController@dashboard')->middleware('auth:admin');

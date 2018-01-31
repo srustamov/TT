@@ -109,10 +109,14 @@ class Console
             'title' => "\033[34m" ,
         );
 
-        if (is_null ( self::$support )) {
-            if (DIRECTORY_SEPARATOR == '\\') {
+        if (is_null ( self::$support ))
+        {
+            if (DIRECTORY_SEPARATOR == '\\')
+            {
                 self::$support = false !== getenv ( 'ANSICON' ) || 'ON' === getenv ( 'ConEmuANSI' );
-            } else {
+            }
+            else
+            {
                 self::$support = function_exists ( 'posix_isatty' ) && @posix_isatty ( STDOUT );
             }
         }
@@ -141,6 +145,7 @@ class Console
     private function keygenerate()
     {
         $settings_file = BASEDIR.'/.settings';
+
         try
         {
           $file = fopen($settings_file,'r+');
@@ -160,6 +165,7 @@ class Console
                          array('\+',"\\/",'\?','\.','\[','\]'),
                          $replace
                      );
+
            $key = base64_encode(openssl_random_pseudo_bytes(40));
 
            $key = "APP_KEY = ".str_replace('=','',$key)."\n";
@@ -175,8 +181,6 @@ class Console
         {
           return $this->print('error',$e->getMessage()."\n");
         }
-
-
 
 
     }
@@ -231,7 +235,7 @@ class Console
       {
         case 'Controller':
           $type = 'Controllers';
-          $write_data =  "<?php $namespace;   \n\n\nuse App\\Controllers\\Controller;\n\n\nclass $name extends Controller\n{\n\n\t\tpublic function index(){}\n\n}";
+          $write_data =  "<?php $namespace;   \n\n\nuse App\\Controllers\\Controller;\n\nuse System\Libraries\Request;\n\n\nclass $name extends Controller\n{\n\n\t\tpublic function index(){}\n\n}";
           break;
 
         case 'Model':
@@ -313,28 +317,36 @@ class Console
                 $table = $manage[2];
             }
         }
-        if (!$table) {
+        if (!$table)
+        {
             $table = config('session.table','sessions');
         }
 
-        $result = DB::pdo()->query("CREATE TABLE IF NOT EXISTS {$table} (
-                    session_id varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-                    expires int(100) NOT NULL,
-                    data text COLLATE utf8_unicode_ci,
-                     PRIMARY KEY(session_id)
-                   )
-                 ");
-
-        if (!empty(DB::error_message()))
+        try
         {
-            $this->print('error',"\n".DB::error_message()."\n");
+          DB::exec("CREATE TABLE IF NOT EXISTS {$table} (
+                      session_id varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+                      expires int(100) NOT NULL,
+                      data text COLLATE utf8_unicode_ci,
+                       PRIMARY KEY(session_id)
+                     )
+                   ");
+          $this->print('success',"\n Create session table successfully \n\n");
+        }
+        catch (\PDOException $e)
+        {
+          if($e->getCode() == "42S01")
+          {
+            $this->print('error',"\n\n {$table} table or view already exists\n");
+          }
+          else
+          {
+            $this->print('error',"\n\n {$e->getmessage()}\n");
+          }
+
+          $this->print('red',"\n \n");
         }
 
-        if($result) {
-            $this->print('success',"\n Create session table successfully \n\n");
-        } else {
-            $this->print('error',"\n Create session table error occurred \n");
-        }
 
     }
 
@@ -402,7 +414,7 @@ class Console
       try
       {
 
-         DB::pdo()->query("CREATE TABLE IF NOT EXISTS users (
+         DB::exec("CREATE TABLE IF NOT EXISTS users (
                         id int(11) NOT NULL AUTO_INCREMENT,
                         name varchar(100) COLLATE utf8_unicode_ci NOT NULL,
                         password varchar(100) COLLATE utf8_unicode_ci NOT NULL,
