@@ -12,31 +12,12 @@
  */
 
 //--------------------------------------------------------------
-   define('APP_START', microtime(true));
+define('APP_START', microtime(true));
 //--------------------------------------------------------------
-//
 
 
-   if(!defined('BASEDIR'))
-   {
-     define('BASEDIR',dirname(__DIR__));
-   }
-
-   define('DS',DIRECTORY_SEPARATOR);
-
-   define('PS',PATH_SEPARATOR);
-
-   define('APPDIR',BASEDIR.DS.'app'.DS);
-
-   define('SYSDIR',BASEDIR.DS.'system'.DS);
+require_once __DIR__.'/../vendor/autoload.php';
 
 
-//--------------------------------------------------------------
-   chdir(BASEDIR.DS);
-//--------------------------------------------------------------
-//
-   require_once SYSDIR.'autoload.php';
 
-   require_once SYSDIR.'Engine/Kernel.php';
-//
-//--------------------------------------------------------------
+System\Engine\Kernel::start(realpath('../'));

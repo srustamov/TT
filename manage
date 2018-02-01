@@ -6,11 +6,13 @@
  */
 //------------------------------------------------------
 
+define('APP_START', microtime(true));
 
-define('BASEDIR',__DIR__);
+
+require_once __DIR__.'/vendor/autoload.php';
 
 
-require_once __DIR__.'/public/index.php';
+System\Engine\Kernel::start(__DIR__);
 
 
 System\Engine\Cli\Console::run($argv);

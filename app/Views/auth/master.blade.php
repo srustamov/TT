@@ -23,10 +23,10 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar">
           <ul class="nav navbar-nav">
-            <li @if(Url::request() == '/home') class="active" @endif><a href="/home">@lang('home.home')</a></li>
-            @if (current_url() == base_url('auth/login/'))
+            <li @if(url()->request() == '/home') class="active" @endif><a href="/home">@lang('home.home')</a></li>
+            @if (url()->current() == url('auth/login/'))
             <li><a href="/auth/register">@lang('home.register')</a></li>
-            @elseif (current_url() == base_url('auth/register/'))
+            @elseif (url()->current() == url('auth/register/'))
             <li><a href="/auth/login">@lang('home.login')</a></li>
             @endif
           </ul>

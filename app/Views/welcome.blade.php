@@ -53,7 +53,7 @@
 <div id="container">
     <span id="welcome">{{ setting('APP_NAME') }}</span>
     <span><a href="https://github.com/SamirRustamov/TT" target="_blank">GITHUB</a></span>
-    <span><a href="{{base_url('/home')}}">HOME</a></span>
+    <span><a href="{{url('/home')}}">HOME</a></span>
 </div>
 @if (isset($error->auth))
   <script type="text/javascript">

@@ -148,7 +148,8 @@ class Console
 
         try
         {
-          $file = fopen($settings_file,'r+');
+           $file = fopen($settings_file,'r+');
+
            while (($line = fgets($file,4096)) !==false)
            {
              if(strpos($line,'APP_KEY') !== false)

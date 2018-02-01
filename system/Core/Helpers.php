@@ -34,7 +34,8 @@ function is_base64(String $string)
 
 
 
-if (!function_exists('report')) {
+if (!function_exists('report'))
+{
     function report(String $subject, String $message,  $destination = null)
     {
         if (empty($destination)) {
@@ -66,14 +67,20 @@ if (!function_exists('report')) {
 
 
 
-if (!function_exists('cookie')) {
+if (!function_exists('cookie'))
+{
     function cookie($key = false, $value = false, $time = null, $path = '/', $domain = '', $secure = false, $http_only = true)
     {
-        if ($key && !$value) {
+        if ($key && !$value)
+        {
             return (new Cookie())->get($key);
-        } elseif (!$key) {
+        }
+        elseif (!$key)
+        {
           return (new Cookie());
-        }else {
+        }
+        else
+        {
           return (new Cookie())->http_only($http_only)
                  ->path($path)
                  ->domain($domain)
@@ -85,14 +92,20 @@ if (!function_exists('cookie')) {
 
 
 
-if (!function_exists('cache')) {
+if (!function_exists('cache'))
+{
     function cache($key = false, $value = false ,$expires = 10)
     {
-        if(!$key) {
+        if(!$key)
+        {
           return (new System\Libraries\Cache());
-        } elseif (!$value) {
+        }
+        elseif (!$value)
+        {
           return (new System\Libraries\Cache())->get($key);
-        } elseif ($key && $value) {
+        }
+        elseif ($key && $value)
+        {
           return (new System\Libraries\Cache())->put($key,$value,$expires);
         }
     }
@@ -103,11 +116,16 @@ if (!function_exists('cache')) {
 if (!function_exists('session')) {
     function session($key = null,$value = false)
     {
-        if (is_null($key)) {
+        if (is_null($key))
+        {
             return (new Session());
-        } elseif ($key && !$value) {
+        }
+        elseif ($key && !$value)
+        {
             return (new Session())->get($key);
-        } else {
+        }
+        else
+        {
             return (new Session())->set($key,$value);
         }
     }
@@ -115,7 +133,8 @@ if (!function_exists('session')) {
 
 
 
-if (!function_exists('view')) {
+if (!function_exists('view'))
+{
     function view(String $file, $data = [], $cache = true)
     {
         return (new View())->render($file, $data, $cache);
@@ -124,7 +143,8 @@ if (!function_exists('view')) {
 
 
 
-if (!function_exists('csrf_token')) {
+if (!function_exists('csrf_token'))
+{
     function csrf_token():String
     {
         static $token;
@@ -142,7 +162,8 @@ if (!function_exists('csrf_token')) {
 }
 
 
-if (!function_exists('csrf_check')) {
+if (!function_exists('csrf_check'))
+{
     function csrf_check():Bool
     {
         $token = app('session')->get('csrf_token_data');
@@ -152,7 +173,8 @@ if (!function_exists('csrf_check')) {
 }
 
 
-if (!function_exists('csrf_field')) {
+if (!function_exists('csrf_field'))
+{
     function csrf_field():String
     {
         return '<input type="hidden" name="_token" value="' . csrf_token() . '" />';
@@ -201,22 +223,6 @@ if (!function_exists('lang'))
 }
 
 
-if (!function_exists('lang_code'))
-{
-    function lang_code()
-    {
-        return (new Language())->locale();
-    }
-}
-
-
-if (!function_exists('lang_data'))
-{
-    function lang_data($code = false)
-    {
-        return (new Language())->data($code);
-    }
-}
 
 
 
@@ -282,7 +288,7 @@ if (!function_exists('request'))
 
 
 
-if (!function_exists('xss_clean'))
+if (!function_exists('xssClean'))
 {
     /**
      * @param $data
@@ -336,7 +342,8 @@ if (!function_exists('preg_replace_array')) {
     {
         $callback = function () use (&$replacements)
         {
-          foreach ($replacements as $key => $value) {
+          foreach ($replacements as $key => $value)
+          {
             return array_shift($replacements);
           }
         };
@@ -350,7 +357,8 @@ if (!function_exists('preg_replace_array')) {
 
 
 
-if (!function_exists('str_replace_first')) {
+if (!function_exists('str_replace_first'))
+{
     /**
      * @param $search
      * @param $replace
@@ -364,7 +372,8 @@ if (!function_exists('str_replace_first')) {
 }
 
 
-if (!function_exists('str_replace_last')) {
+if (!function_exists('str_replace_last'))
+{
     /**
      * @param $search
      * @param $replace
@@ -378,7 +387,8 @@ if (!function_exists('str_replace_last')) {
 }
 
 
-if (!function_exists('str_slug')) {
+if (!function_exists('str_slug'))
+{
     /**
      * @param $str
      * @param $separator
@@ -391,7 +401,8 @@ if (!function_exists('str_slug')) {
 }
 
 
-if (!function_exists('upper')) {
+if (!function_exists('upper'))
+{
     /**
      * @param $str
      * @return string
@@ -403,7 +414,8 @@ if (!function_exists('upper')) {
 }
 
 
-if (!function_exists('lower')) {
+if (!function_exists('lower'))
+{
     /**
      * @param $str
      * @return string
@@ -427,13 +439,14 @@ if (!function_exists('title')) {
 }
 
 
-if (!function_exists('length')) {
+if (!function_exists('len'))
+{
     /**
      * @param $value
      * @param null $encoding
      * @return int
      */
-    function length(String $value, $encoding = null):Int
+    function len(String $value, $encoding = null):Int
     {
         return mb_strlen($value, $encoding);
     }
@@ -456,14 +469,23 @@ if (!function_exists('str_replace_array')) {
 }
 
 
-if (!function_exists('base_url')) {
+if (!function_exists('url'))
+{
     /**
      * @param null $url
      * @return string
      */
-    function base_url($url = ''):String
+    function url($url = null)
     {
-        return (new Url())->base($url);
+        if (is_null($url))
+        {
+          return (new Url());
+        }
+        else
+        {
+          return (new Url())->base($url);
+        }
+
     }
 }
 
@@ -487,18 +509,23 @@ if (!function_exists('clean_url')) {
      */
     function clean_url($url):String
     {
-        if ($url == '') {
-            return '';
-        }
+        if ($url == '') return '';
+
 
         $url = str_replace("http://", "", strtolower($url));
+
         $url = str_replace("https://", "", $url);
-        if (substr($url, 0, 4) == 'www.') {
+
+        if (substr($url, 0, 4) == 'www.')
+        {
             $url = substr($url, 4);
         }
         $url = explode('/', $url);
+
         $url = reset($url);
+
         $url = explode(':', $url);
+
         $url = reset($url);
 
         return $url;
@@ -570,7 +597,8 @@ if (!function_exists('valid_ip'))
 }
 
 
-if (!function_exists('get_css')) {
+if (!function_exists('get_css'))
+{
     function get_css($file,$modifiedTime = false):String
     {
         return Html::css($file,$modifiedTime);
@@ -578,7 +606,8 @@ if (!function_exists('get_css')) {
 }
 
 
-if (!function_exists('get_js')) {
+if (!function_exists('get_js'))
+{
     function get_js($file,$modifiedTime = false):String
     {
         return Html::js($file,$modifiedTime);
@@ -586,7 +615,8 @@ if (!function_exists('get_js')) {
 }
 
 
-if (!function_exists('get_img')) {
+if (!function_exists('get_img'))
+{
     function get_img($file,$attributes = []):String
     {
         return Html::img($file,$attributes);
@@ -594,7 +624,8 @@ if (!function_exists('get_img')) {
 }
 
 
-if (!function_exists('get_bootstrap_css')) {
+if (!function_exists('get_bootstrap_css'))
+{
     function get_bootstrap_css():String
     {
         return Html::BootstrapCss();
@@ -602,7 +633,8 @@ if (!function_exists('get_bootstrap_css')) {
 }
 
 
-if (!function_exists('get_bootstrap_js')) {
+if (!function_exists('get_bootstrap_js'))
+{
     function get_bootstrap_js():String
     {
         return Html::BootstrapJs();
@@ -610,7 +642,8 @@ if (!function_exists('get_bootstrap_js')) {
 }
 
 
-if (!function_exists('get_font_awesome')) {
+if (!function_exists('get_font_awesome'))
+{
     function get_font_awesome():String
     {
         return Html::FontAwesome();
@@ -618,7 +651,8 @@ if (!function_exists('get_font_awesome')) {
 }
 
 
-if (!function_exists('get_jquery')) {
+if (!function_exists('get_jquery'))
+{
     function get_jquery():String
     {
         return Html::jquery();
@@ -626,7 +660,8 @@ if (!function_exists('get_jquery')) {
 }
 
 
-if (!function_exists('get_jqueryUi')) {
+if (!function_exists('get_jqueryUi'))
+{
     function get_jqueryUi():String
     {
         return Html::JqueryUi();

@@ -84,7 +84,7 @@ class Authentication
 
 
 
-  public  function attempt($data, $remember = false)
+  public function attempt($data, $remember = false)
   {
     $this->setAttemptDriver();
 
@@ -219,6 +219,8 @@ class Authentication
       Auth_Cookie::set('remember_'.static::$guard, base64_encode($_token), 3600 * 24 * 30);
       Auth_DB::table(static::$config[static::$guard]['table'])->set(['remember_token' => $_token])->where('id',$user->id)->update();
     }
+
+    return $this;
   }
 
 

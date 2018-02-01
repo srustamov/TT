@@ -24,6 +24,8 @@ class CustomException extends \Exception
 
         if($_debug && strtolower($_debug) == 'true')
         {
+          ob_get_clean();
+          
           if(!InConsole())
           {
             if(file_exists(SYSDIR . 'Engine/Exception/views/exception.php'))
