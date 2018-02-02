@@ -104,7 +104,13 @@ class Kernel
     {
         $settingsFile = path('storage/system/settings');
 
-        if (!file_exists($settingsFile) || @filemtime($settingsFile) < filemtime(path('.settings')))
+        if (!file_exists($settingsFile))
+        {
+          touch($settingsFile);
+          touch(path('.settings'),time() + 10);
+        }
+
+        if (filemtime($settingsFile) < filemtime(path('.settings')))
         {
             $_auto_detect = ini_get('auto_detect_line_endings');
 
@@ -175,6 +181,8 @@ class Kernel
         require_once SYSDIR.'Engine/Helpers.php';
 
         import(SYSDIR.'Core/Helpers.php');
+
+        import_dir_files(APPDIR.'Helpers');
 
     }
 
