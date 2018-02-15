@@ -3,7 +3,7 @@
 
 use App\Controllers\Controller;
 use System\Libraries\Request;
-use Validator;
+use System\Facades\Validator;
 use Auth;
 
 

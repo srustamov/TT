@@ -11,6 +11,5 @@ class User extends Model
 
 	 protected $primaryKey; // default id
 
-	 protected $fillable; //default ['*']
 
 }

@@ -26,7 +26,7 @@ function app(String $class_name)
         'email' =>  'System\Libraries\Mail\Email',
         'session' =>  'System\Libraries\Session\Session',
         'array' =>  'System\Libraries\Arr',
-        'cache' =>  'System\Libraries\Cache',
+        'cache' =>  'System\Libraries\Cache\Cache',
         'cookie' =>  'System\Libraries\Cookie',
         'file' =>  'System\Libraries\File',
         'hash' =>  'System\Libraries\Hash',

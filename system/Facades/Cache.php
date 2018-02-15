@@ -10,6 +10,6 @@ class Cache
 {
   public static function __callStatic( $method, $args)
   {
-      return  (new \System\Libraries\Cache())->{$method}(...$args);
+      return  (new \System\Libraries\Cache\Cache())->{$method}(...$args);
   }
 }

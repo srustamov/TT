@@ -94,8 +94,6 @@ class View
         }
 
 
-
-
         $content = $edge->render($this->file, $this->data);
 
 

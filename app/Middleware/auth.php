@@ -10,22 +10,23 @@
 
 
 use System\Libraries\Request;
+use System\Facades\Auth as Authentication;
 
 class Auth
 {
 
-	 protected $redirect = [
-		 'admin' => '/',
-		 'user' => '/auth/login'
-	 ];
+    protected $redirect = [
+        'admin' => '/',
+        'user' => '/auth/login'
+    ];
 
 
-	 public function handle(Request $request ,$guard)
-     {
-       if(\System\Facades\Auth::guard($guard)->guest())
-			 {
-           return redirect ($this->redirect[$guard])->withError([ 'auth' => 'Öncə giriş etməlisiz']);
-       }
-     }
+    public function handle(Request $request ,$guard)
+    {
+        if(Authentication::guard($guard)->guest())
+        {
+            return redirect ($this->redirect[$guard])->withError([ 'auth' => 'Öncə giriş etməlisiz']);
+        }
+    }
 
 }

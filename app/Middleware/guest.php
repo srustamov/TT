@@ -17,16 +17,10 @@ class Guest
 {
 
 
-	 protected $redirect = [
-						 'admin' => '/admin',
-						 'user'  => '/home'
-					 ];
-
-
-
     public function handle(Request $request, $guard)
     {
-      if(Auth::guard($guard)->check()) {
+      if(Auth::guard($guard)->check())
+	  {
           return redirect()->back();
       }
       return true;

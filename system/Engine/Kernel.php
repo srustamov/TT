@@ -57,10 +57,10 @@ class Kernel
         {
             self::$instance->basePath = dirname(dirname(__DIR__));
         }
-				else
-				{
-					self::$instance->basePath = $basePath;
-				}
+        else
+        {
+            self::$instance->basePath = $basePath;
+        }
 
         self::$instance->setPathDefines();
 
@@ -74,13 +74,23 @@ class Kernel
 
         date_default_timezone_set(config('datetime.time_zone', 'UTC'));
 
+
+        if (class_exists('\App\Kernel'))
+        {
+            (new \App\Kernel())->boot();
+
+            $_middleware = (new \App\Kernel())->middleware;
+
+            foreach ($_middleware as $middleware)
+            {
+                (new $middleware())->handle(new \System\Libraries\Request(),null);
+            }
+        }
+
         import_dir_files(BASEDIR.'/routes');
-
-
 
         if (!InConsole()) \Route::init();
 
-				return true;
     }
 
 
@@ -99,15 +109,14 @@ class Kernel
     }
 
 
-
     public function set_settings_variables()
     {
         $settingsFile = path('storage/system/settings');
 
         if (!file_exists($settingsFile))
         {
-          touch($settingsFile);
-          touch(path('.settings'),time() + 10);
+            touch($settingsFile);
+            touch(path('.settings'),time() + 10);
         }
 
         if (filemtime($settingsFile) < filemtime(path('.settings')))
@@ -151,12 +160,12 @@ class Kernel
                 if (strpos($value, '$') !== false)
                 {
                     $value = preg_replace_callback('/\${([a-zA-Z0-9_\-.]+)}/',
-                                function ($m) use ($_settings)
-                                {
-                                    return $_settings[$m[1]] ?? "${".$m[1]."}";
-                                },
-                                 $value
-                               );
+                        function ($m) use ($_settings)
+                        {
+                            return $_settings[$m[1]] ?? "${".$m[1]."}";
+                        },
+                        $value
+                    );
                 }
 
                 $_ENV[$key] = $value;
@@ -187,8 +196,8 @@ class Kernel
     }
 
 
-		private  function setInstance()
-		{
-			self::$instance = &$this;
-		}
+    private  function setInstance()
+    {
+        self::$instance = &$this;
+    }
 }

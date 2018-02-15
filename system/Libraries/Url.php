@@ -11,7 +11,7 @@
  */
 
 
-use System\Facades\Html as HtmlDom;
+
 
 class Url
 {
@@ -22,16 +22,12 @@ class Url
   public function request()
   {
 
-    $request = HtmlDom::filter (
-        urldecode (
+    $request_uri = urldecode (
             parse_url ( rtrim ( @$_SERVER[ 'REQUEST_URI' ] , '/' ) , PHP_URL_PATH )
-        )
-    );
-    $local_path = basename ( BASEDIR ) != '' ? '/' . basename ( BASEDIR ) : '';
-    $request = str_replace ( [ ' ' , $local_path   ] , '' , $request );
-    $request = $request == '' ? '/' : $request;
+        );
+    $request_uri = $request_uri == '' ? '/' : $request_uri;
 
-    return $request;
+    return $request_uri;
   }
 
 
@@ -50,7 +46,8 @@ class Url
   public function base ( $url = ''):String
   {
     $base_url = trim(config('config.base_url'));
-    if(empty($base_url)) {
+    if(empty($base_url))
+    {
       $base_url = $this->protocol()."://".$_SERVER['HTTP_HOST'].rtrim(
         str_replace(
           basename(
@@ -67,8 +64,7 @@ class Url
 
   function current ( $url = null ):String
   {
-      $uri = trim ( str_replace ( basename ( BASEDIR ) , '' , $_SERVER[ 'REQUEST_URI' ] ) , '/' );
-      return rtrim($this->base(). $uri,'/') . '/' . $url;
+      return rtrim($this->base(). $_SERVER['REQUEST_URI'],'/') . '/' . $url;
   }
 
 

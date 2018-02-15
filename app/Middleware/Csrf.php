@@ -10,12 +10,13 @@ class Csrf
 
     public function handle(Request $request,$guard = null)
     {
-        if ($request->method() == 'POST') {
-            if(!csrf_check()) {
+        if ($request->method() == 'POST')
+        {
+            if(!csrf_check())
+            {
                 throw new CsrfException("Verify csrf token failed");
             }
         }
-        return;
     }
 
 }
