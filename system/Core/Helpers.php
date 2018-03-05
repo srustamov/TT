@@ -15,7 +15,7 @@ use System\Libraries\Input;
 use System\Libraries\Validator;
 use System\Libraries\Redirect;
 use System\Libraries\Cookie;
-use System\Libraries\Request;
+use System\Engine\Http\Request;
 use System\Facades\File;
 use System\Facades\Html;
 use System\Facades\Http;
@@ -26,12 +26,13 @@ use System\Facades\Http;
 
 
 
-function is_base64(String $string)
+if (!function_exists('is_base64'))
 {
-  return base64_encode(base64_decode($string)) == $string;
+    function is_base64(String $string)
+    {
+        return base64_encode(base64_decode($string)) == $string;
+    }
 }
-
-
 
 
 if (!function_exists('report'))
@@ -54,17 +55,13 @@ if (!function_exists('report'))
                  '----------------------------' . PHP_EOL .
                  '|IP: ' . Http::ip() . PHP_EOL .
                  '|Subject: ' . $subject . PHP_EOL .
-                 '|File: ' . @debug_backtrace()[0]['file']. PHP_EOL .
-                 '|Line: ' . @debug_backtrace()[0]['line']. PHP_EOL .
+                 '|File: ' . debug_backtrace()[0]['file'] ?? ''. PHP_EOL .
+                 '|Line: ' . debug_backtrace()[0]['line'] ?? ''. PHP_EOL .
                  '|Date: ' . strftime('%d %B %Y %H:%M:%S') . PHP_EOL .
                  '|Message: ' . $message . PHP_EOL. PHP_EOL. PHP_EOL;
        return File::append($logDir . $destination . $extension,$report);
     }
 }
-
-
-
-
 
 
 if (!function_exists('cookie'))
@@ -91,26 +88,24 @@ if (!function_exists('cookie'))
 }
 
 
-
 if (!function_exists('cache'))
 {
     function cache($key = false, $value = false ,$expires = 10)
     {
         if(!$key)
         {
-          return (new System\Libraries\Cache());
+          return (new System\Libraries\Cache\Cache());
         }
         elseif (!$value)
         {
-          return (new System\Libraries\Cache())->get($key);
+          return (new System\Libraries\Cache\Cache())->get($key);
         }
         elseif ($key && $value)
         {
-          return (new System\Libraries\Cache())->put($key,$value,$expires);
+          return (new System\Libraries\Cache\Cache())->put($key,$value,$expires);
         }
     }
 }
-
 
 
 if (!function_exists('session')) {
@@ -132,52 +127,11 @@ if (!function_exists('session')) {
 }
 
 
-
 if (!function_exists('view'))
 {
     function view(String $file, $data = [], $cache = true)
     {
         return (new View())->render($file, $data, $cache);
-    }
-}
-
-
-
-if (!function_exists('csrf_token'))
-{
-    function csrf_token():String
-    {
-        static $token;
-
-        if (is_null($token))
-        {
-            if(!app('session')->has('csrf_token_data'))
-            {
-               app('session')->set('csrf_token_data', base64_encode(openssl_random_pseudo_bytes(32)));
-            }
-            $token = app('session')->get('csrf_token_data');
-        }
-        return $token;
-    }
-}
-
-
-if (!function_exists('csrf_check'))
-{
-    function csrf_check():Bool
-    {
-        $token = app('session')->get('csrf_token_data');
-        $user_token = $_POST['_token'] ?? null;
-        return ($token === $user_token);
-    }
-}
-
-
-if (!function_exists('csrf_field'))
-{
-    function csrf_field():String
-    {
-        return '<input type="hidden" name="_token" value="' . csrf_token() . '" />';
     }
 }
 
@@ -223,9 +177,6 @@ if (!function_exists('lang'))
 }
 
 
-
-
-
 if (!function_exists('validator'))
 {
     function validator($data = null, $rules = [])
@@ -242,9 +193,6 @@ if (!function_exists('validator'))
 }
 
 
-
-
-
 if (!function_exists('get'))
 {
     /**
@@ -257,8 +205,6 @@ if (!function_exists('get'))
         return (new Input())->get($name, $xss_clean);
     }
 }
-
-
 
 
 if (!function_exists('post'))
@@ -275,8 +221,6 @@ if (!function_exists('post'))
 }
 
 
-
-
 if (!function_exists('request'))
 {
     function request($name = null)
@@ -284,8 +228,6 @@ if (!function_exists('request'))
         return !is_null($name) ? (new Request())->{$name} : (new Request());
     }
 }
-
-
 
 
 if (!function_exists('xssClean'))
@@ -302,11 +244,7 @@ if (!function_exists('xssClean'))
 
 
 if (!function_exists('fullTrim')) {
-    /**
-     * @param $str
-     * @param string $char
-     * @return String
-     */
+
     function fullTrim($str, $char = ' '):String
     {
         return str_replace($char, '', $str);
@@ -316,10 +254,7 @@ if (!function_exists('fullTrim')) {
 
 if (!function_exists('encode_php_tag'))
 {
-    /**
-     * @param $str
-     * @return String
-     */
+
     function encode_php_tag($str):String
     {
         return str_replace(array( '<?' , '?>' ), array( '&lt;?' , '?&gt;' ), $str);
@@ -327,17 +262,8 @@ if (!function_exists('encode_php_tag'))
 }
 
 
-
-
-
-
 if (!function_exists('preg_replace_array')) {
-    /**
-     * @param  string $pattern
-     * @param  array $replacements
-     * @param  string $subject
-     * @return string
-     */
+
     function preg_replace_array($pattern, array $replacements, $subject):String
     {
         $callback = function () use (&$replacements)
@@ -355,16 +281,9 @@ if (!function_exists('preg_replace_array')) {
 }
 
 
-
-
 if (!function_exists('str_replace_first'))
 {
-    /**
-     * @param $search
-     * @param $replace
-     * @param $subject
-     * @return String
-     */
+
     function str_replace_first($search, $replace, $subject):String
     {
         return (new Str())->replace_first($search, $replace, $subject);
@@ -374,12 +293,7 @@ if (!function_exists('str_replace_first'))
 
 if (!function_exists('str_replace_last'))
 {
-    /**
-     * @param $search
-     * @param $replace
-     * @param $subject
-     * @return mixed
-     */
+
     function str_replace_last($search, $replace, $subject):String
     {
         return (new Str())->replace_last($search, $replace, $subject);
@@ -389,11 +303,7 @@ if (!function_exists('str_replace_last'))
 
 if (!function_exists('str_slug'))
 {
-    /**
-     * @param $str
-     * @param $separator
-     * @return string
-     */
+
     function str_slug($str, $separator = '-'): String
     {
         return (new Str())->slug($str, $separator);
@@ -403,10 +313,7 @@ if (!function_exists('str_slug'))
 
 if (!function_exists('upper'))
 {
-    /**
-     * @param $str
-     * @return string
-     */
+
     function upper(String $str,$encoding = 'UTF-8'): String
     {
         return mb_strtoupper($str, $encoding);
@@ -416,10 +323,7 @@ if (!function_exists('upper'))
 
 if (!function_exists('lower'))
 {
-    /**
-     * @param $str
-     * @return string
-     */
+
     function lower(String $str,$encoding = 'UTF-8'): String
     {
         return mb_strtolower($str, $encoding);
@@ -546,7 +450,6 @@ if (!function_exists('segment')) {
 }
 
 
-
 if (!function_exists('debug'))
 {
     function debug($data)
@@ -577,8 +480,6 @@ if (!function_exists('valid_mail'))
 }
 
 
-
-
 if (!function_exists('valid_url'))
 {
     function valid_url(String $url)
@@ -597,82 +498,28 @@ if (!function_exists('valid_ip'))
 }
 
 
-if (!function_exists('get_css'))
+if (!function_exists('css'))
 {
-    function get_css($file,$modifiedTime = false):String
+    function css($file,$modifiedTime = false):String
     {
         return Html::css($file,$modifiedTime);
     }
 }
 
 
-if (!function_exists('get_js'))
+if (!function_exists('js'))
 {
-    function get_js($file,$modifiedTime = false):String
+    function js($file,$modifiedTime = false):String
     {
         return Html::js($file,$modifiedTime);
     }
 }
 
 
-if (!function_exists('get_img'))
+if (!function_exists('img'))
 {
-    function get_img($file,$attributes = []):String
+    function img($file,$attributes = []):String
     {
         return Html::img($file,$attributes);
-    }
-}
-
-
-if (!function_exists('get_bootstrap_css'))
-{
-    function get_bootstrap_css():String
-    {
-        return Html::BootstrapCss();
-    }
-}
-
-
-if (!function_exists('get_bootstrap_js'))
-{
-    function get_bootstrap_js():String
-    {
-        return Html::BootstrapJs();
-    }
-}
-
-
-if (!function_exists('get_font_awesome'))
-{
-    function get_font_awesome():String
-    {
-        return Html::FontAwesome();
-    }
-}
-
-
-if (!function_exists('get_jquery'))
-{
-    function get_jquery():String
-    {
-        return Html::jquery();
-    }
-}
-
-
-if (!function_exists('get_jqueryUi'))
-{
-    function get_jqueryUi():String
-    {
-        return Html::JqueryUi();
-    }
-}
-
-
-if (!function_exists('get_angular'))
-{
-    function get_angular():String
-    {
-        return Html::angular();
     }
 }

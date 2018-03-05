@@ -1,6 +1,7 @@
-<?php namespace System\Libaries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Drivers;
 
-use System\Libaries\Cache\CacheStore;
+
+use System\Libraries\Cache\CacheStore;
 
 class MemcacheStore implements CacheStore
 {
@@ -9,7 +10,7 @@ class MemcacheStore implements CacheStore
 
     private $key;
 
-    private $expires;
+    private $expires = 10;
 
     private $memcache;
 
@@ -23,12 +24,12 @@ class MemcacheStore implements CacheStore
         }
 
         $this->memcache = new \Memcache;
+
         $this->memcache->addServer(self::$config['host'],self::$config['port']);
     }
 
     public function put ( String $key , $value , $expires = 10 )
     {
-
         $this->put = true;
 
         $this->key = $key;
@@ -82,7 +83,7 @@ class MemcacheStore implements CacheStore
 
     public function __destruct ()
     {
-        if ($this->put && !is_null($this->expires))
+        if ($this->put)
         {
             $this->memcache->set($this->key,$this->memcache->get($this->key),null,$this->expires);
         }

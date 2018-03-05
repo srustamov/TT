@@ -1,0 +1,17 @@
+<?php  :namespace;
+
+
+use App\Controllers\Controller;
+use System\Engine\Http\Request;
+
+
+class :name extends Controller
+{
+
+
+  public function index()
+  {
+
+  }
+
+}

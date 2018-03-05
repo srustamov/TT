@@ -75,10 +75,14 @@ class Redirect
   public function __call($method,$args)
   {
     $method = mb_strtolower($method);
-    if(mb_strlen($method) >= 4 && mb_substr($method,0,4) == 'with') {
-      if($method == 'with') {
+    if(mb_strlen($method) >= 4 && mb_substr($method,0,4) == 'with')
+    {
+      if($method == 'with')
+      {
         $this->view_variable = 'errors';
-      }else {
+      }
+      else
+      {
         $this->view_variable = mb_substr($method,4);
       }
       $this->with = (object) $args[0];

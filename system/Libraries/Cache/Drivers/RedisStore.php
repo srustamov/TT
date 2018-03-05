@@ -1,11 +1,11 @@
-<?php namespace System\Libaries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Drivers;
 
-use System\Libaries\Cache\CacheStore;
 
+
+use System\Libraries\Cache\CacheStore;
 
 class RedisStore implements CacheStore
 {
-
 
     private $put = false;
 
@@ -17,20 +17,16 @@ class RedisStore implements CacheStore
 
     private static $config;
 
-
-
     function __construct ()
     {
         if (is_null(self::$config))
         {
             self::$config = config('cache.redis');
         }
-
         $this->redis = new \Redis();
-
         try
         {
-            $this->redis->connect(self::$config['host'],self::$config['port']);
+            $this->redis->connect('127.0.0.1',6379);
         }
         catch (\RedisException $e)
         {
@@ -45,14 +41,7 @@ class RedisStore implements CacheStore
 
         $this->key = $key;
 
-        if (!is_null($expires))
-        {
-          $this->redis->setex($key , $expires, $value);
-        }
-        else
-        {
-          $this->redis->setex($key , 10, $value);
-        }
+        $this->redis->setex($key , $expires, $value);
 
         return $this;
     }
@@ -74,7 +63,7 @@ class RedisStore implements CacheStore
 
     public function forget ( $key )
     {
-        return $this->redis->delete($key);
+        $this->redis->delete($key);
     }
 
     public function expires ( Int $expires )
@@ -94,6 +83,10 @@ class RedisStore implements CacheStore
         $this->redis->flushAll();
     }
 
+    public function __get ( $key )
+    {
+        return $this->redis->get($key);
+    }
 
     public function __destruct ()
     {

@@ -25,7 +25,6 @@ class Session
         if (is_null(static::$config)) {
 
             static::$config = config('session');
-
             ini_set('session.cookie_httponly', static::$config['cookie']['http_only']);
             ini_set('session.use_only_cookies', static::$config['only_cookies']);
             ini_set('session.gc_maxlifetime', static::$config['lifetime']);
@@ -63,6 +62,7 @@ class Session
             }
             else
             {
+                echo 'rgreg';
                 if ($this->get('session_hash') != $this->hash())
                 {
                     $this->destroy();
@@ -77,6 +77,7 @@ class Session
      * @param $value
      * @return mixed
      */
+
     public function set($key, $value)
     {
         if (is_callable($value))
@@ -86,7 +87,13 @@ class Session
         else
         {
             $_SESSION[ $key ] = $value;
-            @session_regenerate_id(session_id());
+
+            if (static::$config['regenerate'] == true)
+            {
+              @session_regenerate_id(session_id( [$id]));
+            }
+
+
         }
     }
 
@@ -98,7 +105,7 @@ class Session
      */
     private function hash():String
     {
-        return sha1($_SERVER['REMOTE_ADDR'].config('config.encryption_key').@$_SERVER['HTTP_USER_AGENT']);
+        return sha1(@$_SERVER['REMOTE_ADDR'].config('config.encryption_key').@$_SERVER['HTTP_USER_AGENT']);
     }
 
 

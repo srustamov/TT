@@ -11,6 +11,6 @@ class Url
 {
     public static function __callStatic($method, $args)
     {
-        return  (new \System\Libraries\Url())->$method(...$args);
+        return  (new \System\Libraries\Url())->{$method}(...$args);
     }
 }

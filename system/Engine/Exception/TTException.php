@@ -10,7 +10,7 @@
 
 
 
-class CustomException extends \Exception
+class TTException extends \Exception
 {
 
     public function __construct($e)
@@ -18,20 +18,15 @@ class CustomException extends \Exception
 
         parent::__construct();
 
-        static::writeLog($e);
+        write_error_log($e);
 
-        $_debug = setting('APP_DEBUG',false);
-
-        if($_debug && strtolower($_debug) == 'true')
+        if(config('config.debug',false))
         {
           ob_get_clean();
           
           if(!InConsole())
           {
-            if(file_exists(SYSDIR . 'Engine/Exception/views/exception.php'))
-            {
-              return require_once(SYSDIR . 'Engine/Exception/views/exception.php');
-            }
+            require_once(system_dir('Engine/Exception/views/exception.php'));
           }
           else
           {
@@ -41,7 +36,7 @@ class CustomException extends \Exception
         }
         else
         {
-          http_response_code( 500 );
+            abort(500);
         }
 
     }
@@ -50,16 +45,11 @@ class CustomException extends \Exception
 
     public static function handler($e)
     {
-        throw new CustomException($e);
+        throw new TTException($e);
     }
 
 
 
-
-    public static function writeLog($e)
-    {
-      return write_error_log($e);
-    }
 
 
 

@@ -2,7 +2,7 @@
 
 
 use App\Controllers\Controller;
-use System\Libraries\Request;
+use System\Engine\Http\Request;
 use System\Facades\Validator;
 use App\Models\User;
 use Hash;
@@ -15,7 +15,7 @@ class RegisterController extends Controller
 
 		function __construct()
 		{
-			$this->middleware('guest','csrf');
+			$this->middleware('guest');
 		}
 
 

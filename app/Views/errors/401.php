@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <title>404 Not Found</title>
+    <title>401 unauthorized</title>
     <style>
         *{
             margin:0;
@@ -49,10 +49,7 @@
     </style>
 </head>
 <body>
-<div class="_404">404</div>
-<div class="not-found">PAGE NOT FOUND !</div>
-<div class="btn">
-    <a href="<?php echo url('/');?>">Back to home</a>
-</div>
+<div class="_404">401</div>
+<div class="not-found" style="text-transform: uppercase"> unauthorized !</div>
 </body>
 </html>

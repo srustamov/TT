@@ -10,12 +10,6 @@ class Load
 {
 
 
-    protected static $_config_file_name;
-
-    protected static $_config;
-
-    protected static $settings;
-
 
 
     public static function config($name, $default = false)
@@ -24,34 +18,26 @@ class Load
         {
             list($file, $item) = explode('.', $name);
 
-            if (static::$_config_file_name == $file)
+            if (file_exists(app_dir("Config/{$file}.php")))
             {
-                return static::$_config[ $item ] ?? $default;
+                $config = require app_dir("Config/{$file}.php");
+
+                return $config[ $item ] ?? $default;
             }
             else
             {
-                if (file_exists(APPDIR."Config/{$file}.php"))
-                {
-                    $config = require APPDIR."Config/{$file}.php";
-
-                    static::$_config_file_name = $file; static::$_config = $config;
-                    return $config[ $item ] ?? $default;
-                }
-                else
-                {
-                    throw new \Exception("Config file not found. Path : [".APPDIR."Config/{$file}.php]");
-                }
+                show_error("Config file not found. Path : [".app_dir("Config/{$file}.php")."]");
             }
         }
         else
         {
-            if (file_exists(APPDIR."Config/{$name}.php"))
+            if (file_exists(app_dir("Config/{$name}.php")))
             {
-                return require APPDIR."Config/{$name}.php";
+                return require app_dir("Config/{$name}.php");
             }
             else
             {
-                throw new \Exception("Config file not found. Path : [".APPDIR."Config/{$name}.php ]");
+                show_error("Config file not found. Path : [".app_dir("Config/{$name}.php")." ]");
             }
         }
     }

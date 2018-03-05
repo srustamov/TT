@@ -44,7 +44,7 @@ abstract class Model
 
     public function __set($column,$value)
     {
-      static::$data[$column] = $value;
+      self::$data[$column] = $value;
     }
 
 
@@ -55,10 +55,10 @@ abstract class Model
      */
     public function save():Bool
     {
-        if (!is_null(static::$data))
+        if (!is_null(self::$data))
         {
-            $return = static::create(static::$data);
-            static::$data = null;
+            $return = self::create(self::$data);
+            self::$data = null;
             return $return;
         }
         return false;
@@ -76,8 +76,8 @@ abstract class Model
 
 
     /**
-     * @param $primaryKey
      * @return mixed
+     * @internal param $primaryKey
      */
     public static function find()
     {
@@ -89,9 +89,7 @@ abstract class Model
         {
           $in = func_num_args();
         }
-        return (new Database())->table(( new static )->table)
-               ->whereIn((new static)->primaryKey,$in)
-               ->get(true);
+        return (new Database())->table(( new static )->table)->whereIn((new static)->primaryKey,$in)->get();
     }
 
 
@@ -125,16 +123,21 @@ abstract class Model
     }
 
 
+    private function _call($name, $arguments)
+    {
+        return (new Database())->table($this->table)->select($this->fillable)->{$name}(...$arguments);
+    }
+
 
     public function __call($name, $arguments)
     {
-      return (new Database())->table($this->table)->{$name}(...$arguments);
+       return $this->_call($name, $arguments);
     }
 
 
     public static function __callStatic($name, $arguments)
     {
-      return (new Database())->table((new static)->table)->{$name}(...$arguments);
+        return (new static())->_call($name, $arguments);
     }
 
 

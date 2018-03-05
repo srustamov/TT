@@ -28,6 +28,7 @@ interface DatabaseInterface
   public function database(String $database);
 
 
+
   public function get($first = false);
 
 
@@ -190,7 +191,6 @@ interface DatabaseInterface
 
 
 
-  function __destruct ();
 
 
 

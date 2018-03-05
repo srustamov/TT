@@ -60,9 +60,9 @@ class Language
         $this->set();
       }
 
-      $lang = static::$lang;
+      $lang = &static::$lang;
 
-      if(!is_null($locale) && $locale != app("session")->get(md5('LANG')))
+      if(!is_null($locale) && $locale != app("session")->get('_LOCALE'))
       {
          $lang = $this->_getdata($locale);
       }
@@ -112,6 +112,7 @@ class Language
       if(!is_null($locale))
       {
          app('session')->set('_LOCALE',$locale);
+
          return $locale;
       }
       else
@@ -123,7 +124,9 @@ class Language
         else
         {
            $locale  = config('config.locale','en');
+
            app('session')->set('_LOCALE',$locale);
+
            return $locale;
         }
       }
@@ -143,19 +146,18 @@ class Language
 
     private function _getdata(String $locale):Array
     {
-
         $lang = [];
 
-        if (is_dir (APPDIR.'Language/'.$locale))
+        if (is_dir (app_dir('Language/'.$locale)))
         {
-           foreach (glob(APPDIR."Language/{$locale}/*\.ini") as $file)
+           foreach (glob(app_dir("Language/{$locale}/*\.ini")) as $file)
            {
              $lang[basename(substr($file,0,-4))] =  parse_ini_file($file);
            }
         }
         else
         {
-          throw new LanguageException("Language folder not found. Path :".APPDIR.'Language/'.$locale);
+          throw new LanguageException("Language folder not found. Path :".app_dir('Language/'.$locale));
         }
 
         return $lang;

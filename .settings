@@ -6,7 +6,7 @@ APP_KEY = QTGwXUQxCIytgF7csCdcELBbM9QC+eJB9WzYT6pk5cyT8OO+vnaoDw
 
 LOCALE    = en
 
-BASE_URL  = http://localhost:8000
+BASE_URL  = http://${_SERVER['HTTP_HOST']}
 
 
 

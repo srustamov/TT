@@ -29,10 +29,9 @@ class Arr
     {
       foreach ($array as $key => $value)
       {
-        yield $callback($key,$value);
+        $callback($key,$value);
       }
 
-      //return $array;
     }
 
     /**
@@ -46,13 +45,12 @@ class Arr
     }
 
 
-
     /**
-     * @param Array $array
+     * @param array $array
      * @param $key
      * @return array
      */
-    public function forget(Array &$array, $key):Array
+    public function forget(array &$array, $key):array
     {
         if($this->exists($array, $key)) {
             unset($array[ $key ]);
@@ -69,4 +67,7 @@ class Arr
     {
         return array_key_exists($key, $array);
     }
+
+
+
 }

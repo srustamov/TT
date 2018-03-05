@@ -1,4 +1,4 @@
-<?php namespace System\Libararies\Cache;
+<?php namespace System\Libraries\Cache;
 
 /**
  * @package    TT
@@ -8,15 +8,7 @@
  * @category    Cache
  */
 
-
-
 use System\Libraries\Cache\CacheStore;
-use System\Libraries\Cache\Drivers\FileStore;
-use System\Libraries\Cache\Drivers\DatabaseStore;
-use System\Libraries\Cache\Drivers\MemcacheStore;
-use System\Libraries\Cache\Drivers\RedisStore;
-
-
 
 
 class Cache implements CacheStore
@@ -30,41 +22,39 @@ class Cache implements CacheStore
     {
         if (is_null(self::$driver))
         {
-            $driver = tt_config('cache.driver','file');
+            $driver = config('cache.driver','file');
 
-            self::driver($driver);
+            $this->driver($driver);
         }
     }
 
 
     public static function driver($driver)
     {
-
-        if ($driver instanceof CacheStore)
+        if($driver instanceof CacheStore)
         {
-          self::$driver = $driver;
+            self::$driver = $driver;
         }
         else
         {
-          switch (strtolower($driver))
-          {
-              case 'file':
-                  self::$driver = new FileStore();
-                  break;
-              case 'database':
-                  self::$driver = new DatabaseStore();
-                  break;
-              case 'memcache':
-                  self::$driver = new MemcacheStore();
-                  break;
-              case 'redis':
-                  self::$driver = new RedisStore();
-                  break;
-              default:
-                  self::$driver = new FileStore();
-                  break;
-          }
-
+            switch (strtolower($driver))
+            {
+                case 'file':
+                    self::$driver = new \System\Libraries\Cache\Drivers\FileStore();
+                    break;
+                case 'database':
+                    self::$driver = new \System\Libraries\Cache\Drivers\DatabaseStore();
+                    break;
+                case 'memcache':
+                    self::$driver = new \System\Libraries\Cache\Drivers\MemcacheStore();
+                    break;
+                case 'redis':
+                    self::$driver = new \System\Libraries\Cache\Drivers\RedisStore();
+                    break;
+                default:
+                    self::$driver = new \System\Libraries\Cache\Drivers\FileStore();
+                    break;
+            }
         }
         return new static();
     }
@@ -72,13 +62,8 @@ class Cache implements CacheStore
 
     public function put(String $key , $value ,$expires = 10)
     {
-        if (!is_string($value) && is_callable($value))
-        {
-            $value = call_user_func($value,$this);
-        }
         return self::$driver->put($key , $value ,$expires);
     }
-
 
 
     public function forever(String $key , $value )
@@ -87,40 +72,22 @@ class Cache implements CacheStore
     }
 
 
-
-
     public function has($key)
     {
-        if (!is_string($key) && is_callable($key))
-        {
-            $key = call_user_func($key,$this);
-        }
         return self::$driver->has($key);
     }
 
 
-
     public function get($key)
     {
-        if (!is_string($key) && is_callable($key))
-        {
-            $key = call_user_func($key,$this);
-        }
         return self::$driver->get($key);
     }
 
 
-
     public function forget($key)
     {
-        if (!is_string($key) && is_callable($key))
-        {
-            $key = call_user_func($key,$this);
-        }
         return self::$driver->forget($key);
     }
-
-
 
 
     public function expires(Int $expires)
@@ -133,9 +100,7 @@ class Cache implements CacheStore
     {
         return self::$driver->minutes($minutes);
     }
-
-
-
+    
     public function flush ()
     {
         self::$driver->flush();
@@ -143,23 +108,11 @@ class Cache implements CacheStore
 
 
 
-    public function createDatabaseTable()
-    {
-        (new DatabaseStore())->createDatabaseTable();
-    }
-
-
-    public function __get($key)
-    {
-        return self::$driver->get($key);
-    }
-
-
-
     function __destruct()
     {
-      //self::$driver->__destruct();
     }
+
+
 
 
 

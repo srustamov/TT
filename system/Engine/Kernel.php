@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 
 ini_set('display_errors', 0);
 
-use System\Engine\Exception\CustomException;
+use System\Engine\Exception\TTException;
 
 class Kernel
 {
@@ -40,17 +40,33 @@ class Kernel
 
         define('SYSDIR', BASEDIR.DS.'system'.DS);
 
-        $this->setChdir(BASEDIR.DS);
+        if (!defined('PUBLIC_DIR'))
+        {
+            if(isset($_SERVER['SCRIPT_FILENAME']) && !empty($_SERVER['SCRIPT_FILENAME']))
+            {
+                $_ = explode('/',$_SERVER['SCRIPT_FILENAME']); array_pop($_);
+
+                define('PUBLIC_DIR',implode('/',$_));
+
+            }
+            else
+            {
+                define('PUBLIC_DIR',BASEDIR.DS.'public');
+            }
+
+        }
+
+        chdir(BASEDIR.DS);
     }
 
 
     public static function start($basePath = null)
     {
-        (new static)->setInstance();
+        self::setInstance();
 
         set_exception_handler(function ($e)
         {
-            CustomException::handler($e);
+            TTException::handler($e);
         });
 
         if (is_null($basePath))
@@ -77,19 +93,22 @@ class Kernel
 
         if (class_exists('\App\Kernel'))
         {
-            (new \App\Kernel())->boot();
+            $kernel = new \App\Kernel();
 
-            $_middleware = (new \App\Kernel())->middleware;
+            $_middleware = $kernel->middleware;
 
             foreach ($_middleware as $middleware)
             {
-                (new $middleware())->handle(new \System\Libraries\Request(),null);
+                (new $middleware())->handle(new \System\Engine\Http\Request(),null);
             }
+
+            $kernel->boot();
         }
 
-        import_dir_files(BASEDIR.'/routes');
-
-        if (!InConsole()) \Route::init();
+        if (!InConsole()) {
+              import_dir_files(path('routes'));
+             \Route::init ();
+        }
 
     }
 
@@ -103,10 +122,6 @@ class Kernel
     }
 
 
-    public function setChdir($path)
-    {
-        chdir($path);
-    }
 
 
     public function set_settings_variables()
@@ -116,16 +131,17 @@ class Kernel
         if (!file_exists($settingsFile))
         {
             touch($settingsFile);
+
             touch(path('.settings'),time() + 10);
         }
 
-        if (filemtime($settingsFile) < filemtime(path('.settings')))
+        if (!inConsole() && filemtime($settingsFile) < filemtime(path('.settings')))
         {
             $_auto_detect = ini_get('auto_detect_line_endings');
 
             ini_set('auto_detect_line_endings', 1);
 
-            $lines = file(BASEDIR.'/.settings', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $lines = file(path('.settings'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
             ini_set('auto_detect_line_endings', $_auto_detect);
 
@@ -149,20 +165,77 @@ class Kernel
                         show_error("setting variable value containing spaces must be surrounded by quotes");
                     }
 
+                    if (strtolower($value) == 'true')
+                    {
+                        $value = true;
+                    }
+                    if (strtolower($value) == 'false')
+                    {
+                        $value = false;
+                    }
+
                     $_settings[$name] = $value;
                 }
             }
 
 
-
             foreach ($_settings as $key => $value)
             {
+
                 if (strpos($value, '$') !== false)
                 {
-                    $value = preg_replace_callback('/\${([a-zA-Z0-9_\-.]+)}/',
+                    $value = preg_replace_callback('/\${([a-zA-Z0-9_\-.\'\"\[\]]+)}/',
                         function ($m) use ($_settings)
                         {
-                            return $_settings[$m[1]] ?? "${".$m[1]."}";
+
+                            if (isset($_settings[$m[1]]))
+                            {
+                                return $_settings[$m[1]];
+                            }
+                            else
+                            {
+                                if (($pos = strpos($m[1],'[')) !== false)
+                                {
+
+                                    $_global = substr($m[1],0,$pos);
+                                    $item = str_replace(['["','[\'','"]','\']'],'',substr($m[1],$pos));
+
+                                    switch ($_global)
+                                    {
+                                        case "_SERVER":
+                                            $_global = $_SERVER;
+                                            break;
+                                        case "_REQUEST":
+                                            $_global = $_REQUEST;
+                                            break;
+                                        case "_GET":
+                                            $_global = $_GET;
+                                            break;
+                                        case "_POST":
+                                            $_global = $_POST;
+                                            break;
+                                        case "_SESSION":
+                                            $_global = $_SESSION;
+                                            break;
+                                        case "_COOKIE":
+                                            $_global = $_COOKIE;
+                                            break;
+                                        case "_ENV":
+                                            $_global = $_ENV;
+                                            break;
+                                        default:
+                                            $_global = array();
+                                            break;
+                                    }
+
+                                    return $_global[$item] ?? '${'.$m[1].'}';
+
+                                }
+                                else
+                                {
+                                    return ${"$m[1]"} ?? '${'.$m[1].'}';
+                                }
+                            }
                         },
                         $value
                     );
@@ -175,7 +248,8 @@ class Kernel
         }
         else
         {
-            $_settings = unserialize(file_get_contents(path('storage/system/settings')));
+
+            $_settings = (array) unserialize(file_get_contents(path('storage/system/settings')));
 
             foreach ($_settings as $key => $value)
             {
@@ -187,17 +261,17 @@ class Kernel
 
     public function loadHelpers()
     {
-        require_once SYSDIR.'Engine/Helpers.php';
+        require_once SYSDIR.'Engine'.DS.'Helpers.php';
 
-        import(SYSDIR.'Core/Helpers.php');
+        import(SYSDIR.'Core'.DS.'Helpers.php');
 
         import_dir_files(APPDIR.'Helpers');
 
     }
 
 
-    private  function setInstance()
+    private static function setInstance()
     {
-        self::$instance = &$this;
+        self::$instance = new static();
     }
 }

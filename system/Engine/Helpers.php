@@ -46,6 +46,7 @@ function app(String $class_name)
         'exception' =>  'System\Engine\Exception\CustomException',
         'middleware' =>  'System\Engine\Http\Middleware',
         'router' =>  'System\Engine\Http\Router',
+        'request' =>  'System\Engine\Http\Request',
     ];
 
     $class = strtolower($class_name);
@@ -56,7 +57,7 @@ function app(String $class_name)
     }
     else
     {
-        return show_error("Class '{$class_name}' not found");
+         show_error("Class '{$class_name}' not found");
     }
 }
 
@@ -64,23 +65,20 @@ function app(String $class_name)
 /**
  * @param String $extension
  * @param Null $default
- * @return Bool|Array|String
+ * @return Bool|array|String
  */
 function config( String $extension, $default = null)
 {
 
-    static $configs;
+    $config_cache_file = path('storage/system/configs.php');
 
-    if(is_null($configs))
+    if(file_exists($config_cache_file))
     {
-        if(file_exists(path('storage/system/configs')))
-        {
-          $configs = unserialize(file_get_contents(path('storage/system/configs')));
-        }
-        else
-        {
-          return System\Core\Load::config($extension, $default);
-        }
+      $configs = require $config_cache_file;
+    }
+    else
+    {
+      return System\Core\Load::config($extension, $default);
     }
 
     if (strpos($extension, '.') !== false)
@@ -98,12 +96,12 @@ function config( String $extension, $default = null)
             }
             else
             {
-                return show_error("Config file <span style=\"color:red\">{$file}</span> item <span style=\"color:red\">{$item}</span> not found");
+                 show_error("Config file <span style=\"color:red\">{$file}</span> item <span style=\"color:red\">{$item}</span> not found");
             }
         }
         else
         {
-            return show_error("Config  file not found. Path :".APPDIR."Config/{$file}.php");
+             show_error("Config  file not found. Path :".path("app/Config/{$file}.php"));
         }
 
     }
@@ -115,7 +113,7 @@ function config( String $extension, $default = null)
         }
         else
         {
-            return show_error("Config  file not found. Path :".APPDIR."Config/{$extension}.php");
+            show_error("Config  file not found. Path :".path("app/Config/{$extension}.php"));
         }
     }
 
@@ -149,7 +147,7 @@ function import( String $file)
     }
     else
     {
-        return show_error("File not found. Path: [ {$file} ]");
+        show_error("File not found. Path: [ {$file} ]");
     }
 }
 
@@ -200,7 +198,7 @@ function system_dir( $path = '')
  */
 function public_dir( $path = '')
 {
-    return path($path,'public');
+    return PUBLIC_DIR.'/'.ltrim($path,'/');
 }
 
 
@@ -216,17 +214,79 @@ function path($path,$path_name = null)
  */
 function abort( Int $http_code)
 {
-    if ($http_code == 404)
-    {
-        http_response_code(404);
+    $messages = [
+        100 => 'Continue',
+        101 => 'Switching Protocols',
+        102 => 'Processing',
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        203 => 'Non-Authoritative Information',
+        204 => 'No Content',
+        205 => 'Reset Content',
+        206 => 'Partial Content',
+        207 => 'Multi-status',
+        208 => 'Already Reported',
+        300 => 'Multiple Choices',
+        301 => 'Moved Permanently',
+        302 => 'Found',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        305 => 'Use Proxy',
+        306 => 'Switch Proxy',
+        307 => 'Temporary Redirect',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        402 => 'Payment Required',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        406 => 'Not Acceptable',
+        407 => 'Proxy Authentication Required',
+        408 => 'Request Time-out',
+        409 => 'Conflict',
+        410 => 'Gone',
+        411 => 'Length Required',
+        412 => 'Precondition Failed',
+        413 => 'Request Entity Too Large',
+        414 => 'Request-URI Too Large',
+        415 => 'Unsupported Media Type',
+        416 => 'Requested range not satisfiable',
+        417 => 'Expectation Failed',
+        418 => 'I\'m a teapot',
+        422 => 'Unprocessable Entity',
+        423 => 'Locked',
+        424 => 'Failed Dependency',
+        425 => 'Unordered Collection',
+        426 => 'Upgrade Required',
+        428 => 'Precondition Required',
+        429 => 'Too Many Requests',
+        431 => 'Request Header Fields Too Large',
+        451 => 'Unavailable For Legal Reasons',
+        500 => 'Internal Server Error',
+        501 => 'Not Implemented',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+        504 => 'Gateway Time-out',
+        505 => 'HTTP Version not supported',
+        506 => 'Variant Also Negotiates',
+        507 => 'Insufficient Storage',
+        508 => 'Loop Detected',
+        511 => 'Network Authentication Required',
+    ];
 
-        import(config('config.404_Page'));
+    $message = $messages[$http_code] ?? '';
 
-    }
-    else
+    http_response_code($http_code);
+
+    header("HTTP/1.1 $http_code $message");
+
+    if (file_exists(app_dir('Views/errors/'.$http_code.'.php')))
     {
-        return http_response_code($http_code);
+        import(app_dir('Views/errors/'.$http_code.'.php'));
     }
+
+    exit();
 }
 
 
@@ -255,7 +315,7 @@ function show_error( $message, $file = 'undefained', $line = 'undefained')
           $_message = $message;
         }
 
-        $style  = 'border:solid 1px #E1E4E5;';
+        $style  = 'border:solid 1px red;';
         $style .= 'background:#FEFEFE;';
         $style .= 'padding:10px;';
         $style .= 'margin-bottom:10px;';
@@ -285,7 +345,7 @@ function show_error( $message, $file = 'undefained', $line = 'undefained')
  * @param string $file
  * @param string $line
  */
-function write_error_log( $message, $file = 'undefained', $line = 'undefained')
+function write_error_log( $message, $file = 'undefined', $line = 'undefined')
 {
 
     if($message instanceof Exception)
@@ -294,13 +354,13 @@ function write_error_log( $message, $file = 'undefained', $line = 'undefained')
         $line    = $message->getLine();
         $message = $message->getMessage();
     }
-    $date = date('Y-m-d H:m:s');
+    $date     = date('Y-m-d H:m:s');
 
-    $log_file = BASEDIR.'/storage/logs/error.log';
+    $log_file = path('storage/logs/error.log');
 
     if(!file_exists($log_file))
     {
-        @touch($log_file);
+        touch($log_file);
     }
 
     @file_put_contents($log_file,"[{$date}] File:{$file} |Message:{$message} |Line:{$line}\n" ,FILE_APPEND);
@@ -318,6 +378,55 @@ function InConsole()
 
 
 
+
+function csrf_token():String
+{
+    static $token;
+
+    if (is_null($token))
+    {
+        if(!app('session')->has('csrf_token_data'))
+        {
+            app('session')->set('csrf_token_data', base64_encode(openssl_random_pseudo_bytes(32)));
+        }
+        $token = app('session')->get('csrf_token_data');
+    }
+    return $token;
+}
+
+
+
+function csrf_check():Bool
+{
+
+    if(!isset($_POST['_token']))
+    {
+      return false;
+    }
+    else
+    {
+      $post_token = $_POST['_token'];
+    }
+
+    $token = app('session')->get('csrf_token_data');
+
+    if(!$token)
+    {
+      return false;
+    }
+
+    return ($token === $post_token);
+}
+
+
+
+function csrf_field():String
+{
+    return '<input type="hidden" name="_token" value="' . csrf_token() . '" />';
+}
+
+
+
 /**
  * @param float $start
  * @param float $finish
@@ -327,6 +436,8 @@ function elapsed_time( $start, $finish)
 {
     return (round((float) $finish - (float) $start,4)*1000)." ms";
 }
+
+
 
 
 

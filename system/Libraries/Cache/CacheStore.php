@@ -1,4 +1,4 @@
-<?php namespace System\Libararies\Cache;
+<?php namespace System\Libraries\Cache;
 
 
 interface CacheStore

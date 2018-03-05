@@ -2,7 +2,7 @@
 
 
 use App\Controllers\Controller;
-use System\Libraries\Request;
+use System\Engine\Http\Request;
 use System\Facades\Validator;
 use Auth;
 
@@ -15,7 +15,7 @@ class LoginController extends Controller
 
 		function __construct()
 		{
-			$this->middleware('guest|logout','csrf');
+			$this->middleware('guest|logout');
 		}
 
 

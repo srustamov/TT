@@ -9,9 +9,9 @@
  * @category  Http
  */
 
-use System\Facades\Html as HtmlDom;
 
-class HTTP
+
+class Http
 {
 
 
@@ -20,9 +20,7 @@ class HTTP
      */
     public function userAgent (): String
     {
-        return isset( $_SERVER[ 'HTTP_USER_AGENT' ] )
-            ? HtmlDom::filter ( $_SERVER[ 'HTTP_USER_AGENT' ] )
-            : '';
+        return  $_SERVER[ 'HTTP_USER_AGENT' ]  ?? '';
     }
 
 
@@ -31,9 +29,7 @@ class HTTP
      */
     public function host (): String
     {
-        return isset( $_SERVER[ 'HTTP_HOST' ] )
-            ? HtmlDom::filter  ( $_SERVER[ 'HTTP_HOST' ] )
-            : '';
+        return $_SERVER[ 'HTTP_HOST' ] ?? '';
     }
 
 
@@ -42,9 +38,7 @@ class HTTP
      */
     public function name (): String
     {
-        return isset( $_SERVER[ 'SERVER_NAME' ] )
-            ? HtmlDom::filter  ( $_SERVER[ 'SERVER_NAME' ] )
-            : '';
+        return $_SERVER[ 'SERVER_NAME' ] ?? '';
     }
 
 
@@ -53,7 +47,9 @@ class HTTP
      */
     public function language (): String
     {
-        return substr ( $_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] , 0 , 2 );
+        return isset($_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ])
+            ? substr ( $_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] , 0 , 2 )
+            : 'en';
     }
 
 
@@ -62,7 +58,7 @@ class HTTP
      */
     public function encoding (): String
     {
-        return $_SERVER[ 'HTTP_ACCEPT_ENCODING' ];
+        return $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ?? '';
     }
 
 
@@ -72,7 +68,7 @@ class HTTP
     public function cookie ()
     {
         return isset( $_SERVER[ 'HTTP_COOKIE' ] )
-            ? HtmlDom::filter ( $_SERVER[ 'HTTP_COOKIE' ] )
+            ? $_SERVER[ 'HTTP_COOKIE' ]
             : false;
     }
 
@@ -82,7 +78,7 @@ class HTTP
      */
     public function connection (): String
     {
-        return $_SERVER[ 'HTTP_CONNECTION' ];
+        return $_SERVER[ 'HTTP_CONNECTION' ] ?? '';
     }
 
 
@@ -110,7 +106,7 @@ class HTTP
         } elseif (!empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] )) {
             $ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
         } else {
-            $ip = $_SERVER[ 'REMOTE_ADDR' ];
+            $ip = $_SERVER[ 'REMOTE_ADDR' ] ?? '';
         }
         return $ip;
     }

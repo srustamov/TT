@@ -8,7 +8,7 @@
 //-------------------------------------------------------------
 
 
-use DB;
+use System\Libraries\Database\Database as ConsoleDB;
 
 class Console
 {
@@ -20,8 +20,7 @@ class Console
 
     private static $message;
 
-
-
+    private $db;
 
 
     public static function run ( array $argv )
@@ -53,10 +52,16 @@ class Console
             case 'create:middleware':
                 self::$instance->create ( $manage );
                 break;
+                break;
+            case 'create:resource':
+                self::$instance->create ( $manage );
+                break;
             case 'session:table':
+                self::$instance->db = new ConsoleDB();
                 self::$instance->createSessionTable($manage);
                 break;
             case 'users:table':
+                self::$instance->db = new ConsoleDB();
                 self::$instance->userTableCreate();
                 break;
             case 'view:cache':
@@ -66,13 +71,14 @@ class Console
                 self::$instance->clearConfigsCacheOrCreate($manage[1] ?? null);
                 break;
             case 'key:generate':
-                self::$instance->keygenerate($manage);
+                self::$instance->keyGenerate();
                 break;
             default:
                 self::$instance->commandList ();
                 break;
         }
     }
+
 
     public function commandList ()
     {
@@ -81,6 +87,7 @@ class Console
         $this->print ( "title" , "----------------------------------------------------\n\n\n" );
         $this->print ( "green" , "runserver [ port(default 8000) ]\n\n" );
         $this->print ( "green" , "create:controller [Controller Name]\n\n" );
+        $this->print ( "green" , "create:resource [Controller Name]\n\n" );
         $this->print ( "green" , "create:model [Model Name]\n\n" );
         $this->print ( "green" , "create:middleware [Middleware Name]\n\n" );
         $this->print ( "green" , "session:table --create [tableName] (Database Migration Session table) \n\n" );
@@ -90,10 +97,6 @@ class Console
         $this->print ( "green" , "config:cache --create (Configs  files all cache)\n\n" );
         $this->print ( "green" , "key:generate \n\n" );
     }
-
-
-
-
 
 
     private function print( $style , $text )
@@ -133,7 +136,6 @@ class Console
     }
 
 
-
     private function output ()
     {
         $this->print ( "title" , "----------------------------------------------------\n" );
@@ -142,7 +144,7 @@ class Console
     }
 
 
-    private function keygenerate()
+    private function keyGenerate()
     {
         $settings_file = BASEDIR.'/.settings';
 
@@ -180,12 +182,12 @@ class Console
         }
         catch (\Exception $e)
         {
-          return $this->print('error',$e->getMessage()."\n");
+          $this->print('error',$e->getMessage()."\n");
+          exit;
         }
 
 
     }
-
 
 
     private function runServer ( array $manage )
@@ -208,11 +210,22 @@ class Console
 
       list($create,$type) = explode(':',$manage[0],2);
 
-      $type = ucfirst($type);
+
+      $is_resource = false;
+
+      if ($type == 'resource')
+      {
+        $is_resource = true;
+        $type = 'controller';
+      }
+
+      $type  = ucfirst($type);
+
+      $_type = $type;
 
       if(!isset($manage[1]))
       {
-        return $this->print ( "error" , "\nPlease enter {$type} name \n\n" );
+        $this->print ( "error" , "\nPlease enter {$type} name \n\n" ); exit();
       }
 
       $name = $manage[1];
@@ -236,21 +249,26 @@ class Console
       {
         case 'Controller':
           $type = 'Controllers';
-          $write_data =  "<?php $namespace;   \n\n\nuse App\\Controllers\\Controller;\n\nuse System\Libraries\Request;\n\n\nclass $name extends Controller\n{\n\n\t\tpublic function index(){}\n\n}";
+          if($is_resource)
+          {
+            $write_data =  str_replace([':namespace',':name'],[$namespace,$name],file_get_contents(__DIR__.'/resource/resource'));;
+          }
+          else
+          {
+            $write_data =  str_replace([':namespace',':name'],[$namespace,$name],file_get_contents(__DIR__.'/resource/controller'));
+          }
           break;
-
         case 'Model':
-          $write_data =  "<?php $namespace;   \n\n\nuse System\\Core\\Model;\n\n\nclass $name extends Model\n{\n\n\t protected \$table;\n\n\n}";
+          $write_data =  str_replace([':namespace',':name'],[$namespace,$name],file_get_contents(__DIR__.'/resource/model'));;
           $type = 'Models';
           break;
-
         case 'Middleware':
           $type = 'Middleware';
-          $write_data = "<?php  {$namespace};  \n\n\nclass {$name}\n{\n\n\t public function handle(\$request,\$options){}\n\n}";
+          $write_data = str_replace([':namespace',':name'],[$namespace,$name],file_get_contents(__DIR__.'/resource/middleware'));;
           break;
-
         default:
-          return $this->print ( "error" , "\nCreate {$type} name undefained. Please use type ['controller,model,middleware']\n\n" );;
+          $this->print ( "error" , "\nCreate {$type} name undefained. Please use type ['controller,model,middleware']\n\n" );
+          exit();
           break;
       }
 
@@ -289,21 +307,23 @@ class Console
           {
               try
               {
-                file_put_contents("app/{$type}/$manage[1].php", $write_data );
+                 file_put_contents("app/{$type}/$manage[1].php", $write_data );
 
-                return $this->print ( "success" , "\nCreate $name controller successfully\n\n" );
+                 $this->print ( "success" , "\nCreate $name {$_type} successfully\n\n" );
               }
               catch (\Exception $e) {}
           }
-          return $this->print ( "success" , "\nCreate file failed\n\n" );
+          else
+          {
+              $this->print ( "success" , "\nCreate file failed\n\n" );
+          }
+
       }
       else
       {
           $this->print ( "error" , "\nThe file was already created\n\n" );
       }
     }
-
-
 
 
     private function createSessionTable($manage)
@@ -325,7 +345,7 @@ class Console
 
         try
         {
-          DB::exec("CREATE TABLE IF NOT EXISTS {$table} (
+          $this->db->exec("CREATE TABLE IF NOT EXISTS {$table} (
                       session_id varchar(255) COLLATE utf8_unicode_ci NOT NULL,
                       expires int(100) NOT NULL,
                       data text COLLATE utf8_unicode_ci,
@@ -351,39 +371,38 @@ class Console
 
     }
 
-    private static function clearViewCache()
+
+    private  function clearViewCache()
     {
 
-      foreach (glob(BASEDIR.'/storage/cache/views/*') as $readdir)
+      foreach (glob(BASEDIR.'/storage/cache/views/*') as $file)
       {
-        foreach($readdir as $file)
-        {
-            if (is_file($file))
-            {
+          if (is_file($file))
+          {
               if(@unlink($file))
               {
-                echo "Delete: [{$file}]\n";
+                  echo "Delete: [{$file}]\n";
               }
               else
               {
-                $this->print('error','Delete failed:['.$file.']');
+                  $this->print('error','Delete failed:['.$file.']');
               }
 
-            }
-        }
+          }
+
       }
 
-      return self::$instance->print('green',"\n\nCache clear successfully \n\n");
+
+     $this->print('green',"\n\nCache clear successfully \n\n");
 
     }
 
 
-
-    private static function clearConfigsCacheOrCreate($subcommand)
+    private  function clearConfigsCacheOrCreate($subCommand)
     {
-      if($subcommand == '--create')
+      if($subCommand == '--create')
       {
-        if(!file_exists(path('system/configs','storage')))
+        if(!file_exists(path('storage/system/configs.php')))
         {
             $configsArray = [];
 
@@ -392,57 +411,106 @@ class Console
                 $configsArray[substr(basename($file),0,-4)] = require $file;
             }
 
-            file_put_contents(path('storage/system/configs'),serialize($configsArray));
+            $__file = path('storage/system/configs.php');
+
+            file_put_contents($__file,"<?php \n\n return array(\n\n");
+
+            $this->config_create($configsArray);
+
+            file_put_contents($__file,");",FILE_APPEND);
 
         }
-        return self::$instance->print('green',"\n\nConfigs cached successfully \n\n");
+        $this->print('green',"\n\nConfigs cached successfully \n\n");
       }
       else
       {
-        @unlink(path('storage/system/configs'));
+        @unlink(path('storage/system/configs.php'));
 
-        return self::$instance->print('green',"\n\nCache configs clear successfully \n\n");
+        $this->print('green',"\n\nCache configs clear successfully \n\n");
       }
     }
 
 
+    private function config_create($configsArray)
+    {
 
+        foreach ($configsArray as $key => $value)
+        {
+
+            if (is_array($value))
+            {
+                file_put_contents(path('storage/system/configs.php'),
+                    "\t'".$key."' => array(\n\n",FILE_APPEND);
+
+                $this->config_create($value);
+
+                file_put_contents(path('storage/system/configs.php'),
+                    "\t),\n\n",FILE_APPEND);
+
+            }
+            else
+            {
+                if (is_bool($value))
+                {
+                    $value = $value ? "true" : "false";
+                }
+                elseif (is_integer($value)) {
+                }
+                else
+                {
+                    $value = "'$value'";
+                }
+
+
+                if (is_numeric($key))
+                {
+                    file_put_contents(path('storage/system/configs.php'), "\t$value, \n\n", FILE_APPEND);
+                }
+                else
+                {
+                    file_put_contents(path('storage/system/configs.php'), "\t'".$key."' => $value, \n\n", FILE_APPEND);
+                }
+            }
+
+
+        }
+    }
 
 
     private function userTableCreate()
     {
+        $sql = <<<__SQL__
+                "CREATE TABLE IF NOT EXISTS users (
+                    id int(11) NOT NULL AUTO_INCREMENT,
+                    name varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+                    password varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+                    email varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+                    status tinyint(1) NOT NULL DEFAULT '1',
+                    remember_token varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+                    created_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    forgotten_pass_code varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+                    PRIMARY KEY (id))"
+__SQL__;
 
-      try
-      {
-
-         DB::exec("CREATE TABLE IF NOT EXISTS users (
-                        id int(11) NOT NULL AUTO_INCREMENT,
-                        name varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-                        password varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-                        email varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-                        status tinyint(1) NOT NULL DEFAULT '1',
-                        remember_token varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-                        created_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                        forgotten_pass_code varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-                        PRIMARY KEY (id)
-
-                )");
-        return $this->print('green',"\nusers table created successfully\n\n");
-
-      }
-      catch (\PDOException $e)
-      {
-        if($e->getCode() == "42S01")
+        try
         {
-          $this->print('error',"\n\n users table or view already exists\n");
-          $this->print('red',"\n \n");
+            $this->db->exec($sql);
+
+            $this->print('green',"\nUsers table created successfully\n\n");
         }
-        else
+        catch (\PDOException $e)
         {
-          $this->print('error',"\n\n {$e->getmessage()}\n");
-          $this->print('red',"\n \n");
+            if($e->getCode() == "42S01")
+            {
+                $this->print('error',"\n\n users table or view already exists\n");
+                $this->print('red',"\n \n");
+            }
+            else
+            {
+                $this->print('error',"\n\n {$e->getmessage()}\n");
+                $this->print('red',"\n \n");
+            }
         }
-      }
 
     }
 
@@ -455,14 +523,12 @@ class Console
       }
 
       $command  = explode(' ',str_replace('  ', ' ',$command));
-      $_argv    = array('manage');
-      $_argv    = array_merge($_argv,$command);
+
+      $_argv    = array_merge(['manage'],$command);
 
       return  self::run($_argv);
 
     }
-
-
 
 
     public function printMessage()
@@ -471,7 +537,7 @@ class Console
     }
 
 
-    function __destruct()
+    public function __destruct()
     {
       self::$message = null;
     }

@@ -12,6 +12,6 @@ class Session
 {
     public static function __callStatic($method, $args)
     {
-        return  (new \System\Libraries\Session\Session())->$method(...$args);
+        return  (new \System\Libraries\Session\Session())->{$method}(...$args);
     }
 }

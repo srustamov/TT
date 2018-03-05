@@ -68,10 +68,10 @@ class Database extends Connection
     }
 
 
-
     /**
-     * @param array $array
+     * @param bool $first
      * @return $this
+     * @internal param array $array
      */
     public function get($first = false)
     {
@@ -136,7 +136,7 @@ class Database extends Connection
       {
         $select = implode(',',$select);
       }
-      $this->select[] = $select;
+      $this->select = [$select];
 
       return $this;
     }
@@ -266,7 +266,6 @@ class Database extends Connection
     }
 
 
-
     public function leftJoin ( String $table , $opt )
     {
         return $this->join ( $table , $opt , 'LEFT' );
@@ -296,6 +295,12 @@ class Database extends Connection
     public function orderBy ( $column , $sort = 'ASC' )
     {
         $this->orderBy[] = " ORDER BY " . $column . " " . strtoupper ( $sort );
+        return $this;
+    }
+
+    public function orderByRand()
+    {
+        $this->orderBy[] = " ORDER BY RAND() ";
         return $this;
     }
 
@@ -399,18 +404,15 @@ class Database extends Connection
 
       try
       {
-          static::$connect->beginTransaction ();
 
           $this->bindValues($statement);
           $statement->execute ();
-          static::$connect->commit ();
 
           return $statement->rowCount ();
       }
       catch (\PDOException $e)
       {
           static::$exception = $e;
-          static::$connect->rollBack ();
           return false;
       }
     }
@@ -441,16 +443,13 @@ class Database extends Connection
 
       try
       {
-          //static::$connect->beginTransaction ();
           $this->bindValues($statement);
           $statement->execute ();
-          //static::$connect->commit ();
           return $statement->rowCount() > 0;
       }
       catch (\PDOException $e)
       {
           static::$exception = $e;
-          //static::$connect->rollBack ();
           return false;
       }
     }
@@ -467,16 +466,13 @@ class Database extends Connection
 
       try
       {
-          static::$connect->beginTransaction ();
           $this->bindValues($statement);
           $statement->execute ();
-          static::$connect->commit ();
           return $statement->rowCount();
       }
       catch (\PDOException $e)
       {
           static::$exception = $e;
-          static::$connect->rollBack ();
           return false;
       }
     }
@@ -630,6 +626,7 @@ class Database extends Connection
     public function list_tables ()
     {
         $database = $this->database ?: static::$config[$this->connection_group][ 'dbname' ];
+
         static::$queryString = "SHOW TABLES FROM {$database}";
         try
         {
@@ -768,6 +765,7 @@ class Database extends Connection
     }
 
 
+
     private function normalizeQueryString($query)
     {
       foreach ($this->execute_data as $value)
@@ -797,18 +795,15 @@ class Database extends Connection
 
     public function __call($method,$args)
     {
-      return static::$connect->{$method}($args);
+      return self::$connect->{$method}($args);
     }
 
 
     public static function __callStatic($method,$args)
     {
-      return static::$connect->{$method}($args);
+      return self::$connect->{$method}($args);
     }
 
-    /**
-     * @return string
-     */
 
     public function __toString ()
     {

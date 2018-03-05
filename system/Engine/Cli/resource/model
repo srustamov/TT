@@ -1,0 +1,16 @@
+<?php  :namespace;
+
+
+use System\Core\Model;
+
+
+class :name extends Model
+{
+
+	 protected $table;
+
+	 protected $fillable;
+
+
+
+}

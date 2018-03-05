@@ -11,6 +11,6 @@ class Request
 {
     public static function __callStatic($method, $args)
     {
-        return (new \System\Libraries\Request())->$method(...$args);
+        return (new \System\Engine\Http\Request())->{$method}(...$args);
     }
 }

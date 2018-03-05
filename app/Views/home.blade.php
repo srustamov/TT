@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>Home</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -22,7 +23,7 @@
         </div>
         <div class="collapse navbar-collapse" id="navbar">
           <ul class="nav navbar-nav">
-            <li @if(Url::request() == '/home') class="active" @endif><a href="/home">@lang('home.home')</a></li>
+            <li @if(url()->request() == '/home') class="active" @endif><a href="/home">@lang('home.home')</a></li>
           @if (Auth::guest())
             <li><a href="/auth/login">@lang('home.login')</a></li>
             <li><a href="/auth/register">@lang('home.register')</a></li>

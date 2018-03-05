@@ -9,7 +9,7 @@
  */
 
 
-use System\Facades\Language as ValidatorLang;
+use System\Facades\Language as VLang;
 
 class Validator
 {
@@ -30,45 +30,45 @@ class Validator
                         if (count($value) == 0 or count($value) != count(array_filter($value))) {
                             foreach ($value as $kk => $vv) {
                                 if (empty($value[$kk]) && $value[$kk] !== 0) {
-                                    static::$messages[$key][] = ValidatorLang::translate('validator.required', ['field' => $key]);
+                                    static::$messages[$key][] = VLang::translate('validator.required', ['field' => $key]);
                                     break;
                                 }
                             }
                         }
                     } else {
                         if (empty(trim($data[$key]))) {
-                            static::$messages[$key][] = ValidatorLang::translate('validator.required', ['field' => $key]);
+                            static::$messages[$key][] = VLang::translate('validator.required', ['field' => $key]);
                         }
                     }
                 }
                 if (in_array('email', $fields)) {
                     if (!$this->is_mail($value)) {
-                        static::$messages[$key][] = ValidatorLang::translate('validator.email');
+                        static::$messages[$key][] = VLang::translate('validator.email');
                     }
                 }
                 if (in_array('integer', $fields)) {
                     if (!$this->is_integer($value)) {
-                        static::$messages[$key][] = ValidatorLang::translate('validator.integer', ['field' => $key]);
+                        static::$messages[$key][] = VLang::translate('validator.integer', ['field' => $key]);
                     }
                 }
                 if (in_array('numeric', $fields)) {
                     if (!$this->is_numeric($value)) {
-                        static::$messages[$key][] = ValidatorLang::translate('validator.numeric', ['field' => $key]);
+                        static::$messages[$key][] = VLang::translate('validator.numeric', ['field' => $key]);
                     }
                 }
                 if (in_array('ip', $fields)) {
                     if (!$this->is_ip($value)) {
-                        static::$messages[$key][] = ValidatorLang::translate('validator.ip', ['field' => $key]);
+                        static::$messages[$key][] = VLang::translate('validator.ip', ['field' => $key]);
                     }
                 }
                 if (in_array('file', $fields)) {
                     if (!$this->is_file($value)) {
-                        static::$messages[$key][] = ValidatorLang::translate('validator.file', ['field' => $key]);
+                        static::$messages[$key][] = VLang::translate('validator.file', ['field' => $key]);
                     }
                 }
                 if (in_array('image', $fields)) {
                     if (!$this->is_image($value)) {
-                        static::$messages[$key][] = ValidatorLang::translate('validator.image', ['field' => $key]);
+                        static::$messages[$key][] = VLang::translate('validator.image', ['field' => $key]);
                     }
                 }
 
@@ -79,32 +79,25 @@ class Validator
                           case 'unique':
                             $control = app('db')->table($b)->where([$key => $value])->first();
                             if ($control) {
-                                self::$messages[$key][] = ValidatorLang::translate('validator.unique', ['field' => $key]);
+                                self::$messages[$key][] = VLang::translate('validator.unique', ['field' => $key]);
                             }
                             break;
 
                           case 'max':
                             if (mb_strlen($value) > $b) {
-                                self::$messages[$key][] = ValidatorLang::translate('validator.max_character', ['max' => $b]);
+                                self::$messages[$key][] = VLang::translate('validator.max_character', ['max' => $b]);
                             }
                             break;
 
                           case 'min':
                             if (mb_strlen($value) < $b) {
-                                self::$messages[$key][] = ValidatorLang::translate('validator.min_character', ['min' => $b]);
+                                self::$messages[$key][] = VLang::translate('validator.min_character', ['min' => $b]);
                             }
                             break;
 
                           case 'confirm':
                             if ($data[$b] != $value) {
-                                if(array_key_exists('custom_message.confirm',ValidatorLang::translate('validator'))){
-                                  static::$messages[$key][] = ValidatorLang::translate('validator.custom_message.confirm',
-                                  ['field' => $key,'confirm' => $b]);
-                                }else {
-                                  static::$messages[$key][] = ValidatorLang::translate('validator.confirm',
-                                  ['field' => $key,'confirm' => $b]);
-                                }
-
+                                static::$messages[$key][] = VLang::translate('validator.confirm', ['field' => $key,'confirm' => $b]);
                             }
                             break;
 

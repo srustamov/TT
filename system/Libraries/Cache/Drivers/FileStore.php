@@ -1,6 +1,6 @@
-<?php namespace System\Libaries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Drivers;
 
-use System\Libaries\Cache\CacheStore;
+use System\Libraries\Cache\CacheStore;
 
 class FileStore implements CacheStore
 {
@@ -12,15 +12,15 @@ class FileStore implements CacheStore
     private $fullpath;
 
 
-    private $put = false;
+    private $put     = false;
 
 
-    private $expires;
+    private $expires = 10;
 
 
     function __construct ()
     {
-        $this->path = config('cache.file',['path' => path('/storage/cache/data')])['path'];
+        $this->path = config('cache.file',['path' => path('storage/cache/data')])['path'];
     }
 
 
@@ -38,6 +38,11 @@ class FileStore implements CacheStore
         if(!$this->has($key))
         {
             $this->createDir($paths);
+        }
+
+        if(is_callable($value))
+        {
+            $value = call_user_func($value,$this);
         }
 
         file_put_contents($paths->fullpath,serialize($value));
@@ -60,6 +65,10 @@ class FileStore implements CacheStore
 
     public function has($key)
     {
+        if(is_callable($key))
+        {
+            $key = call_user_func($key,$this);
+        }
         return $this->existsExpires($this->getpaths($key));
     }
 
@@ -67,6 +76,11 @@ class FileStore implements CacheStore
 
     public function get($key)
     {
+        if(is_callable($key))
+        {
+            $key = call_user_func($key,$this);
+        }
+
         $paths = $this->getpaths($key);
 
         if($this->existsExpires($paths))
@@ -80,11 +94,16 @@ class FileStore implements CacheStore
 
     public function forget($key)
     {
+        if(is_callable($key))
+        {
+            $key = call_user_func($key,$this);
+        }
+
         $paths = $this->getpaths($key);
 
         @unlink($paths->fullpath);
 
-        if (@rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2))
+        if (rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2))
         {
             @rmdir($this->path.'/'.$paths->path1);
         }
@@ -161,36 +180,23 @@ class FileStore implements CacheStore
 
     public function flush()
     {
-        $this->flushDir();
+        @rmdir(path('/storage/cache/data'));
+        @mkdir(path('/storage/cache/data'));
     }
 
 
-    private function flushDir($dir = null)
+    public function __get($key)
     {
-        if (is_null($dir))
-        {
-            $dir = $this->path;
-        }
-        foreach (glob($dir.'/*') as $item) {
-            if(is_dir($item))
-            {
-                $this->flushDir($item);
-                rmdir($item);
-            }
-            else
-            {
-                unlink($item);
-            }
-        }
+        return $this->get($key);
     }
 
 
 
     public function __destruct()
     {
-        if($this->put && !is_null($this->expires))
+        if($this->put)
         {
-            @touch($this->fullpath , time()+ $this->expires);
+            touch($this->fullpath , time()+ $this->expires);
         }
     }
 

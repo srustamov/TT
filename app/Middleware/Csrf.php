@@ -1,20 +1,22 @@
 <?php  namespace App\Middleware;
 
 
-use System\Libraries\Request;
-use Exception as CsrfException;
+use System\Engine\Http\Request;
 
 
 class Csrf
 {
 
-    public function handle(Request $request,$guard = null)
+    public function handle(Request $request)
     {
-        if ($request->method() == 'POST')
+        if ($request->server('request_method') == 'POST')
         {
-            if(!csrf_check())
-            {
-                throw new CsrfException("Verify csrf token failed");
+            if(!csrf_check()) {
+                if(config('debug')) {
+                    show_error('Verify Csrf Token Failed');
+                } else {
+                    abort(404);
+                }
             }
         }
     }

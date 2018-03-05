@@ -12,11 +12,10 @@
 // Controller Class
 //-------------------------------------------------------------
 
-use System\Libraries\Request;
 use System\Libraries\View;
 use System\Engine\Http\Middleware;
 
-class Controller
+abstract class Controller
 {
 
 

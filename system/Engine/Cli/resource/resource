@@ -1,0 +1,53 @@
+<?php  :namespace;
+
+
+use App\Controllers\Controller;
+use System\Engine\Http\Request;
+
+
+class :name extends Controller
+{
+
+
+  public function __construct()
+  {
+
+  }
+
+
+  public function show()
+  {
+
+  }
+
+
+  public function createForm()
+  {
+
+  }
+
+
+  public function create(Request $request)
+  {
+
+  }
+
+
+  public function updateForm($id)
+  {
+
+  }
+
+
+  public function update(Request $request)
+  {
+
+  }
+
+
+  public function delete(Request $request)
+  {
+
+  }
+
+}

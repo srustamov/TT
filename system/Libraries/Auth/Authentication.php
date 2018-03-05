@@ -34,12 +34,6 @@ class Authentication
   private $hidden;
 
 
-  private $cookie;
-
-
-  private $session;
-
-
 
 
   function __construct()
@@ -215,7 +209,7 @@ class Authentication
     }
     else
     {
-      $_token = hash_hmac('sha256',$user->email . $user->name,self::ENC_KEY);
+      $_token = hash_hmac('sha256',$user->email . $user->name,setting('APP_KEY'));
       Auth_Cookie::set('remember_'.static::$guard, base64_encode($_token), 3600 * 24 * 30);
       Auth_DB::table(static::$config[static::$guard]['table'])->set(['remember_token' => $_token])->where('id',$user->id)->update();
     }
@@ -289,9 +283,9 @@ class Authentication
   }
 
 
-  public function redirect(...$args)
+  public function redirect()
   {
-    return redirect(...$args);
+    return redirect(...func_get_args());
   }
 
 

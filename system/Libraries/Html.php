@@ -12,6 +12,8 @@
 
  class Html
  {
+
+
      public function filter(String $str):String
      {
          $str = html_entity_decode($str, ENT_QUOTES);
@@ -33,34 +35,32 @@
 
      public function css(String $file ,$modified = true):String
      {
-         $file = ltrim($file, '/');
+         if ($modified)
+         {
+             $file = $file . '?v=' . @filemtime(public_dir($file));
+         }
 
-         $dir = BASEDIR . DS . 'public/' .$file;
-
-         $file = '/'.$file . '?v=' . @filemtime($dir);
-
-         return '<link rel="stylesheet" type="text/css"  href="' . $file . '">';
+         return '<link rel="stylesheet" type="text/css"  href="' . url($file) . '">';
      }
 
 
 
      public function js(String $file,$modified = true):String
      {
-         $file = ltrim($file, '/');
+         if ($modified)
+         {
+             $file = $file . '?v=' . @filemtime(public_dir($file));
+         }
 
-         $dir = BASEDIR . DS . 'public/' .$file;
-
-         $file = '/'.$file . '?v=' . @filemtime($dir);
-
-         return  '<script type="text/javascript" src="' . $file . '"></script>';
+         return  '<script type="text/javascript" src="' . url($file) . '"></script>';
      }
 
 
 
      public function img(String $file , $attributes = []):String
      {
-         $file = ltrim($file, '/');
-         $img  = '<img src="'. '/'.$file .'" ';
+
+         $img  = '<img src="'.url($file).'" ';
 
          foreach ($attributes as $key => $value)
          {
@@ -71,45 +71,4 @@
      }
 
 
-
-
-     public function BootstrapCss():String
-     {
-         return '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">';
-     }
-
-
-
-     public function BootstrapJs():String
-     {
-         return '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>';
-     }
-
-
-
-     public function FontAwesome():String
-     {
-         return '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">';
-     }
-
-
-
-     public function jquery():String
-     {
-         return  '<script src="https://code.jquery.com/jquery-latest.js"></script>';
-     }
-
-
-
-     public function JqueryUi():String
-     {
-         return '<script src="https://code.jquery.com/ui/1.11.3/jquery-ui.js"></script>';
-     }
-
-
-
-     public function angular():String
-     {
-         return '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.29/angular.min.js"></script>';
-     }
  }

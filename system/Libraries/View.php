@@ -20,19 +20,19 @@ class View
 
 
 
-
     protected $file;
 
     protected $data = [];
 
     protected $cache = true;
 
+    private $getContent = false;
 
 
-    public function render(String $file, $_data = [], $cache = true)
+    public function render(String $file, $data = [], $cache = true)
     {
         $this->file  = $file;
-        $this->data  = array_merge($this->data, $_data);
+        $this->data  = array_merge($this->data, $data);
         $this->cache = $cache;
         return $this;
     }
@@ -50,6 +50,12 @@ class View
         }
 
         return $this;
+    }
+
+
+    public function getContent()
+    {
+        $this->getContent = true;
     }
 
 
@@ -81,12 +87,12 @@ class View
         }
         else
         {
-            $edge = new Edge($loader, null, new EdgeFileCache(BASEDIR.'/storage/cache/views'));
+            $edge = new Edge($loader, null, new EdgeFileCache(config('view.cache_path')));
         }
 
-        $compiler = $edge->getCompiler();
+        //$compiler = $edge->getCompiler();
 
-        if($extension = config('blade.extension'))
+        if($extension = config('view.extension'))
         {
           $extension = '\\'.trim($extension,'\\');
 
@@ -96,8 +102,15 @@ class View
 
         $content = $edge->render($this->file, $this->data);
 
+        if($this->getContent == true)
+        {
+            return $content;
+        }
+        else
+        {
+            echo $content;
+        }
 
-        echo $content;
     }
 
 
