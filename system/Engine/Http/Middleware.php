@@ -2,7 +2,7 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 
 
@@ -46,8 +46,10 @@ class Middleware
 
       foreach ($excepts as $action)
       {
-        if (mb_strtolower($request->action(),"UTF-8") == mb_strtolower($action,"UTF-8"))
-            return true;
+        if (strtolower($request->action()) == strtolower($action)) {
+          return true;
+        }
+
       }
 
       $middleware = "\\App\\Middleware\\{$name}";
@@ -55,7 +57,7 @@ class Middleware
       if (class_exists($middleware))
       {
           call_user_func_array(
-              [ (new $middleware) , "handle" ], [ $request  , $guard ?? "user" ]
+              [ new $middleware() , "handle" ], [ $request  , $guard ?? "user" ]
           );
 
       }

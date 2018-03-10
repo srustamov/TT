@@ -2,15 +2,15 @@
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  */
 
+use System\Facades\Facade;
 
-class Auth
+class Auth extends Facade
 {
-
-    public static function __callStatic( $method, $args)
+    protected static function getFacadeAccessor()
     {
-        return  (new \System\Libraries\Auth\Authentication())->{$method}(...$args);
+        return 'auth';
     }
 }

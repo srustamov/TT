@@ -4,16 +4,15 @@ APP_NAME  = TT
 
 APP_KEY = QTGwXUQxCIytgF7csCdcELBbM9QC+eJB9WzYT6pk5cyT8OO+vnaoDw
 
-LOCALE    = en
+LOCALE = en
 
-BASE_URL  = http://${_SERVER['HTTP_HOST']}
-
+URL  = http://localhost:8000
 
 
 DB_HOST = localhost
-DB_NAME =
+DB_NAME = exam
 DB_USER = root
-DB_PASS =
+DB_PASS = samir96
 DB_CHARSET = utf8
 DB_PREFIX =
 

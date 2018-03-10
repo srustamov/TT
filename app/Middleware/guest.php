@@ -10,17 +10,16 @@
 
 
 
-use System\Libraries\Request;
-use Auth;
+
+use System\Facades\Auth;
 
 class Guest
 {
 
-
-    public function handle(Request $request, $guard)
+    public function handle($request, $guard)
     {
       if(Auth::guard($guard)->check())
-	    {
+      {
           return redirect()->back();
       }
       return true;

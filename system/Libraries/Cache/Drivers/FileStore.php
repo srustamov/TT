@@ -12,10 +12,10 @@ class FileStore implements CacheStore
     private $fullpath;
 
 
-    private $put     = false;
+    private $put;
 
 
-    private $expires = 10;
+    private $expires;
 
 
     function __construct ()
@@ -24,7 +24,7 @@ class FileStore implements CacheStore
     }
 
 
-    public function put(String $key , $value ,$expires = 10)
+    public function put(String $key , $value ,$expires = null)
     {
 
         $this->expires = $expires;
@@ -35,21 +35,16 @@ class FileStore implements CacheStore
 
         $this->fullpath = $paths->fullpath;
 
-        if(!$this->has($key))
-        {
+        if(!$this->has($key)) {
             $this->createDir($paths);
         }
 
-        if(is_callable($value))
-        {
+        if(is_callable($value)) {
             $value = call_user_func($value,$this);
         }
-
         file_put_contents($paths->fullpath,serialize($value));
 
         return $this;
-
-
     }
 
 
@@ -94,18 +89,21 @@ class FileStore implements CacheStore
 
     public function forget($key)
     {
-        if(is_callable($key))
-        {
+        if(is_callable($key)) {
             $key = call_user_func($key,$this);
         }
 
         $paths = $this->getpaths($key);
 
-        @unlink($paths->fullpath);
+        if (file_exists($paths->fullpath)) {
+          unlink($paths->fullpath);
+        }
 
-        if (rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2))
-        {
-            @rmdir($this->path.'/'.$paths->path1);
+        if (app('file')->is_dir_empty($this->path.'/'.$paths->path1.'/'.$paths->path2)) {
+            rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2);
+            if (app('file')->is_dir_empty($this->path.'/'.$paths->path1)) {
+              rmdir($this->path.'/'.$paths->path1);
+            }
         }
 
     }
@@ -118,9 +116,9 @@ class FileStore implements CacheStore
         {
             if(!file_exists($this->path.'/'.$paths->path1.'/'))
             {
-                @mkdir($this->path.'/'.$paths->path1.'/',0755,false);
+                mkdir($this->path.'/'.$paths->path1.'/',0755,false);
             }
-            @mkdir($this->path.'/'.$paths->path1.'/'.$paths->path2.'/');
+            mkdir($this->path.'/'.$paths->path1.'/'.$paths->path2.'/',0755,false);
         }
 
         return $paths->fullpath;
@@ -150,10 +148,12 @@ class FileStore implements CacheStore
         {
             if(filemtime($paths->fullpath) <= time())
             {
-                @unlink($paths->fullpath);
-                if (rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2))
-                {
-                    @rmdir($this->path.'/'.$paths->path1);
+                unlink($paths->fullpath);
+                if (app('file')->is_dir_empty($this->path.'/'.$paths->path1.'/'.$paths->path2)) {
+                    rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2);
+                    if (app('file')->is_dir_empty($this->path.'/'.$paths->path1)) {
+                      rmdir($this->path.'/'.$paths->path1);
+                    }
                 }
                 return false;
             }
@@ -165,24 +165,33 @@ class FileStore implements CacheStore
 
     private function getpaths($key)
     {
-        $filename = sha1($key);
+        $parts = array_slice(str_split($hash = sha1($key), 2), 0, 2);
 
-        $path1    = substr($filename,0,2);
+        $fullpath = $this->path.'/'.$parts[0].'/'.$parts[1].'/'.$hash;
 
-        $path2    = substr($filename,-2);
-
-        $fullpath = $this->path.'/'.$path1.'/'.$path2.'/'.$filename;
-
-        return (object) array('path1' => $path1,'path2' => $path2, 'fullpath' => $fullpath);
+        return (object) array('path1' => $parts[0],'path2' => $parts[1], 'fullpath' => $fullpath);
 
     }
 
 
     public function flush()
     {
-        @rmdir(path('/storage/cache/data'));
-        @mkdir(path('/storage/cache/data'));
+      $this->flushDir(path('/storage/cache/data'));
     }
+
+
+
+    private function flushDir($dir)
+    {
+      foreach (glob($dir.'/*') as $file) {
+        if(is_dir($file)) {
+          $this->flushDir($file);
+        } else {
+          unlink($file);
+        }
+      }
+    }
+
 
 
     public function __get($key)
@@ -192,9 +201,17 @@ class FileStore implements CacheStore
 
 
 
+    public function __call($method,$args)
+    {
+      throw new CacheFileStoreException("Call to undefined method Cache::$method()");
+    }
+
+
+
+
     public function __destruct()
     {
-        if($this->put)
+        if(!is_null($this->put) && !is_null($this->expires))
         {
             touch($this->fullpath , time()+ $this->expires);
         }

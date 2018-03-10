@@ -3,7 +3,7 @@
 /**
  * @package  TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage Library
  * @category  Input
  */
@@ -149,7 +149,7 @@ class Input
     public function __get($key)
     {
       $data = $this->all();
-
+      
       if (isset($data[$key])) {
         return !is_array($data[$key]) ? trim($data[$key]) : $data[$key];
       }

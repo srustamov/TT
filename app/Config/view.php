@@ -4,8 +4,10 @@
 
 return array(
 
-    'cache_path'   => storage_dir('cache/views'),
+    'cache_path'=> storage_dir('cache/views'),
 
-
-    'extension' => 'App\\Views\\Blade\\BladeExtension',
+    'extensions' => array(
+        App\Views\Edge\Extension::class,
+    ),
+    'minify' => true
 );

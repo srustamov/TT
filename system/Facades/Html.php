@@ -1,16 +1,16 @@
 <?php namespace System\Facades;
-
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  */
 
+use System\Facades\Facade;
 
-class Html
+class Html extends Facade
 {
-    public static function __callStatic($method, $args)
+    protected static function getFacadeAccessor()
     {
-        return  (new \System\Libraries\Html())->{$method}(...$args);
+        return 'html';
     }
 }

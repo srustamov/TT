@@ -3,35 +3,16 @@
 
 
 use System\Libraries\Cache\CacheStore;
+use System\Libraries\RedisFactory;
 
 class RedisStore implements CacheStore
 {
 
-    private $put = false;
-
-    private $key;
-
-    private $expires;
-
     private $redis;
-
-    private static $config;
 
     function __construct ()
     {
-        if (is_null(self::$config))
-        {
-            self::$config = config('cache.redis');
-        }
-        $this->redis = new \Redis();
-        try
-        {
-            $this->redis->connect('127.0.0.1',6379);
-        }
-        catch (\RedisException $e)
-        {
-            throw new \Exception('Redis message: '.$e->getMessage());
-        }
+        $this->redis = new RedisFactory();
     }
 
     public function put ( String $key , $value , $expires = null )
@@ -86,6 +67,12 @@ class RedisStore implements CacheStore
     public function __get ( $key )
     {
         return $this->redis->get($key);
+    }
+
+
+    public function __call($method,$args)
+    {
+      return $this->redis->$method(...$args);
     }
 
     public function __destruct ()

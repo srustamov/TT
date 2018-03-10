@@ -2,27 +2,23 @@
 
 
 /**
- * @param null $guard
- * @return \System\Libraries\Auth\Authentication|static
- * @throws Exception
+ * @param string $guard
+ * @return \System\Facades\Auth
  */
 
-use System\Libraries\Auth\Authentication;
 
-
-function auth( $guard = null)
+function auth( $guard = 'user')
 {
-    if(class_exists('System\Libraries\Auth\Authentication')) {
-        return is_null($guard)
-            ? (new Authentication())
-            : (new Authentication())->guard($guard);
-    }
-    throw new Exception('System\Libraries\Auth\Authentication class Not Found');
-
+    return Auth::guard($guard);
 }
 
 
-function isAuthentication($guard = null)
+/**
+ * @param string $guard
+ * @return Bool
+ */
+
+function isAuthentication($guard = 'user')
 {
-  return auth($guard)->check();
+  return Auth::guard($guard)->check();
 }

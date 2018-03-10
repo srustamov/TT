@@ -3,99 +3,88 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Library
  * @category    Database/Connection
  */
 
 
 use PDO;
-
 use PDOException;
 
 abstract class Connection
 {
 
-    protected static $general = [];
+    protected $general = [];
 
-    protected static $config  = [];
+    protected $config = [];
 
-    protected static $connect;
+    protected $pdo;
 
-    protected $connection_group = 'default';
+    protected $group = 'default';
 
 
-
-    function __construct()
+    function __construct ()
     {
-      $this->reconnect();
+        $this->reconnect ();
     }
 
+    public function reconnect ()
+    {
+        if (!isset( $this->general[ $this->group ] )) {
 
+            $this->config[ $this->group ] = config ( "database.$this->group" );
+
+            $config = $this->config[ $this->group ];
+
+            try
+            {
+                $dsn = "host={$config[ 'hostname' ]};dbname={$config[ 'dbname' ]};charset={$config[ 'charset' ]}";
+                $this->general[ $this->group ] = new PDO( "mysql:{$dsn}" , $config[ 'username' ] , $config[ 'password' ] );
+                $this->pdo = $this->general[ $this->group ];
+                $this->pdo->setAttribute ( PDO::ATTR_DEFAULT_FETCH_MODE , PDO::FETCH_OBJ );
+                $this->pdo->setAttribute ( PDO::ATTR_ERRMODE , PDO::ERRMODE_EXCEPTION );
+                $this->pdo->query ( "SET CHARACTER SET  " . $config[ 'charset' ] );
+                $this->pdo->query ( "SET NAMES " . $config[ 'charset' ] );
+            }
+            catch (PDOException $e)
+            {
+                throw new \Exception( $e->getMessage() );
+            }
+        }
+        else
+        {
+            $this->pdo = $this->general[ $this->group ];
+        }
+    }
 
     public function pdo ()
     {
-        return self::$connect;
+        return $this->pdo;
     }
 
-
-
-    public  function reconnect()
+    public function connect ( $group = 'default' )
     {
-      if (!isset(static::$general[$this->connection_group]))
-      {
-          static::$config[$this->connection_group] = config("database")[$this->connection_group];
-
-          $config    = static::$config[$this->connection_group];
-
-          try
-          {
-              $dsn = "host={$config[ 'hostname' ]};dbname={$config[ 'dbname' ]};charset={$config[ 'charset' ]}";
-              self::$general[$this->connection_group] = new PDO("mysql:{$dsn}" ,$config[ 'username' ] ,$config[ 'password' ]);
-              self::$connect = static::$general[$this->connection_group];
-              self::$connect->setAttribute (PDO::ATTR_DEFAULT_FETCH_MODE , PDO::FETCH_OBJ );
-              self::$connect->setAttribute (PDO::ATTR_ERRMODE ,PDO::ERRMODE_EXCEPTION );
-              self::$connect->query ( "SET CHARACTER SET  " . $config[ 'charset' ] );
-              self::$connect->query ( "SET NAMES " . $config[ 'charset' ] );
-          }
-          catch (PDOException $e)
-          {
-             show_error($e);
-          }
-      }
-      else
-      {
-        static::$connect = static::$general[$this->connection_group];
-      }
-    }
-
-
-
-
-    public function connect ($connection_group = 'default')
-    {
-         $this->connection_group = $connection_group;
-         $this->reconnect();
-         return $this;
+        $this->group = $group;
+        $this->reconnect ();
+        return $this;
     }
 
 
     /**
-    * Database connection close;
-    */
+     * Database connection close;
+     */
     public function close ()
     {
-        if (isset(self::$general[$this->connection_group]))
-        {
-            unset(self::$general[$this->connection_group]);
+        if (isset( $this->general[ $this->group ] )) {
+            unset( $this->general[ $this->group ] );
 
-            $this->connection_group = 'default';
+            $this->group = 'default';
 
-            $this->reconnect();
+            $this->reconnect ();
         }
 
     }
-
 
 
 }

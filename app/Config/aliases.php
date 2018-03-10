@@ -2,11 +2,11 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 
 
 return array(
-    "Route" => System\Engine\Http\Router::class ,
+    "Route" => System\Facades\Route::class ,
     'Auth' => System\Facades\Auth::class ,
 );

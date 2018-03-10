@@ -3,7 +3,7 @@
 //-------------------------------------------------------------
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 //-------------------------------------------------------------
 
@@ -14,7 +14,7 @@
 //------------------------------------------------------
 
 
-use System\Libraries\Database\Database;
+use System\Facades\DB;
 
 
 abstract class Model
@@ -71,7 +71,7 @@ abstract class Model
      */
     public static function create($data = []):Bool
     {
-        return (new Database())->table(( new static )->table)->set($data)->insert();
+        return DB::table(( new static )->table)->insert($data);
     }
 
 
@@ -89,7 +89,10 @@ abstract class Model
         {
           $in = func_num_args();
         }
-        return (new Database())->table(( new static )->table)->whereIn((new static)->primaryKey,$in)->get();
+
+        $first = (count($in) == 1);
+
+        return DB::table(( new static )->table)->whereIn((new static)->primaryKey,$in)->get($first);
     }
 
 
@@ -101,7 +104,7 @@ abstract class Model
     {
         $select = !empty(func_get_args()) ? func_get_args() : (new static)->fillable;
 
-        $result =  (new Database())->table((new static)->table)->select($select)->get();
+        $result =  DB::table((new static)->table)->select($select)->get();
 
         return $result;
     }
@@ -125,14 +128,9 @@ abstract class Model
 
     private function _call($name, $arguments)
     {
-        return (new Database())->table($this->table)->select($this->fillable)->{$name}(...$arguments);
+        return DB::table($this->table)->select($this->fillable)->{$name}(...$arguments);
     }
 
-
-    public function __call($name, $arguments)
-    {
-       return $this->_call($name, $arguments);
-    }
 
 
     public static function __callStatic($name, $arguments)

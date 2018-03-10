@@ -5,7 +5,7 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Libraries
  * @category    Language
  */
@@ -18,7 +18,7 @@ class Language
 
 
 
-    protected static $lang;
+    protected $lang;
 
 
 
@@ -30,7 +30,7 @@ class Language
     {
         if(!is_null($locale))
         {
-          if($this->locale() == $locale && !is_null(static::$lang))
+          if($this->locale() == $locale && !is_null($this->lang))
           {
             return $locale;
           }
@@ -41,7 +41,7 @@ class Language
           $locale = $this->locale();
         }
 
-        static::$lang = $this->_getdata($locale);
+        $this->lang = $this->_getdata($locale);
    }
 
    /**
@@ -55,12 +55,11 @@ class Language
    public function translate ( $word = '' ,$replace = [] ,$locale = null):String
    {
 
-      if(is_null(static::$lang))
+      if(is_null($this->lang))
       {
         $this->set();
       }
 
-      $lang = &static::$lang;
 
       if(!is_null($locale) && $locale != app("session")->get('_LOCALE'))
       {
@@ -73,24 +72,24 @@ class Language
 
           if(!empty($replace))
           {
-            return isset($lang[$file][$key])
+            return isset($this->lang[$file][$key])
                    ? str_replace(
                         array_map(function($item)
                         {
                            return ':'.$item;
                         },array_keys($replace)),array_values($replace),
-                        $lang[$file][$key]
+                        $this->lang[$file][$key]
                      )
                    : '';
           }
           else
           {
-            return $lang[$file][$key] ?? '';
+            return $this->lang[$file][$key] ?? '';
           }
       }
       else
       {
-        return $lang[$word] ?? '';
+        return $this->lang[$word] ?? '';
       }
 
    }

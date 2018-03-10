@@ -2,7 +2,7 @@
 
 
 use System\Libraries\Auth\Drivers\Attempt_Driver_Interface;
-use System\Libraries\Session\Session as Auth_Session;
+use System\Libraries\Session\Session;
 
 
 
@@ -14,7 +14,7 @@ class Session_Attempt_Driver implements Attempt_Driver_Interface
 
   function __construct()
   {
-    $this->session = new Auth_Session();
+    $this->session = new Session();
   }
 
 

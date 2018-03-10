@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    @css('css/bootstrap.css')
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>{{ setting('APP_NAME') }}</title>
     <style>
@@ -46,20 +47,20 @@
         span a {
             color: rgb(45, 55, 48);
             cursor: pointer;
+            text-decoration: none !important;
         }
     </style>
 </head>
 <body>
 <div id="container">
     <span id="welcome">{{ setting('APP_NAME') }}</span>
-    <span><a href="https://github.com/SamirRustamov/TT" target="_blank">GITHUB</a></span>
+    <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
     <span><a href="{{url('/home')}}">HOME</a></span>
 </div>
-@if (isset($error->auth))
+@if ($errors->first('auth')))
   <script type="text/javascript">
-    alert("{{$error->auth}}");
+    alert("{{$errors->auth}}");
   </script>
 @endif
-@benchmark_panel()
 </body>
 </html>

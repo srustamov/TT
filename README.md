@@ -4,7 +4,7 @@ PHP simple mini mvc framework
 Download Project
 
 
-[Download](https://github.com/SamirRustamov/TT/archive/master.zip)
+[Download](https://github.com/srustamov/TT/archive/master.zip)
 
 * Goto Command Line
 ```

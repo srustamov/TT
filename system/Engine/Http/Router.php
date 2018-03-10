@@ -2,11 +2,11 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 
 
-use System\Engine\Http\Middleware;
+
 
 class Router
 {
@@ -18,31 +18,29 @@ class Router
         'OPTIONS' => [] ,
         'PATCH' => []
     ];
+    
 
+    private $notFound = 0;
 
-    private static $namespace = 'App\Controllers';
+    private $namespace = 'App\Controllers';
 
-    private static $count = 0;
+    private $prefix;
 
-    private static $prefix = '';
+    private $method;
 
-    private static $method = '';
+    private $path;
 
-    private static $path = '';
+    private $middleware = [];
 
-    private static $middleware = [];
+    private $ajax = false;
 
-    private static $isAjax = false;
-
-    private static $domain;
-
-
+    
     /**
      * @param String $namespace
      */
-    public static function setNamespace(String $namespace)
+    public  function setNamespace(String $namespace)
     {
-        self::$namespace = trim($namespace, '\\');
+        $this->namespace = trim($namespace, '\\');
     }
 
     /**
@@ -51,33 +49,30 @@ class Router
      * @param $handler
      * @return static
      */
-    public static function any(array $methods, $path, $handler)
+    public  function any(array $methods, $path, $handler)
     {
-        $instance = new static();
-
         foreach ($methods as $method) {
             self::add(strtoupper($method), $path, $handler);
         }
-        return $instance;
+        return $this;
     }
 
     /**
      * @param $method
      * @param $path
      * @param $handler
-     * @internal param array $pattern
-     * @internal param array $middleware
      */
-    public static function add($method, $path, $handler)
+    public function add($method, $path, $handler)
     {
-        static::$method = $method;
-        static::$path   = $path;
+        $this->method = $method;
+        $this->path   = $path;
 
         array_push(static::$routes[ $method ], [
-            'path' => static::$prefix . strtolower($path) ,
+            'path' => $this->prefix . strtolower($path) ,
             'handler' => $handler ,
-            'isAjax' => static::$isAjax ,
-            'middlewares' => self::$middleware
+            'ajax' => $this->ajax ,
+            'middlewares' => $this->middleware,
+            'pattern' => []
         ]);
     }
 
@@ -86,230 +81,189 @@ class Router
      * @param $handler
      * @return static
      */
-    public static function form($path, $handler)
+    public function form($path, $handler)
     {
-        $instance = new static();
-
         foreach ([ 'GET' , 'POST' ] as $method) {
-            self::add($method, $path, $handler);
+            static::add($method, $path, $handler);
         }
-        return $instance;
     }
 
     /**
      * @param $handler
      */
-    public static function ajax($handler)
+    public function ajax($handler)
     {
-        static::$isAjax = true;
-        call_user_func($handler, new Router);
-        static::$isAjax = false;
+        $this->ajax = true;
+        call_user_func($handler);
+        $this->ajax = false;
     }
 
     /**
      * @param $prefix
      * @return static
      */
-    public static function prefix($prefix)
+    public function prefix($prefix)
     {
-        $instance = new static();
-
-        static::$prefix = $prefix;
-
-        return $instance;
+        $this->prefix = $prefix;
+        return $this;
     }
 
     /**
      * @param $prefix
      * @param $callback
-     * @return null
+     * @return null|mixed
      */
-    public static function group($prefix, $callback = null)
+    public function group($prefix, $callback = null)
     {
-        $_prefix = $prefix;
-
+        $_prefix    = $prefix;
         $middleware = false;
-
-        $domain = false;
+        $args       = [];
 
         if (is_null($callback)) {
             $callback = $prefix;
-
-            $_prefix = static::$prefix;
+            $_prefix = $this->prefix;
         }
 
         if (is_array($prefix)) {
             if (isset($prefix[ 'prefix' ])) {
                 $_prefix = $prefix[ 'prefix' ];
             }
-
             if (isset($prefix[ 'domain' ])) {
-                if ($_SERVER[ 'HTTP_HOST' ] != $prefix[ 'domain' ]) {
-                    return null;
+                $_domain = $prefix[ 'domain' ];
+                if(preg_match('/({.+?})/',$prefix[ 'domain' ])) {
+                    $_domain = preg_replace_callback('/({.+?})/',function() {
+                        return '[A-Za-z0-9\-\_]+';
+                    },$prefix[ 'domain' ]);
+                    $r_domain = explode('.',$prefix[ 'domain' ]);
+                    $args     = array_diff(array_replace($r_domain, explode('.', $this->server('http_host'))), $r_domain);
                 }
-
-                self::$domain = $prefix[ 'domain' ];
-
-                $domain = true;
+                if (!preg_match("#^$_domain$#",$this->server('http_host'))) {
+                    return null;
+                } else {
+                    if(!empty($args)) {
+                        preg_match_all('/{(.+?)}/', $prefix[ 'domain' ], $_request_keys);
+                        $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
+                        foreach ($_request_data as $key => $value) {
+                            $_REQUEST[$key] = $value;
+                        }
+                        app('url')->setBase($prefix[ 'domain' ]);
+                    }
+                }
             }
         }
 
-        $requestUri = static::getrequestUri();
+        $requestUri = app('url')->request();
 
-        $prefixUri = strtolower(static::$prefix . $_prefix);
+        $prefixUri = strtolower($this->prefix . $_prefix);
 
-        if ($prefixUri == substr($requestUri, 0, strlen(static::$prefix . $_prefix))) {
+        if ($prefixUri == substr($requestUri, 0, strlen($this->prefix . $_prefix))) {
             if (isset($prefix[ 'middleware' ])) {
-                self::$middleware[] = $prefix[ 'middleware' ];
-
+                $this->middleware[] = $prefix[ 'middleware' ];
                 $middleware = true;
             }
+            $this->prefix .= $_prefix;
 
-            static::$prefix .= $_prefix;
+            call_user_func_array($callback,$this->getReflectionFunctionParameters($callback,$args));
 
-            call_user_func($callback, new Router);
-
-            if ($middleware && isset(self::$middleware[ count(self::$middleware) - 1 ])) {
-                unset(self::$middleware[ count(self::$middleware) - 1 ]);
+            if ($middleware && isset($this->middleware[ count($this->middleware) - 1 ])) {
+                unset($this->middleware[ count($this->middleware) - 1 ]);
                 $middleware = false;
             }
-            static::$prefix = substr(static::$prefix, 0, strlen(static::$prefix) - strlen($_prefix));
-
-            if ($domain) {
-                self::$domain = null;
+            $this->prefix = substr($this->prefix, 0, strlen($this->prefix) - strlen($_prefix));
+            
+            if (isset($prefix[ 'domain' ])) {
+                app('url')->setBase();
             }
         }
     }
 
 
-    /**
-     * @return String
-     */
-    protected static function getRequestUri(): String
-    {
-        $request_uri = urldecode(
-            parse_url($_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH)
-        );
-        $request_uri = str_replace(' ', '', $request_uri);
-
-        if($request_uri != '/') {
-          $request_uri = rtrim($request_uri,'/');
-        }
-
-        if (!is_null(self::$domain)) {
-            $request_uri = self::$domain . $request_uri;
-        }
-
-        return $request_uri;
-    }
 
 
     /**
      * @return bool|int|mixed|void
+     * @throws \Exception
      */
-    protected static function match()
+    protected function match()
     {
-        $requestUri = static::getRequestUri();
-
-        $method     = static::getRequestMethod();
-
-        $isAjax     = app('http')->isAjax();
-
+        $requestUri = app('url')->request();
+        $method     = $this->getRequestMethod();
+        $ajax       = app('http')->isAjax();
         foreach (static::$routes[ $method ] as $resource) {
-            if ($resource['isAjax'] && !$isAjax) {
+            if ($resource['ajax'] && !$ajax) {
                 continue;
             }
-
             $args = [];
-
             $route = $resource[ 'path' ] != '/' ? rtrim($resource[ 'path' ], '/') : $resource[ 'path' ];
-
-            if (!is_null(self::$domain)) {
-                $route = self::$domain . $route;
-            }
-
             $handler = $resource[ 'handler' ];
-
             if (preg_match('/({.+?})/', $route)) {
-                list($args, $uri, $route) = self::parseRoute($requestUri, $route, $resource[ 'pattern' ] ?? []);
+                list($args, $uri, $route) = $this->parseRoute($requestUri, $route, $resource[ 'pattern' ] ?? []);
             }
-
-
             if (!preg_match("#^$route$#", $requestUri)) {
                 unset(self::$routes[ $method ]);
                 continue;
             }
-
-
             if (isset($uri)) {
                 preg_match_all('/{(.+?)}/', $uri, $_request_keys);
-
                 $_request_keys = array_map(function ($item) {
                     return str_replace('?', '', $item);
                 }, $_request_keys[1]);
-
                 $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
-
                 foreach ($_request_data as $key => $value) {
                     $_REQUEST[$key] = $value;
                 }
             }
 
-
             if (is_string($handler) && strpos($handler, '@')) {
                 list($controller, $method) = explode('@', $handler);
-
                 if (strpos($controller, '/') !== false) {
                     $controller = str_replace('/', '\\', $controller);
                 }
-                $controller = "\\" .static::$namespace."\\$controller";
+                $controller_with_namespace = "\\" .$this->namespace."\\$controller";
 
-                $args = static::getReflectionMethodParameters($controller, $method, $args);
-
-                if (method_exists($controller, $method)) {
-                    $_SERVER[ 'CALLED_METHOD' ]     = $method;
-                    $_SERVER[ 'CALLED_CONTROLLER' ] = substr($controller, strlen(static::$namespace)+2);
+                if (method_exists($controller_with_namespace, $method)) {
+                    $this->server('called_method',$method);
+                    $this->server('called_controller',$controller);
                     if (!empty($resource[ 'middlewares' ])) {
                         foreach ($resource[ 'middlewares' ] as $middleware) {
                             Middleware::init($middleware);
                         }
                     }
-
-                    return call_user_func_array([$controller,$method],$args);
+                    call_user_func_array(
+                              [new $controller_with_namespace(),$method],
+                              $this->getReflectionMethodParameters($controller_with_namespace, $method, $args)
+                            );
+                    return;
                 } else {
-                    return abort(404);
+                    abort(404);
                 }
+            } elseif (is_callable($handler)) {
+              if (!empty($resource[ 'middlewares' ])) {
+                  foreach ($resource[ 'middlewares' ] as $middleware) {
+                      Middleware::init($middleware);
+                  }
+              }
+              call_user_func_array($handler, $this->getReflectionFunctionParameters($handler, $args));
+              return;
+            } else {
+              throw new \Exception("Route Handler type undefined");
             }
 
-
-            if (!empty($resource[ 'middlewares' ])) {
-                foreach ($resource[ 'middlewares' ] as $middleware) {
-                    Middleware::init($middleware);
-                }
-            }
-
-            $args = static::getReflectionFunctionParameters($handler, $args);
-
-            return call_user_func_array($handler, $args);
         }
-        static::$count++;
+        $this->notFound++;
     }
 
     /**
      * @return string
      */
-    private static function getRequestMethod()
+    private  function getRequestMethod()
     {
-        $method = $_SERVER[ 'REQUEST_METHOD' ] ?? 'GET';
-
-        if ($method == 'HEAD') {
-            $method = 'GET';
-        } elseif ($method == 'POST') {
+        $method = ($this->server('request_method') == 'HEAD') ?  'GET' : $this->server('request_method');
+        if ($method == 'POST') {
             $headers = getallheaders();
-            if (isset($headers[ 'X-HTTP-Method-Override' ]) &&
-                in_array($headers[ 'X-HTTP-Method-Override' ], array( 'PUT' , 'DELETE' , 'PATCH' ))
-            ) {
-                $method = $headers[ 'X-HTTP-Method-Override' ];
+            $xhmo    = $headers[ 'X-HTTP-Method-Override' ] ?? false;
+            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
+                $method = $xhmo;
             }
         }
         return $method;
@@ -321,13 +275,11 @@ class Router
      * @param $patterns
      * @return array
      */
-    private static function parseRoute($requestUri, $resource, $patterns): array
+    private function parseRoute($requestUri, $resource, $patterns): array
     {
         $route = preg_replace_callback('/({.+?})/', function ($matches) use ($patterns) {
             $matches[ 0 ] = str_replace([ '{' , '}' ], '', $matches[ 0 ]);
-
             $normalize = (substr($matches[ 0 ], -1) == '?') ? substr($matches[ 0 ], 0, -1) : $matches[ 0 ];
-
             if (in_array($normalize, array_keys($patterns))) {
                 if ($matches[ 0 ][ strlen($matches[ 0 ]) - 1 ] == '?') {
                     return '?(\/' . $patterns[ $normalize ] . ')?';
@@ -341,9 +293,7 @@ class Router
             return '[a-zA-Z0-9_=\-\?]+';
         }, $resource);
 
-
         $regUri = explode('/', str_replace('?}', '}', $resource));
-
         $args   = array_diff(array_replace($regUri, explode('/', $requestUri)), $regUri);
 
         return array( array_values($args) , $resource , $route);
@@ -352,14 +302,13 @@ class Router
 
     /**
      * @param $class_name
-     * @param $method_name
+     * @param $method
      * @param $args
      * @return mixed
      */
-    private static function getReflectionMethodParameters($class_name, $method_name, $args)
+    private  function getReflectionMethodParameters($class_name, $method, $args)
     {
-        $reflection = new \ReflectionMethod($class_name, $method_name);
-
+        $reflection = new \ReflectionMethod($class_name, $method);
         foreach ($reflection->getParameters() as $num => $param) {
             if ($param->getClass()) {
                 $class = $param->getClass()->name;
@@ -372,20 +321,18 @@ class Router
                 }
             }
         }
-
         return $args;
     }
 
 
     /**
-     * @param $function_name
+     * @param $function
      * @param $args
      * @return mixed
      */
-    private static function getReflectionFunctionParameters($function_name, $args)
+    private  function getReflectionFunctionParameters($function, $args)
     {
-        $reflection = new \ReflectionFunction($function_name);
-
+        $reflection = new \ReflectionFunction($function);
         foreach ($reflection->getParameters() as $num => $param) {
             if ($param->getClass()) {
                 $class = $param->getClass()->name;
@@ -408,36 +355,23 @@ class Router
      */
     public function __call($method, $args)
     {
-        return static::__callStatic($method, $args);
-    }
-
-    /**
-     * @param $method
-     * @param $args
-     * @return static
-     */
-    public static function __callStatic($method, $args)
-    {
-        $instance = new static();
-
         $methods  = array( 'GET' , 'POST' , 'PUT' , 'DELETE' , 'OPTIONS' , 'PATCH' );
-
         if (in_array(strtoupper($method), $methods)) {
             self::add(strtoupper($method), ...$args);
-            return $instance;
+            return $this;
         } else {
-            throw new \BadMethodCallException("Call to undefined method {$method}");
+            throw new \BadMethodCallException("Call to undefined method Route::{$method}()");
         }
     }
 
     /**
      * @param $extension
-     * @return $this
+     * @return Router
      */
     public function middleware($extension) :Router
     {
-        $index = count(static::$routes[ static::$method ]) - 1;
-        static::$routes[ static::$method ][ $index ][ 'middleware' ][] = $extension;
+        $index = count(static::$routes[ $this->method ]) - 1;
+        static::$routes[ $this->method ][ $index ][ 'middleware' ][] = $extension;
         return $this;
     }
 
@@ -447,20 +381,30 @@ class Router
      */
     public function pattern(array $pattern): Router
     {
-        $index = count(static::$routes[ static::$method ]) - 1;
-        static::$routes[ static::$method ][ $index ][ 'pattern' ] = $pattern;
+        $index = count(static::$routes[ $this->method ]) - 1;
+        static::$routes[ $this->method ][ $index ][ 'pattern' ] = $pattern;
         return $this;
+    }
+
+
+    private function server(String $key,$value = null)
+    {
+      if(!is_null($value)) {
+        $_SERVER[strtoupper($key)] = $value;
+      } else {
+        return $_SERVER[strtoupper($key)] ?? false;
+      }
     }
 
     /**
      * @return int
      */
-    public static function init()
+    public function execute()
     {
-        static::match();
-
-        if (self::$count > 0) {
+        $this->match();
+        if ($this->notFound > 0) {
             return abort(404);
         }
     }
+
 }

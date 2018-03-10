@@ -1,81 +1,135 @@
 <?php namespace System\Libraries;
 
-
-
 /**
  * @package  TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
- * @subpackage  Libraries
+ * @link https://github.com/srustamov/TT
+ * @subpackage  Library
  * @category   Url
  */
 
 
-use System\Facades\Html as HtmlDom;
 
 class Url
 {
 
 
+    protected $baseUrl;
 
 
-  public function request()
-  {
+    /**
+     * @param String|null $baseUrl
+     */
+    public function setBase( String $baseUrl = null)
+    {
+        $this->baseUrl = $baseUrl;
+    }
 
-    $request = urldecode (
+
+    /**
+     * @return mixed|string
+     */
+    public function request()
+    {
+
+        $request = urldecode (
             parse_url ( rtrim ( @$_SERVER[ 'REQUEST_URI' ] , '/' ) , PHP_URL_PATH )
         );
-    $request = str_replace ( ' ' , '' , $request );
+        $request = str_replace ( ' ' , '' , $request );
 
-    return $request == '' ? '/' : $request;
-  }
-
-
-
-  public function protocol()
-  {
-    if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off')
-    {
-      return 'https';
-    }
-    return 'http';
-  }
-
-
-
-  public function base ( $url = ''):String
-  {
-    $base_url = trim(config('config.base_url'));
-
-    if(empty($base_url))
-    {
-      $base_url = $this->protocol()."://".$_SERVER['HTTP_HOST'];
+        return $request == '' ? '/' : $request;
     }
 
-    return $base_url . '/' . ltrim($url,'/');
-  }
+
+    /**
+     * @return string
+     */
+    public function protocol()
+    {
+        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off')
+        {
+            return 'https';
+        }
+        return 'http';
+    }
 
 
+    /**
+     * @param string $url
+     * @return String
+     */
+    public function base ( $url = ''):String
+    {
+        if(!is_null($this->baseUrl)) {
+            if(!preg_match('/^(https?://)/',$this->baseUrl)) {
+                $base_url = $this->protocol().'://'.$this->baseUrl;
+            } else {
+                $base_url = $this->baseUrl;
+            }
+
+        } else {
+            $base_url = trim(config('config.base_url'));
+
+            if(empty($base_url))
+            {
+                $base_url = $this->protocol()."://".$this->host();
+            }
+        }
+
+        return $base_url . '/' . ltrim($url,'/');
+    }
 
 
-  function current ( $url = null ):String
-  {
-      return rtrim($this->base().trim ( $_SERVER[ 'REQUEST_URI' ] , '/' ),'/') . '/' . $url;
-  }
+    /**
+     * @param null $url
+     * @return String
+     */
+    public function current ( $url = null ):String
+    {
+        return rtrim($this->base().trim ( $this->request() , '/' ),'/') . '/' . $url;
+    }
 
 
+    /**
+     * @return string
+     */
+    public  function host()
+    {
+        if( isset($_SERVER['HTTP_X_FORWARDED_HOST']) )
+        {
+            $host     = $_SERVER['HTTP_X_FORWARDED_HOST'];
+            $elements = explode(',', $host);
+            $host     = trim(end($elements));
+        }
+        else
+        {
+            $host = $_SERVER['HTTP_HOST']   ??
+                $_SERVER['SERVER_NAME'] ??
+                $_SERVER['SERVER_ADDR'] ??
+                '';
+        }
 
-  public function segment ( Int $number )
-  {
-      return $this->segments()[ $number ] ?? false;
-  }
+        return trim($host);
+    }
 
 
+    /**
+     * @param Int $number
+     * @return bool|mixed
+     */
+    public function segment ( Int $number )
+    {
+        return $this->segments()[ $number ] ?? false;
+    }
 
-  public function segments ():array
-  {
-      return  array_filter ( explode ( '/' , $this->request() ) );
-  }
+
+    /**
+     * @return array
+     */
+    public function segments ():array
+    {
+        return  array_filter ( explode ( '/' , $this->request() ) );
+    }
 
 
 

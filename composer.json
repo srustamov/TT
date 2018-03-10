@@ -1,13 +1,13 @@
 {
     "name": "rustamov/tt",
-    "description": "php simple mini mvc framework",
+    "description": "php simple and fastest mini mvc framework",
     "type": "project",
     "license": "MIT",
     "authors": [
         {
             "name": "Samir Rustamov",
             "email": "rustemovv96@gmail.com",
-            "homepage": "https://github.com/SamirRustamov/TT",
+            "homepage": "https://github.com/srustamov/TT",
             "role": "Developer"
         }
     ],

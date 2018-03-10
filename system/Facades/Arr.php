@@ -2,13 +2,15 @@
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  */
 
-class Arr
+use System\Facades\Facade;
+
+class Arr extends Facade
 {
-    public static function __callStatic( $method, $args)
+    protected static function getFacadeAccessor()
     {
-        return  (new \System\Libraries\Arr())->{$method}(...$args);
+        return 'array';
     }
 }

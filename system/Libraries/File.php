@@ -3,7 +3,7 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Libraries
  * @category    Files
  */
@@ -27,14 +27,16 @@ class File
     {
       if (isset($file['tmp_name']))
       {
-          return @getimagesize($file['tmp_name']) ? true :  false;
+          return \getimagesize($file['tmp_name']);
+      } else {
+          return \getimagesize($file);
       }
     }
 
 
     public function setDir($pathname, $mode = 0755, $recursive = false):Bool
     {
-        return @mkdir($pathname, $mode, $recursive);
+        return \mkdir($pathname, $mode, $recursive);
     }
 
 
@@ -51,28 +53,52 @@ class File
         if (!$this->isDir($pathname)) {
             return false;
         }
-        return @rmdir($pathname);
+        return \rmdir($pathname);
+    }
+    
+    /**
+     *@param string $directory
+     *
+     */
+    
+    public function rmdir_r(String $directory)
+    {
+       if(is_dir($directory)) {
+           $this->flashDir($directory);
+           rmdir($directory);
+       }
+    }
+    
+    
+    public function flashDir($directory)
+    {
+        foreach (glob($directory."/*") as $file) {
+            if(is_dir($file)) {
+                $this->flashDir($file);
+            } else {
+                \unlink($file);
+            }
+        }
     }
 
+    
 
-
-
-    public function require($file)
+    public function import($file)
     {
         if ($this->exists($file)) {
             return require $file;
         }
-        throw new \Exception("File not found.Path: ({$file})", 1001);
+        throw new \Exception("File not found.Path: ({$file})");
     }
 
 
 
-    public function requireOnce($file)
+    public function importOnce($file)
     {
         if ($this->exists($file)) {
             return require_once $file;
         }
-        throw new \Exception("File not found.Path: ({$file})", 1001);
+        throw new \Exception("File not found.Path: ({$file})");
     }
 
 
@@ -84,8 +110,8 @@ class File
 
     public function write($path, $contents, $lock = false)
     {
-        $lock = $lock ? LOCK_EX : 0;
-        return file_put_contents($path, $contents, $lock);
+        $_lock = $lock ? \LOCK_EX : 0;
+        return file_put_contents($path, $contents, $_lock);
     }
 
 
@@ -122,15 +148,12 @@ class File
 
     public function delete($files):Bool
     {
-        $files = is_array($files) ? $files : func_num_args();
-        $error = 0;
-        foreach ($files as $file) {
-            try {
-                if (! @unlink($file)) {
-                    $error++;
-                }
-            } catch (\Exception $e) {
-                $error++;
+        $_files = is_array($files) ? $files : func_num_args();
+        $error  = 0;
+        
+        foreach ($_files as $file) {
+            if (!@unlink($file)) {
+                 $error++;
             }
         }
         return !($error > 0);
@@ -159,5 +182,13 @@ class File
     public function mimeType($path)
     {
         return finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
+    }
+
+
+    public function is_dir_empty($dir)
+    {
+      $iterator = new \FilesystemIterator($dir);
+
+      return !$iterator->valid();
     }
 }

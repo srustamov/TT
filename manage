@@ -6,13 +6,40 @@
  */
 //------------------------------------------------------
 
+use System\Engine\Kernel;
+use System\Engine\Cli\Console;
+use System\Engine\Cli\PrintConsole;
+
+//------------------------------------------
+// Define set application started time
+//------------------------------------------
 define('APP_START', microtime(true));
 
 
+//------------------------------------------
+// Load Composer Autoload file
+//------------------------------------------
 require __DIR__.'/vendor/autoload.php';
 
 
-System\Engine\Kernel::start(__DIR__);
+
+//------------------------------------------
+// Application Bootstrapping and Routing
+//------------------------------------------
+Kernel::start(__DIR__);
 
 
-System\Engine\Cli\Console::run($argv);
+
+//------------------------------------------
+// Application $argv parameters execute
+//------------------------------------------
+Console::run($argv);
+
+
+
+//------------------------------------------
+// Console command execute benchmark message
+//------------------------------------------
+$message = PrintConsole::benchmark(microtime(true));
+
+exit($message);

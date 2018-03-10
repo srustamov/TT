@@ -3,7 +3,7 @@
 //-------------------------------------------------------------
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 //-------------------------------------------------------------
 
@@ -12,7 +12,7 @@
 // Controller Class
 //-------------------------------------------------------------
 
-use System\Libraries\View;
+use System\Libraries\View\View;
 use System\Engine\Http\Middleware;
 
 abstract class Controller
@@ -29,7 +29,7 @@ abstract class Controller
 //-------------------------------------------------------------
 
 
-    public function __construct()
+    function __construct()
     {
         self::$instance =& $this;
     }
@@ -45,12 +45,13 @@ abstract class Controller
     /**
      * @param String $file
      * @param array|bool $data
-     * @param bool $cache
+     * @param bool $content
+     * @return \System\Libraries\View\View
      */
 
-    public function view(String $file, array $data = [], $cache = false)
+    public function view(String $file, array $data = [], $content = false)
     {
-        return (new View())->render($file, $data, $cache);
+        return (new View)->render($file, $data, $content);
     }
 
 
@@ -74,55 +75,35 @@ abstract class Controller
 
 
 
+
 //-------------------------------------------------------------
-//    Model Load
+//    Class Load
 //-------------------------------------------------------------
 
 
-    public function model($model, $namespace = "App\\Models")
+    /**
+     * @param $class
+     * @param $namespace
+     * @throws \Exception
+     */
+    public function loadClass( $class, $namespace)
     {
-        $alias = $model;
-        if(strpos(':',$model) !== false)
+        $alias = $class;
+
+        if(strpos(':',$class) !== false)
         {
-          list($model,$alias) = explode(':', $model,2);
+          list($class,$alias) = explode(':',$class,2);
         }
-        if (class_exists("\\{$namespace}\\{$model}"))
+
+        if (class_exists("\\{$namespace}\\{$class}"))
         {
-            $key = 'Model'.md5(uniqid());
-            class_alias("\\{$namespace}\\{$model}", "{$key}");
+            $key = 'Class'.md5(uniqid());
+            class_alias("\\$namespace\\$class", "$key");
             $this->{$alias} = new $key;
         }
         else
         {
-            throw new \Exception("Model {$namespace}\\{$model} class not found");
-        }
-    }
-
-
-
-//-------------------------------------------------------------
-//    Library Load
-//-------------------------------------------------------------
-
-
-
-    public function library($library, $namespace = 'System\\Libraries')
-    {
-        $alias = $library;
-        if(strpos(':',$library) !== false)
-        {
-          list($library,$alias) = explode(':',$library,2);
-        }
-
-        if (class_exists("\\{$namespace}\\{$library}"))
-        {
-            $key = 'Library'.md5(uniqid());
-            class_alias("\\$namespace\\$library", "$key");
-            $this->{$alias} = new $key;
-        }
-        else
-        {
-            throw new \Exception("Library {$namespace}\\{$library} class not found");
+            throw new \Exception("Class {$namespace}\\{$class}  not found");
         }
     }
 }

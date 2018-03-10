@@ -4,7 +4,7 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Libraries/Encrypt
  * @category    OpenSSL
  */
@@ -63,7 +63,7 @@ class OpenSsl
   }
 
 
-  public function encode ($data):String
+  public function encrypt ($data):String
   {
       $encrypted_data = openssl_encrypt($data, $this->method, $this->key,$this->option,$this->getIv());
       return base64_encode ($encrypted_data);
@@ -71,7 +71,7 @@ class OpenSsl
 
 
 
-  public function decode ($data):String
+  public function decrypt ($data):String
   {
       $decoded  = openssl_decrypt ( base64_decode ( $data ), $this->method, $this->key,$this->option,$this->getIv() );
       return trim ( $decoded );

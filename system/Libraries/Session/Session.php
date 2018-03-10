@@ -3,27 +3,24 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Library
  * @category    Session
  */
 
 
-use System\Libraries\Session\Drivers\Session_driver_File;
-use System\Libraries\Session\Drivers\Session_driver_DB;
-
+use System\Libraries\Session\Drivers\SessionFileStore;
+use System\Libraries\Session\Drivers\SessionDBStore;
+use System\Facades\OpenSsl;
 
 class Session
 {
-
-
     protected static $config;
 
 
     public function __construct()
     {
         if (is_null(static::$config)) {
-
             static::$config = config('session');
             ini_set('session.cookie_httponly', static::$config['cookie']['http_only']);
             ini_set('session.use_only_cookies', static::$config['only_cookies']);
@@ -31,7 +28,7 @@ class Session
             ini_set('session.save_path', static::$config['files_location']);
 
             session_set_cookie_params(
-              static::$config['lifetime'] ,
+              static::$config['lifetime'],
               static::$config['cookie']['path'],
               static::$config['cookie']['domain'],
               static::$config['cookie']['secure'],
@@ -40,33 +37,20 @@ class Session
 
             session_name(static::$config['cookie']['name']);
 
-            if(static::$config['driver'] == 'file')
-            {
-              $handler = new Session_driver_File();
-            }
-            elseif (static::$config['driver'] == 'database')
-            {
-              $handler = new Session_driver_DB(static::$config['table']);
+            if (static::$config['driver'] == 'file') {
+                $handler = new SessionFileStore();
+            } elseif (static::$config['driver'] == 'database') {
+                $handler = new SessionDBStore(static::$config['table']);
             }
 
-            if(isset($handler))
-            {
-              session_set_save_handler($handler,true);
-              register_shutdown_function('session_write_close');
+            if (isset($handler)) {
+                session_set_save_handler($handler, true);
+                register_shutdown_function('session_write_close');
             }
 
-            if (session_status() == PHP_SESSION_NONE)
-            {
-                @session_start();
-                $this->set('session_hash', $this->hash());
-            }
-            else
-            {
-                echo 'rgreg';
-                if ($this->get('session_hash') != $this->hash())
-                {
-                    $this->destroy();
-                }
+            if (session_status() == PHP_SESSION_NONE) {
+                session_start();
+                $this->token();
             }
         }
     }
@@ -80,32 +64,31 @@ class Session
 
     public function set($key, $value)
     {
-        if (is_callable($value))
-        {
+        if (is_callable($value)) {
             return $this->set($key, call_user_func($value, $this));
-        }
-        else
-        {
+        } else {
             $_SESSION[ $key ] = $value;
 
-            if (static::$config['regenerate'] == true)
-            {
-              @session_regenerate_id(session_id( [$id]));
+            if (static::$config['regenerate'] == true) {
+                @session_regenerate_id(session_id());
             }
-
-
         }
     }
-
-
 
 
     /**
      * @return string
      */
-    private function hash():String
+
+    private function token():String
     {
-        return sha1(@$_SERVER['REMOTE_ADDR'].config('config.encryption_key').@$_SERVER['HTTP_USER_AGENT']);
+        if (!$this->has('_token')) {
+            $token = base64_encode(OpenSsl::random(40));
+            $this->set('_token', $token);
+        } else {
+            $token = $this->get('_token');
+        }
+        return $token;
     }
 
 
@@ -115,14 +98,10 @@ class Session
 
     public function get($key)
     {
-        if (is_callable($key))
-        {
+        if (is_callable($key)) {
             return $this->get(call_user_func($key, $this));
-        }
-        else
-        {
-            if (isset($_SESSION[ $key ]))
-            {
+        } else {
+            if (isset($_SESSION[ $key ])) {
                 return $_SESSION[ $key ];
             }
         }
@@ -133,10 +112,9 @@ class Session
     /**
      * @param array $data
      */
-    public function setArray( Array $data )
+    public function setArray(array $data)
     {
-        foreach ($data as $key => $value)
-        {
+        foreach ($data as $key => $value) {
             $this->set($key, $value);
         }
     }
@@ -156,7 +134,7 @@ class Session
      * @param $key
      * @return Bool
      */
-    public function has($key ):Bool
+    public function has($key):Bool
     {
         return isset($_SESSION[ $key ]);
     }
@@ -168,23 +146,15 @@ class Session
 
     public function delete($key)
     {
-        if (is_callable($key))
-        {
+        if (is_callable($key)) {
             $this->delete(call_user_func($key, $this));
-        }
-        else
-        {
-            if (is_array($key))
-            {
-                foreach ($key as  $value)
-                {
+        } else {
+            if (is_array($key)) {
+                foreach ($key as  $value) {
                     $this->delete($value);
                 }
-            }
-            else
-            {
-                if (isset($_SESSION[ $key ]))
-                {
+            } else {
+                if (isset($_SESSION[ $key ])) {
                     unset($_SESSION[ $key ]);
                 }
             }
@@ -195,69 +165,67 @@ class Session
 
     public function path($path = null)
     {
-      $cookie_params = session_get_cookie_params();
+        $cookie_params = session_get_cookie_params();
 
-      if(is_null($path))
-      {
-        return $cookie_params['path'];
-      }
+        if (is_null($path)) {
+            return $cookie_params['path'];
+        }
 
-      session_set_cookie_params($cookie_params['lifetime'],$path);
+        session_set_cookie_params($cookie_params['lifetime'], $path);
 
-      return $this;
+        return $this;
     }
 
 
     public function domain($domain = null)
     {
-      $cookie_params = session_get_cookie_params();
+        $cookie_params = session_get_cookie_params();
 
-      if(is_null($domain))
-      {
-        return $cookie_params['domain'];
-      }
+        if (is_null($domain)) {
+            return $cookie_params['domain'];
+        }
 
-      session_set_cookie_params(
+        session_set_cookie_params(
         $cookie_params['lifetime'],
         $cookie_params['path'],
         $domain
       );
 
-      return $this;
+        return $this;
     }
 
 
 
     public function __get($key)
     {
-      return $this->get($key);
+        return $this->get($key);
     }
 
 
-    public function __set($key,$value)
+    public function __set($key, $value)
     {
-      return $this->set($key,$value);
+        return $this->set($key, $value);
     }
 
 
     public function __isset($key)
     {
-      return $this->has($key);
+        return $this->has($key);
     }
 
 
-    public function __call($method,$args)
+    public function __call($method, $args)
     {
-      $value = $args[0] ?? null;
-      return is_null($value)
+        $value = $args[0] ?? null;
+        return is_null($value)
              ? $this->get($method)
-             : $this->set($method,$value);
+             : $this->set($method, $value);
     }
 
 
-    public static function __callStatic($method,$args)
+    public static function __callStatic($method, $args)
     {
-      return (new static)->__call($method,$args);
+        return (new static)->__call($method, $args);
     }
 
 
@@ -267,6 +235,4 @@ class Session
         $_SESSION = [];
         session_destroy();
     }
-
-
 }

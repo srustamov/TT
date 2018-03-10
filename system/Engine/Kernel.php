@@ -2,276 +2,153 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 
 
-error_reporting(E_ALL);
 
-ini_set('display_errors', 0);
 
-use System\Engine\Exception\TTException;
+ini_set ( 'display_errors' , 1 );
+
+error_reporting(1);
+
+
+use System\Core\Load;
+use System\Facades\Route;
 
 class Kernel
 {
 
-
-    private $basePath;
-
-
-    private static $instance;
+    protected $basePath;
 
 
-
-    private function setPathDefines($path = null)
+    /**
+     * @param null $basePath
+     */
+    public static function start ( $basePath = null )
     {
-        if (!is_null($path))
-        {
-            $this->basePath = $path;
+        $instance = new static();
+
+        if (is_null ( $basePath )) {
+            $instance->basePath = dirname ( dirname ( __DIR__ ) );
+        } else {
+            $instance->basePath = $basePath;
         }
 
-        define('BASEDIR', $this->basePath);
+        $instance->setPathDefines ();
 
-        define('DS', DIRECTORY_SEPARATOR);
+        require_once BASEPATH . '/system/Engine/helpers.php';
 
-        define('PS', PATH_SEPARATOR);
+        Load::settingVariables ();
 
-        define('APPDIR', BASEDIR.DS.'app'.DS);
+        define('APP_DEBUG',Load::config('config.debug'));
 
-        define('SYSDIR', BASEDIR.DS.'system'.DS);
+        set_exception_handler ( '\System\Engine\Exception\TTException::handler');
 
-        if (!defined('PUBLIC_DIR'))
-        {
-            if(isset($_SERVER['SCRIPT_FILENAME']) && !empty($_SERVER['SCRIPT_FILENAME']))
-            {
-                $_ = explode('/',$_SERVER['SCRIPT_FILENAME']); array_pop($_);
+        $instance->loadHelpers ();
 
-                define('PUBLIC_DIR',implode('/',$_));
+        $instance->setAliases ();
 
-            }
-            else
-            {
-                define('PUBLIC_DIR',BASEDIR.DS.'public');
-            }
+        setlocale ( LC_ALL , config ( 'datetime.setLocale' ) );
 
-        }
+        date_default_timezone_set ( config ( 'datetime.time_zone' , 'UTC' ) );
 
-        chdir(BASEDIR.DS);
+        $instance->callApplicationKernel();
+
+        $instance->callRoutes ();
     }
 
 
-    public static function start($basePath = null)
+    public function callApplicationKernel()
     {
-        self::setInstance();
-
-        set_exception_handler(function ($e)
-        {
-            TTException::handler($e);
-        });
-
-        if (is_null($basePath))
-        {
-            self::$instance->basePath = dirname(dirname(__DIR__));
-        }
-        else
-        {
-            self::$instance->basePath = $basePath;
-        }
-
-        self::$instance->setPathDefines();
-
-        self::$instance->loadHelpers();
-
-        self::$instance->set_settings_variables();
-
-        self::$instance->setAliases();
-
-        setlocale(LC_ALL, config('datetime.setLocale'));
-
-        date_default_timezone_set(config('datetime.time_zone', 'UTC'));
-
-
-        if (class_exists('\App\Kernel'))
-        {
+        if (class_exists ( '\App\Kernel' )) {
             $kernel = new \App\Kernel();
 
             $_middleware = $kernel->middleware;
 
-            foreach ($_middleware as $middleware)
-            {
-                (new $middleware())->handle(new \System\Engine\Http\Request(),null);
+            foreach ($_middleware as $middleware) {
+                call_user_func_array ( [ new $middleware() , 'handle' ] , [ new \System\Engine\Http\Request() , null ] );
+            }
+            if (method_exists($kernel,'boot')) {
+                $kernel->boot ();
             }
 
-            $kernel->boot();
-        }
-
-        if (!InConsole()) {
-              import_dir_files(path('routes'));
-             \Route::init ();
-        }
-
-    }
-
-
-    public function setAliases()
-    {
-        foreach (config('aliases', []) as $key => $value)
-        {
-            class_alias('\\'.$value, $key);
         }
     }
 
 
-
-
-    public function set_settings_variables()
+    /**
+     * @param null $publicPath
+     */
+    public function setPublicPath ( $publicPath = null )
     {
-        $settingsFile = path('storage/system/settings');
-
-        if (!file_exists($settingsFile))
-        {
-            touch($settingsFile);
-
-            touch(path('.settings'),time() + 10);
-        }
-
-        if (!inConsole() && filemtime($settingsFile) < filemtime(path('.settings')))
-        {
-            $_auto_detect = ini_get('auto_detect_line_endings');
-
-            ini_set('auto_detect_line_endings', 1);
-
-            $lines = file(path('.settings'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-            ini_set('auto_detect_line_endings', $_auto_detect);
-
-            $_settings = [];
-
-            foreach ($lines as $line)
-            {
-                $line = trim($line);
-
-                if (isset($line[0]) && $line[0] === '#')
-                {
-                    continue;
-                }
-
-                if (strpos($line, '=') !== false)
-                {
-                    list($name, $value) = array_map('trim', explode('=', $line, 2));
-
-                    if (preg_match('/\s+/', $value) > 0)
-                    {
-                        show_error("setting variable value containing spaces must be surrounded by quotes");
-                    }
-
-                    if (strtolower($value) == 'true')
-                    {
-                        $value = true;
-                    }
-                    if (strtolower($value) == 'false')
-                    {
-                        $value = false;
-                    }
-
-                    $_settings[$name] = $value;
+        if (is_null ( $publicPath )) {
+            if (!defined ( 'PUBLIC_DIR' )) {
+                if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] )) {
+                    $_ = explode ( '/' , $_SERVER[ 'SCRIPT_FILENAME' ] );
+                    array_pop ( $_ );
+                    define ( 'PUBLIC_DIR' , implode ( '/' , $_ ) );
+                } else {
+                    define ( 'PUBLIC_DIR' , BASEPATH . DS . 'public' );
                 }
             }
-
-
-            foreach ($_settings as $key => $value)
-            {
-
-                if (strpos($value, '$') !== false)
-                {
-                    $value = preg_replace_callback('/\${([a-zA-Z0-9_\-.\'\"\[\]]+)}/',
-                        function ($m) use ($_settings)
-                        {
-
-                            if (isset($_settings[$m[1]]))
-                            {
-                                return $_settings[$m[1]];
-                            }
-                            else
-                            {
-                                if (($pos = strpos($m[1],'[')) !== false)
-                                {
-
-                                    $_global = substr($m[1],0,$pos);
-                                    $item = str_replace(['["','[\'','"]','\']'],'',substr($m[1],$pos));
-
-                                    switch ($_global)
-                                    {
-                                        case "_SERVER":
-                                            $_global = $_SERVER;
-                                            break;
-                                        case "_REQUEST":
-                                            $_global = $_REQUEST;
-                                            break;
-                                        case "_GET":
-                                            $_global = $_GET;
-                                            break;
-                                        case "_POST":
-                                            $_global = $_POST;
-                                            break;
-                                        case "_SESSION":
-                                            $_global = $_SESSION;
-                                            break;
-                                        case "_COOKIE":
-                                            $_global = $_COOKIE;
-                                            break;
-                                        case "_ENV":
-                                            $_global = $_ENV;
-                                            break;
-                                        default:
-                                            $_global = array();
-                                            break;
-                                    }
-
-                                    return $_global[$item] ?? '${'.$m[1].'}';
-
-                                }
-                                else
-                                {
-                                    return ${"$m[1]"} ?? '${'.$m[1].'}';
-                                }
-                            }
-                        },
-                        $value
-                    );
-                }
-
-                $_ENV[$key] = $value;
-            }
-
-            file_put_contents(path('storage/system/settings'), serialize($_ENV));
-        }
-        else
-        {
-
-            $_settings = (array) unserialize(file_get_contents(path('storage/system/settings')));
-
-            foreach ($_settings as $key => $value)
-            {
-                $_ENV[$key] = $value;
+        } else {
+            if (!defined ( 'PUBLIC_DIR' )) {
+                define ( 'PUBLIC_DIR' , $publicPath );
             }
         }
     }
 
 
-    public function loadHelpers()
+    /**
+     *@var $aliases
+     */
+    public function setAliases ()
     {
-        require_once SYSDIR.'Engine'.DS.'Helpers.php';
+        $aliases = config ( 'aliases' , [] );
 
-        import(SYSDIR.'Core'.DS.'Helpers.php');
-
-        import_dir_files(APPDIR.'Helpers');
-
+        foreach ($aliases as $key => $value) {
+            class_alias ( '\\' . $value , $key );
+        }
     }
 
 
-    private static function setInstance()
+
+    public function callRoutes ()
     {
-        self::$instance = new static();
+        if (!InConsole ()) {
+            import_dir_files ( path ( 'routes' ) );
+            Route::execute ();
+        }
     }
+
+
+    public function loadHelpers ()
+    {
+        import ( path ( 'system/Core/Helpers.php' ) );
+
+        import_dir_files ( path ( 'app/Helpers' ) );
+    }
+
+
+
+    /**
+     * @param null $path
+     */
+    private function setPathDefines ( $path = null )
+    {
+        if (!is_null ( $path )) {
+            $this->basePath = $path;
+        }
+
+        define ( 'BASEPATH' , $this->basePath );
+
+        define ( 'DS' , DIRECTORY_SEPARATOR );
+
+        $this->setPublicPath ();
+
+        chdir ( BASEPATH . DS );
+    }
+
+
 }

@@ -1,4 +1,4 @@
-@extends('auth.master')
+@extends('layouts.app')
 @section('style')
   <style media="screen">
     input , .btn {
@@ -9,13 +9,13 @@
 @section('content')
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4">
+      <div class="col-md-6 col-md-offset-3">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Login User</h3>
           </div>
           <form action="/auth/register" method="post">
-            {!! csrf_field() !!}
+            @csrf
             <div class="panel-body">
               <div class="form-group">
                 <label for="">Name</label>

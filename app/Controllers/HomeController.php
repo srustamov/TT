@@ -2,40 +2,31 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 
 
 
-use App\Controllers\Controller;
-use System\Engine\Http\Request;
+//use App\Controllers\Controller;
+//use System\Engine\Http\Request;
 use System\Facades\Language;
-
-
 
 class HomeController extends Controller
 {
-
-
-
-    public function index ()
+    public function index()
     {
-      return view('home');
+        return view('home');
     }
 
 
 
-    public function changeLanguage($language)
+    public function changeLanguage($lang)
     {
-      if(in_array($language,['az','en','tr']))
-      {
-        Language::set($language);
-      }
 
-      return redirect()->back();
+        if (in_array($lang, ['az','en','tr'])) {
+            Language::set($lang);
+        }
+
+        return redirect()->back();
     }
-
-
-
-
 }

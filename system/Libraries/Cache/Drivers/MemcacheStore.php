@@ -81,6 +81,12 @@ class MemcacheStore implements CacheStore
         return $this->memcache->get($key);
     }
 
+
+    public function __call($method,$args)
+    {
+      return $this->memcache->$method(...$args);
+    }
+
     public function __destruct ()
     {
         if ($this->put)

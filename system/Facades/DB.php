@@ -1,15 +1,16 @@
 <?php namespace System\Facades;
-
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  */
 
-class DB
+use System\Facades\Facade;
+
+class DB extends Facade
 {
-    public static function __callStatic($method, $args)
+    protected static function getFacadeAccessor()
     {
-        return (new \System\Libraries\Database\Database())->{$method}(...$args);
+        return 'database';
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link 	https://github.com/SamirRustamov/TT
+ * @link 	https://github.com/srustamov/TT
  */
 
 
@@ -20,4 +20,13 @@ Route::get('/',function(){
 
 Route::get('/home','HomeController@index');
 
-Route::get('/language/{language}','HomeController@changeLanguage')->pattern(['langauge' => '[a-z]+']);
+Route::get('/language/{language}','HomeController@changeLanguage')->pattern(['langauge' => '[a-z]{2}']);
+
+
+Route::group('/auth',function(){
+    Route::get('/login','Auth/LoginController@showlogin');
+    Route::post('/login','Auth/LoginController@login');
+    Route::get('/register','Auth/RegisterController@showregister');
+    Route::post('/register','Auth/RegisterController@register');
+    Route::get('/logout','Auth/LoginController@logout');
+});

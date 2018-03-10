@@ -1,0 +1,20 @@
+<?php   :namespace;
+
+
+/**
+ * @author  Samir Rustamov <rustemovv96@gmail.com>
+ * @link    https://github.com/srustamov/TT
+ */
+
+use System\Engine\Http\Request;
+
+
+class :name
+{
+
+	 public function handle(Request $request ,$guard)
+     {
+        return true;
+     }
+
+}

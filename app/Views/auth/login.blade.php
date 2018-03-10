@@ -1,4 +1,4 @@
-@extends('auth.master')
+@extends('layouts.app')
 @section('style')
 <style media="screen">
   .custom{
@@ -9,10 +9,9 @@
     position: relative;
     min-height: 30px;
     line-height: 30px;
-    animation: 'pop' 1s infinite;
-    -webkit-animation:'pop' 1s infinite;
+    animation: pop 1s infinite;
+    -webkit-animation:pop 1s infinite;
     font-weight:normal;
-
   }
   .custom > span{
     position: absolute;
@@ -25,7 +24,7 @@
 
   }
 
-  @-webkit-keyframes "pop" {
+  @-webkit-keyframes pop {
     50%{
       zoom:103%
     }
@@ -35,7 +34,7 @@
   }
 
 
-  @keyframes "pop" {
+  @keyframes pop {
     50%{
       zoom:103%
     }
@@ -52,39 +51,39 @@
 @section('content')
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4">
+      <div class="col-md-6 col-md-offset-3">
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Login User</h3><br>
-            @if(isset($success->register_success))
+            @if(isset($success->register))
               <div class="alert  alert-success fade in" role="alert">
                  <button type="button" class="close" onclick="this.parentNode.style.display = 'none';">
                  <span aria-hidden="true">×</span>
                  </button>
-                 <strong>{{$success->register_success}}</strong>
+                 <strong>{{$success->register}}</strong>
              </div>
             @endif
           </div>
           <form action="/auth/login" method="post">
-            {!! csrf_field() !!}
+            @csrf
             <div class="panel-body">
               <div class="form-group">
                 <label for="">Email</label>
                 <input type="text" class="form-control" name="email"  placeholder="Email" required>
-                @if (isset($error->email[0]))
+                @if ($errors->has('email'))
                 <strong class="text-danger custom">
                   <span onclick="this.parentNode.style.display = 'none';">x</span>
-                  {{$error->email[0]}}
+                  {{$errors->first('email')}}
                 </strong>
                 @endif
               </div>
               <div class="form-group">
                 <label for="">Password</label>
                 <input type="password" class="form-control" name="password" placeholder="Password">
-                @if (isset($error->password[0]))
+                @if ($errors->has('password'))
                 <strong class="text-danger custom">
                   <span onclick="this.parentNode.style.display = 'none';">x</span>
-                  {{$error->password[0]}}
+                  {{$errors->first('password')}}
                 </strong>
                 @endif
               </div>
@@ -95,8 +94,8 @@
                 </label>
               </div>
               <div class="form-group">
-                @if (isset($error->login_incorrect))
-                  <strong class="text-danger">{{$error->login_incorrect}}</strong>
+                @if ($errors->has('login'))
+                  <strong class="text-danger">{{$errors->login}}</strong>
                 @endif
               </div>
             </div>

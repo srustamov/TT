@@ -2,14 +2,15 @@
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  */
 
+use System\Facades\Facade;
 
-class Cache
+class Cache extends Facade
 {
-  public static function __callStatic( $method, $args)
-  {
-      return  (new \System\Libraries\Cache\Cache())->{$method}(...$args);
-  }
+    protected static function getFacadeAccessor()
+    {
+        return 'cache';
+    }
 }

@@ -1,63 +1,60 @@
 <?php namespace App\Controllers\Auth;
 
-
 use App\Controllers\Controller;
 use System\Engine\Http\Request;
 use System\Facades\Validator;
-use Auth;
-
-
-
-
+use System\Libraries\Auth\Authentication;
 
 class LoginController extends Controller
 {
 
-		function __construct()
-		{
-			$this->middleware('guest|logout');
-		}
+
+
+    function __construct()
+    {
+        $this->middleware('guest|logout');
+    }
 
 
 
-		public function showlogin()
-		{
-			return view('auth.login');
-		}
+    public function showlogin()
+    {
+        return view('auth.login');
+    }
 
 
 
-		public function login(Request $request)
-		{
+    public function login(Request $request,Authentication $auth)
+    {
 
-			$validation =  Validator::make($request->all(),[
-				'email'    => 'required|email',
-				'password' => 'required|min:6'
-			]);
-
-			if($validation == false)
-			{
-				return redirect('auth/login')->withError(Validator::messages());
-			}
-			else
-			{
-					if(Auth::attempt($request->only('email,password'),$request->remember))
-					{
-						return redirect('home');
-					}
-					else
-					{
-						return redirect('auth/login')->withError(['login_incorrect' => Auth::getMessage()]);
-					}
-				}
-		}
+        $validation =  Validator::make($request->all(), [
+                'email'    => 'required|email',
+                'password' => 'required|min:6'
+            ]);
 
 
 
-		public function logout()
-		{
-			return Auth::guard('user')->logout()->redirect()->back();
-		}
+        if (!$validation->check())
+        {
+            return redirect('auth/login')->withErrors($validation->messages());
+        }
+        else
+        {
+            if ($auth->attempt($request->only('email', 'password'), $request->remember))
+            {
+                return redirect('home');
+            }
+            else
+            {
+                return redirect('auth/login')->withErrors(['login' => $auth->getMessage()]);
+            }
+        }
+    }
 
 
+
+    public function logout(Authentication $auth)
+    {
+        return $auth->guard('user')->logout()->redirect('/home');
+    }
 }

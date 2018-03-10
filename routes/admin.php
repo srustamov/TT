@@ -2,7 +2,7 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link 	https://github.com/SamirRustamov/TT
+ * @link 	https://github.com/srustamov/TT
  */
 
 
@@ -14,8 +14,13 @@
 |---------------------------------------------
 */
 
-Route::get('/admin/login','Auth/AdminLoginController@showlogin');
+Route::group('/admin',function(){
 
-Route::post('/admin/login','Auth/AdminLoginController@login');
+    Route::get('/login','Auth/AdminLoginController@showlogin');
 
-Route::get('/admin','Backend/AdminController@dashboard');
+    Route::post('/login','Auth/AdminLoginController@login');
+
+    Route::get('/','Backend/AdminController@dashboard');
+});
+
+

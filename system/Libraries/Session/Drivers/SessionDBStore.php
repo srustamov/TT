@@ -7,7 +7,7 @@
 use System\Libraries\Database\Database as HandlerDB;
 
 
-class Session_driver_DB implements \SessionHandlerInterface
+class SessionDBStore implements \SessionHandlerInterface
 {
 
 

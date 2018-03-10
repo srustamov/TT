@@ -2,7 +2,7 @@
 
 
 use System\Libraries\Auth\Drivers\Attempt_Driver_Interface;
-use System\Libraries\Database\Database as Auth_DB;
+use System\Libraries\Database\Database;
 
 
 
@@ -15,7 +15,7 @@ class Database_Attempt_Driver implements Attempt_Driver_Interface
 
   function __construct()
   {
-    $this->db = new Auth_DB();
+    $this->db = new Database();
   }
 
 

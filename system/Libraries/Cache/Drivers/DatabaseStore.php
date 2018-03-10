@@ -82,6 +82,12 @@ class DatabaseStore implements CacheStore
         app('db')->table(self::$table)->where('expires','<',time())->delete();
     }
 
+    
+    public function __call($method,$args)
+    {
+      throw new CacheDatabaseStoreException("Call to undefined method Cache::$method()");
+    }
+
 
     function __destruct ()
     {

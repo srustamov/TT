@@ -1,14 +1,16 @@
-<?php  namespace System\Facades;
-
+<?php namespace System\Facades;
 /**
- * @package    TT
+ * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  */
-class Input
+
+use System\Facades\Facade;
+
+class Input extends Facade
 {
-    public static function __callStatic ( $method , $args )
+    protected static function getFacadeAccessor()
     {
-        return ( new \System\Libraries\Input())->$method( ...$args );
+        return 'input';
     }
 }

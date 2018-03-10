@@ -9,7 +9,7 @@
 */
 
 
-use System\Libraries\Request;
+
 use System\Facades\Auth as Authentication;
 
 class Auth
@@ -21,11 +21,11 @@ class Auth
     ];
 
 
-    public function handle(Request $request ,$guard)
+    public function handle($request,$guard)
     {
         if(Authentication::guard($guard)->guest())
         {
-            return redirect ($this->redirect[$guard])->withError([ 'auth' => 'Öncə giriş etməlisiz']);
+            return redirect ($this->redirect[$guard])->withErrors([ 'auth' => 'Öncə giriş etməlisiz']);
         }
     }
 

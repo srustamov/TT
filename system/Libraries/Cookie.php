@@ -3,7 +3,7 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Libraries
  * @category    Cookie
  */
@@ -33,7 +33,7 @@ class Cookie
     /**
      * Cookie constructor.
      */
-    public function __construct()
+    public function __construct(...$args)
     {
         if(is_null(static::$config))
         {
@@ -47,6 +47,10 @@ class Cookie
         $this->secure    = is_bool($config['secure'])   ? $config['secure']    : $this->secure;
         $this->path      = !empty($config['path'])      ? $config['path']      : $this->path;
         $this->domain    = !empty($config['domain'])    ? $config['domain']    : $this->domain;
+
+        if(!empty($args)) {
+          $this->set(...$args);
+        }
     }
 
 

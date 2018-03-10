@@ -3,7 +3,7 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Libraries
  * @category    Validator
  */
@@ -20,7 +20,10 @@ class Validator
 
 
 
-    public function make(array $data, array $rules):Bool
+
+
+
+    public function make(array $data, array $rules):Validator
     {
         foreach ($data as $key => $value) {
             if (isset($rules[$key])) {
@@ -110,7 +113,7 @@ class Validator
                 }
             }
         }
-        return !(count(self::$messages) > 0) ;
+        return $this ;
     }
 
 
@@ -154,13 +157,14 @@ class Validator
 
 
 
-    public function is_image($value)
+    public function is_image($value):Bool
     {
-        if (isset($value['tmp_name']))
-        {
-            return @getimagesize($value['tmp_name']) ? true :  false;
+        if (isset($value['tmp_name'])) {
+            return \getimagesize($value['tmp_name']);
+        } else {
+            return \getimagesize($value);
         }
-        return false;
+
     }
 
 

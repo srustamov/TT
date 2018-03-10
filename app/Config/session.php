@@ -2,7 +2,7 @@
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link 	https://github.com/SamirRustamov/TT
+ * @link 	https://github.com/srustamov/TT
  */
 
 
@@ -18,7 +18,7 @@ return array(
     |
     | Driver use "database" or "file"
     |
-    | Important! if using "database" run "php manage session:table --create yourTableName" command on command line
+    | Important! if using "database" run "php manage session:table --create [Your-Table-Name]" command on command line
     | Or run code: Console::command("session:table --create yourTableName");
     |
     */
@@ -56,6 +56,16 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
+    | Session Regenerate id
+    |--------------------------------------------------------------------------
+    |
+    */
+
+    'regenerate'        => false,
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Cookies
     |--------------------------------------------------------------------------
     */
@@ -66,7 +76,7 @@ return array(
 
     'cookie' => array(
 
-        'name' => 'TT_SESSION',
+        'name' => 'tt_session',
 
         'path' => '/',
 

@@ -4,7 +4,7 @@
 //-------------------------------------------------------------
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/SamirRustamov/TT
+ * @link    https://github.com/srustamov/TT
  */
 //-------------------------------------------------------------
 

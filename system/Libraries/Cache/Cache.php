@@ -3,13 +3,16 @@
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link https://github.com/SamirRustamov/TT
+ * @link https://github.com/srustamov/TT
  * @subpackage    Libraries
  * @category    Cache
  */
 
 use System\Libraries\Cache\CacheStore;
-
+use System\Libraries\Cache\Drivers\FileStore;
+use System\Libraries\Cache\Drivers\DatabaseStore;
+use System\Libraries\Cache\Drivers\MemcacheStore;
+use System\Libraries\Cache\Drivers\RedisStore;
 
 class Cache implements CacheStore
 {
@@ -40,19 +43,19 @@ class Cache implements CacheStore
             switch (strtolower($driver))
             {
                 case 'file':
-                    self::$driver = new \System\Libraries\Cache\Drivers\FileStore();
+                    self::$driver = new FileStore();
                     break;
                 case 'database':
-                    self::$driver = new \System\Libraries\Cache\Drivers\DatabaseStore();
+                    self::$driver = new DatabaseStore();
                     break;
                 case 'memcache':
-                    self::$driver = new \System\Libraries\Cache\Drivers\MemcacheStore();
+                    self::$driver = new MemcacheStore();
                     break;
                 case 'redis':
-                    self::$driver = new \System\Libraries\Cache\Drivers\RedisStore();
+                    self::$driver = new RedisStore();
                     break;
                 default:
-                    self::$driver = new \System\Libraries\Cache\Drivers\FileStore();
+                    self::$driver = new FileStore();
                     break;
             }
         }
@@ -100,10 +103,15 @@ class Cache implements CacheStore
     {
         return self::$driver->minutes($minutes);
     }
-    
+
     public function flush ()
     {
         self::$driver->flush();
+    }
+
+    public function __call($method,$args)
+    {
+      return $this->driver->$method(...$args);
     }
 
 
