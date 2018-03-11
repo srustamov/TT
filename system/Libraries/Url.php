@@ -37,7 +37,7 @@ class Url
         );
         $request = str_replace ( ' ' , '' , $request );
 
-        return $request == '' ? '/' : $request;
+        return  $request == '' ? '/' : $request;
     }
 
 
@@ -75,8 +75,7 @@ class Url
                 $base_url = $this->protocol()."://".$this->host();
             }
         }
-
-        return $base_url . '/' . ltrim($url,'/');
+        return rtrim($base_url,'/') . '/' . ltrim($url,'/');
     }
 
 
@@ -93,7 +92,7 @@ class Url
     /**
      * @return string
      */
-    public  function host()
+    public function host()
     {
         if( isset($_SERVER['HTTP_X_FORWARDED_HOST']) )
         {

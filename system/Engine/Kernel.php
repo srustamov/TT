@@ -8,13 +8,10 @@
 
 
 
-ini_set ( 'display_errors' , 1 );
-
-error_reporting(1);
-
-
-use System\Core\Load;
+use System\Engine\Exception\TTException;
+use System\Facades\Load;
 use System\Facades\Route;
+use System\Libraries\Benchmark;
 
 class Kernel
 {
@@ -22,88 +19,78 @@ class Kernel
     protected $basePath;
 
 
-    /**
-     * @param null $basePath
-     */
-    public static function start ( $basePath = null )
+    function __construct($basePath = null)
     {
-        $instance = new static();
+      if (is_null ( $basePath )) {
+          $this->basePath = dirname ( dirname ( __DIR__ ) );
+      } else {
+          $this->basePath = $basePath;
+      }
+      return $this;
+    }
 
-        if (is_null ( $basePath )) {
-            $instance->basePath = dirname ( dirname ( __DIR__ ) );
-        } else {
-            $instance->basePath = $basePath;
-        }
 
-        $instance->setPathDefines ();
+    public function bootstrap ()
+    {
+
+        $this->setPathDefines ();
 
         require_once BASEPATH . '/system/Engine/helpers.php';
 
         Load::settingVariables ();
 
-        define('APP_DEBUG',Load::config('config.debug'));
+        TTException::bootstrap();
 
-        set_exception_handler ( '\System\Engine\Exception\TTException::handler');
+        $this->loadHelpers ();
 
-        $instance->loadHelpers ();
+        $this->setAliases ();
 
-        $instance->setAliases ();
+        setlocale ( LC_ALL , Load::config ( 'datetime.setLocale' ) );
 
-        setlocale ( LC_ALL , config ( 'datetime.setLocale' ) );
+        date_default_timezone_set ( Load::config ( 'datetime.time_zone' , 'UTC' ) );
 
-        date_default_timezone_set ( config ( 'datetime.time_zone' , 'UTC' ) );
-
-        $instance->callApplicationKernel();
-
-        $instance->callRoutes ();
+        return $this;
     }
 
 
-    public function callApplicationKernel()
+    public function callAppKernel()
     {
+
         if (class_exists ( '\App\Kernel' )) {
+
             $kernel = new \App\Kernel();
 
             $_middleware = $kernel->middleware;
 
             foreach ($_middleware as $middleware) {
-                call_user_func_array ( [ new $middleware() , 'handle' ] , [ new \System\Engine\Http\Request() , null ] );
+                call_user_func_array ( [ new $middleware() , 'handle' ] , [ Load::class('request') , null ] );
             }
             if (method_exists($kernel,'boot')) {
                 $kernel->boot ();
             }
-
         }
+
+        return $this;
     }
 
 
-    /**
-     * @param null $publicPath
-     */
-    public function setPublicPath ( $publicPath = null )
+
+    private function setPublicPath ( )
     {
-        if (is_null ( $publicPath )) {
-            if (!defined ( 'PUBLIC_DIR' )) {
-                if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] )) {
-                    $_ = explode ( '/' , $_SERVER[ 'SCRIPT_FILENAME' ] );
-                    array_pop ( $_ );
-                    define ( 'PUBLIC_DIR' , implode ( '/' , $_ ) );
-                } else {
-                    define ( 'PUBLIC_DIR' , BASEPATH . DS . 'public' );
-                }
-            }
-        } else {
-            if (!defined ( 'PUBLIC_DIR' )) {
-                define ( 'PUBLIC_DIR' , $publicPath );
+        if (!defined ( 'PUBLIC_DIR' )) {
+            if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] )) {
+                $_ = explode ( '/' , $_SERVER[ 'SCRIPT_FILENAME' ] );
+                array_pop ( $_ );
+                define ( 'PUBLIC_DIR' , implode ( '/' , $_ ) );
+            } else {
+                define ( 'PUBLIC_DIR' , BASEPATH . DS . 'public' );
             }
         }
     }
 
 
-    /**
-     *@var $aliases
-     */
-    public function setAliases ()
+
+    private function setAliases ()
     {
         $aliases = config ( 'aliases' , [] );
 
@@ -114,32 +101,25 @@ class Kernel
 
 
 
-    public function callRoutes ()
+    public function routing ()
     {
         if (!InConsole ()) {
             import_dir_files ( path ( 'routes' ) );
             Route::execute ();
         }
+        return $this;
     }
 
 
-    public function loadHelpers ()
+    private function loadHelpers ()
     {
-        import ( path ( 'system/Core/Helpers.php' ) );
-
         import_dir_files ( path ( 'app/Helpers' ) );
     }
 
 
 
-    /**
-     * @param null $path
-     */
-    private function setPathDefines ( $path = null )
+    private function setPathDefines ()
     {
-        if (!is_null ( $path )) {
-            $this->basePath = $path;
-        }
 
         define ( 'BASEPATH' , $this->basePath );
 
@@ -148,6 +128,16 @@ class Kernel
         $this->setPublicPath ();
 
         chdir ( BASEPATH . DS );
+    }
+
+
+    public function benchmark($finish)
+    {
+      if(InConsole() || !Load::config('config.debug') || Load::class('http')->isAjax()) {
+          return null;
+      } else {
+        Benchmark::show($finish);
+      }
     }
 
 

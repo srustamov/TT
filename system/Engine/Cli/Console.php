@@ -14,9 +14,6 @@ class Console
 {
 
 
-    private static $instance;
-
-
     /**
      * @param $command
      * @param bool $shell
@@ -40,7 +37,7 @@ class Console
      */
     public static function run ( array $argv )
     {
-        static::$instance = new static();
+        $instance = new static();
 
 
         if (isset( $argv[ 1 ] )) {
@@ -53,7 +50,7 @@ class Console
 
         switch (strtolower ( $manage[ 0 ] )) {
             case 'runserver':
-                self::$instance->startPhpDevelopmentServer ( $manage );
+                $instance->startPhpDevelopmentServer ( $manage );
                 break;
             case 'session:table':
                 CreateTables::session ( $manage );
@@ -62,13 +59,13 @@ class Console
                 CreateTables::users ();
                 break;
             case 'view:cache':
-                self::$instance->clearViewCache ();
+                $instance->clearViewCache ();
                 break;
             case 'config:cache':
                 Config::clearConfigsCacheOrCreate ( $manage[ 1 ] ?? null );
                 break;
             case 'key:generate':
-                self::$instance->keyGenerate ();
+                $instance->keyGenerate ();
                 break;
             default:
                 $create = array(

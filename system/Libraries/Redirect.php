@@ -10,7 +10,7 @@
 
 
 
-
+use System\Facades\Load;
 
 class Redirect
 {
@@ -23,20 +23,17 @@ class Redirect
 
     protected $http_response_code;
 
-    protected $back;
-
-    protected $with;
-
-    protected $view_variable;
 
 
 
 
-    public function __construct($link = false, $refresh = 0, $http_response_code = 302)
+    public function __construct($link = null, $refresh = 0, $http_response_code = 302)
     {
         $this->link = $link;
         $this->refresh = $refresh;
         $this->http_response_code = $http_response_code;
+
+        return $this;
     }
 
 
@@ -44,11 +41,17 @@ class Redirect
 
     public function back($refresh = 0)
     {
-        $this->refresh = $refresh;
-        if ($back = app('http')->referer()) {
-            $this->back = $back;
-        } else {
-            $this->back = 'javascript://history.go(-1)';
+        if($refresh) {
+            $this->refresh = $refresh;
+        }
+
+        if (($back = Load::class('http')->referer()))
+        {
+            $this->link = $back;
+        }
+        else
+        {
+            $this->link = 'javascript://history.go(-1)';
         }
         return $this;
     }
@@ -59,55 +62,97 @@ class Redirect
 
     public function to(String $link, $refresh = 0, $http_response_code = 302)
     {
-        if ((int) $refresh > 0) {
-            sleep($refresh);
+        $this->link = $link;
+
+        $this->refresh = $refresh;
+
+        $this->http_response_code = $http_response_code;
+
+        $this->refresh = $refresh;
+
+        return $this;
+    }
+
+
+    public function refresh(Int $refresh)
+    {
+        $this->refresh = $refresh;
+        return $this;
+    }
+
+
+    public function with($key,$value = null)
+    {
+        $data = is_array($key) ?:[$key => $value];
+
+        foreach ($data as $key => $value)
+        {
+            Load::class('session')->flash($key,$value);
         }
 
-        header("Location:" . $link, true, $http_response_code);
-        exit;
+        return $this;
     }
 
 
 
     public function __call($method, $args)
     {
-        $method = mb_strtolower($method);
 
-        if (mb_strlen($method) >= 4 && mb_substr($method, 0, 4) == 'with') {
-            if ($method == 'with') {
-                $this->view_variable = 'errors';
-            } else {
-                $this->view_variable = mb_substr($method, 4);
+        if(func_num_args() > 0)
+        {
+            if(strlen($method) > 4 && substr($method,0,4) == 'with')
+            {
+                $var = strtolower(substr($method,4));
+
+                $args = is_array($args[0]) ? $args[0] : [$args[0] => $args[1] ?? null];
+
+                if($var == 'errors')
+                {
+                    Load::class('session')->set('view-errors',$args);
+                }
+                else
+                {
+                    Load::class('session')->flash($var,$args[0]);
+                }
             }
-            $this->with = $args[0];
+            else
+            {
+                throw new \BadMethodCallException("Call to undefined method Redirect::{$method}()");
+            }
         }
         return $this;
     }
 
 
-
-
-
-
-
-    public function __destruct()
+    protected function redirect()
     {
-        if ($this->with) {
-            app('session')->setArray([
-                 md5('flash-data') => $this->with ,
-                 md5('flash-name') => mb_strtolower($this->view_variable)
-               ]);
+        if (is_null($this->link))
+        {
+            throw new \Exception('Redirect location not found');
         }
 
-        if ($this->link) {
-            if (!preg_match('/^https?:\/\/|^www./', $this->link)) {
-                $this->link = app('url')->base($this->link);
-            }
-            return $this->to($this->link, $this->refresh, $this->http_response_code);
+
+        if (!preg_match('/^https?:\/\/|^www./', $this->link))
+        {
+            $this->link = Load::class('url')->base($this->link);
         }
 
-        if ($this->back) {
-            return $this->to($this->back, $this->refresh, $this->http_response_code);
+
+        if($this->refresh) {
+            sleep($this->refresh);
         }
+
+        header("Location:" . $this->link, true, $this->http_response_code);
+        exit;
+
     }
+
+
+
+    public function __toString ()
+    {
+       return $this->redirect();
+    }
+
+
 }

@@ -20,7 +20,5 @@ Route::group('/admin',function(){
 
     Route::post('/login','Auth/AdminLoginController@login');
 
-    Route::get('/','Backend/AdminController@dashboard');
+    Route::get('/','Backend/AdminController@dashboard')->middleware('auth:admin');
 });
-
-

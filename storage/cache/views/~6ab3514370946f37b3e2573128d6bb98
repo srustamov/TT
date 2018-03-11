@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    @css('css/bootstrap.css')
+    <?php echo css('css/bootstrap.css'); ?>
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <title>{{ config('config.app_name') }}</title>
+    <title><?php echo $this->escape(config('config.app_name')); ?></title>
     <style>
         *{
           padding: 0;
@@ -53,14 +53,14 @@
 </head>
 <body>
 <div id="container">
-    <span id="welcome">{{ setting('APP_NAME') }}</span>
+    <span id="welcome"><?php echo $this->escape(setting('APP_NAME')); ?></span>
     <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
-    <span><a href="{{url('/home')}}">HOME</a></span>
+    <span><a href="<?php echo $this->escape(url('/home')); ?>">HOME</a></span>
 </div>
-@if ($errors->first('auth')))
+<?php if($errors->first('auth')): ?>)
   <script type="text/javascript">
-    alert("{{$errors->auth}}");
+    alert("<?php echo $this->escape($errors->auth); ?>");
   </script>
-@endif
+<?php endif; ?>
 </body>
 </html>

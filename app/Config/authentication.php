@@ -14,7 +14,8 @@ return [
 
         'user' => [
           'table' => 'users',
-          'attempts_driver' => 'session', // or database
+          // Attempt drivers [session,database,redis]
+          'attempts_driver' => 'session',
           'max_attempts' => 5,
           'lock_time' => 300, //seconds
           'hidden' => [

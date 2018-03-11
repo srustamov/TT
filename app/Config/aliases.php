@@ -7,6 +7,7 @@
 
 
 return array(
-    "Route" => System\Facades\Route::class ,
+    "Route" => System\Facades\Route::class , //required
     'Auth' => System\Facades\Auth::class ,
+    'Session' => System\Facades\Session::class ,
 );

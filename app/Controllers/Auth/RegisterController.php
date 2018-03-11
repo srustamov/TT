@@ -33,7 +33,7 @@ class RegisterController extends Controller
                 'password_configuration' => 'required|min:6|confirm:password'
             ]);
 
-        if ($validation == false)
+        if (!$validation->check())
         {
             return redirect('/auth/register')->withError(Validator::messages());
         }

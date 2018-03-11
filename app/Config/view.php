@@ -4,10 +4,45 @@
 
 return array(
 
-    'cache_path'=> storage_dir('cache/views'),
 
-    'extensions' => array(
-        App\Views\Edge\Extension::class,
-    ),
-    'minify' => true
+/*
+|--------------------------------------------------------------------------
+| Template engine files cache path
+|--------------------------------------------------------------------------
+|
+*/
+'cache_path'=> storage_dir('cache/views'),
+
+
+/*
+|--------------------------------------------------------------------------
+| Template engine extension classes
+|--------------------------------------------------------------------------
+|
+*/
+'extensions' => array(
+    App\Views\Edge\Extension::class,
+),
+
+/*
+|--------------------------------------------------------------------------
+| Content source code minify
+|--------------------------------------------------------------------------
+|
+*/
+'minify' => false,
+
+
+/*
+|--------------------------------------------------------------------------
+| View files extensions [Example -> home.blade.php,user.blade.html]
+|--------------------------------------------------------------------------
+|
+*/
+'file_extensions' => array(
+
+  //'.php','.html','.mytemplate'
+),
+
+
 );

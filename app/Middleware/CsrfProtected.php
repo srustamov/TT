@@ -3,24 +3,29 @@
 
 use System\Engine\Http\Request;
 use System\Facades\Cookie;
+use System\Facades\Load;
 
-class CsrfToken
+class CsrfProtected
 {
+
+
+
+    private $except = [
+      //'/api/.*'
+    ];
 
 
 
     public function handle(Request $request)
     {
 
-
-        if ($this->isReading($request) || $this->isConsole() || $this->tokensMatch($request)) {
+        if ($this->isReading($request) || $this->isConsole() || $this->isExcept() || $this->tokensMatch($request))
+        {
             $this->addCookie($request);
-        } else {
-          if(config('config.debug')) {
-              throw new \Exception('VERIFY CSRF TOKEN FAILED');
-          } else {
-              abort(404);
-          }
+        }
+        else
+        {
+          throw new \Exception('VERIFY CSRF TOKEN FAILED');
         }
     }
 
@@ -37,6 +42,26 @@ class CsrfToken
     }
 
 
+    protected function isExcept()
+    {
+      if(!empty($this->except)) {
+
+        $url = trim(Load::class('url')->request(),'/');
+
+        foreach ($this->except as $key => $value)
+        {
+          $value = trim($value,'/');
+
+          if(preg_match("#^$value$#",$url))
+          {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+
     protected function tokensMatch(Request $request)
     {
         $token = $this->getTokenRequest($request);
@@ -50,7 +75,7 @@ class CsrfToken
 
     protected function getTokenRequest(Request $request)
     {
-        $input    = $request->input()->_token;
+        $input    = $request->input('_token');
 
         $response = $request->cookie('XSRF-TOKEN');
 
@@ -59,11 +84,16 @@ class CsrfToken
           !is_string($response) ||
           empty(trim($input)) ||
           empty(trim($response))
-        ) {
+        )
+        {
           return false;
-        } elseif ($input !== $response) {
+        }
+        elseif ($input !== $response)
+        {
           return false;
-        } else {
+        }
+        else
+        {
           return $input;
         }
 
@@ -73,7 +103,7 @@ class CsrfToken
 
     protected function addCookie(Request $request)
     {
-        $lifetime = config('session.lifetime');
+        $lifetime = Load::config('session.lifetime');
 
         Cookie::set('XSRF-TOKEN', $request->session('_token'), $lifetime);
 

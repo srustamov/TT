@@ -43,13 +43,18 @@ class Session
                 $handler = new SessionDBStore(static::$config['table']);
             }
 
+
             if (isset($handler)) {
                 session_set_save_handler($handler, true);
                 register_shutdown_function('session_write_close');
             }
 
-            if (session_status() == PHP_SESSION_NONE) {
+
+
+            if (session_status() == PHP_SESSION_NONE)
+            {
                 session_start();
+
                 $this->token();
             }
         }
@@ -94,6 +99,7 @@ class Session
 
     /**
      * @param $key
+     * @return bool
      */
 
     public function get($key)
@@ -106,6 +112,26 @@ class Session
             }
         }
         return false;
+    }
+
+
+    public function flash($key,$value = null)
+    {
+        if($value) {
+            $_SESSION['flash-data'][$key] = $value;
+        } else {
+            if (isset($_SESSION['flash-data'][$key])) {
+                $return = $_SESSION['flash-data'][$key];
+                unset($_SESSION['flash-data'][$key]);
+
+                if(empty($_SESSION['flash-data'])) {
+                    unset($_SESSION['flash-data']);
+                }
+                return $return;
+            }
+            return false;
+
+        }
     }
 
 

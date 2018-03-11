@@ -18,22 +18,25 @@ define('APP_START', microtime(true));
 
 
 
+
 //------------------------------------------
-//   Load Composer Autoload file
+// Load Composer Autoload file
 //------------------------------------------
 require __DIR__.'/../vendor/autoload.php';
 
 
 
 //------------------------------------------
-//   Application Bootstrapping and Routing
+// Application Bootstrapping and Routing
 //------------------------------------------
 
-System\Engine\Kernel::start(realpath('../'));
+$TT = new System\Engine\Kernel(realpath('../'));
+
+$TT->bootstrap()->callAppKernel()->routing();
 
 
 
 //------------------------------------------
-//   Application Benchmark panel view
+// Application Benchmark panel view
 //------------------------------------------
-echo benchmark();
+$TT->benchmark(microtime(true));

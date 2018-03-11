@@ -13,7 +13,7 @@ use Windwalker\Edge\Cache\EdgeFileCache;
 use Windwalker\Edge\Edge;
 use Windwalker\Edge\Loader\EdgeFileLoader;
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
-
+use System\Facades\Load;
 
 
 class View
@@ -24,26 +24,32 @@ class View
 
     protected $data = [];
 
-    protected $content;
-
     protected $minify;
 
 
-    public function render ( String $file , $data = [] , $content = false )
+    public function render ( String $file , $data = [] )
     {
         $this->file = $file;
         $this->data = array_merge ( $this->data , $data );
-        $this->content = $content;
-
         return $this;
+    }
+
+
+    public function file (String $file)
+    {
+      $this->file = $file;
+      return $this;
     }
 
 
     public function data ( $key , $value = null )
     {
-        if (is_array ( $key )) {
+        if (is_array ( $key ))
+        {
             $this->data = array_merge ( $this->data , $key );
-        } else {
+        }
+        else
+        {
             $this->data[ $key ] = $value;
         }
 
@@ -58,56 +64,47 @@ class View
     }
 
 
-    public function getContent ()
+    protected function _withFlashData()
     {
-        $this->content = true;
-    }
+        if (Load::class('session')->has ( 'view-errors' ))
+        {
+            $errors = new Errors(Load::class('session')->get('view-errors'));
 
+            Load::class('session')->delete ( 'view-errors' );
+        }
 
-    private function withFlashData()
-    {
-        if (app ( 'session' )->has ( md5 ( 'flash-data' ) )) {
-            $flash_name = app ( 'session' )->get ( md5 ( 'flash-name' ) );
-            $flash_data = app ( 'session' )->get ( md5 ( 'flash-data' ) );
-            if (!isset( $this->data[ $flash_name ] )) {
-                $this->data[ $flash_name ] = new Errors($flash_data);
-                app ( 'session' )->delete ( [
-                        md5 ( 'flash-data' ) ,
-                        md5 ( 'flash-name' )
-                    ]
-                );
-            } else {
-                if(!isset($this->data['errors'])) {
-                    $this->data['errors'] = new Errors;
-                }
-            }
-        } else {
-            if(!isset($this->data['errors'])) {
-                $this->data['errors'] = new Errors;
-            }
+        if(!isset($this->data['errors'])) {
+            $this->data['errors'] = $errors ?? new Errors;
         }
     }
 
 
-    private function reset()
+    protected function reset()
     {
-        $this->file = null;
-        $this->data = [];
+        $this->file    = null;
+        $this->data    = [];
         $this->content = null;
         $this->minify  = null;
     }
 
 
-    public function __destruct ()
+    protected function finishRender()
     {
 
-        $this->withFlashData();
+        if(is_null($this->file)) {
+          throw new \Exception("View File not found");
+        }
+
+        $this->_withFlashData();
 
         $loader = new EdgeFileLoader( array( path ( 'app/Views' ) ) );
 
-        $loader->addFileExtension ( '.php' );
 
-        $edge = new Edge( $loader , null , new EdgeFileCache( config ( 'view.cache_path' ) ) );
+        foreach (Load::config ( 'view.file_extensions',[]) as $file_extension) {
+          $loader->addFileExtension ( $file_extension );
+        }
+
+        $edge = new Edge( $loader , null , new EdgeFileCache( Load::config ( 'view.cache_path' ) ) );
 
         if ($extensions = config ( 'view.extensions')) {
 
@@ -130,17 +127,22 @@ class View
             $content  = preg_replace('/([\n]+)|([\s]{2})/','',$content);
         }
 
-        if ($this->content === true)
-        {
-            $this->reset();
-            return $content;
-        }
-        else
-        {
-            $this->reset();
-            echo $content;
-        }
+        $this->reset();
 
+        return $content;
+
+    }
+
+
+    public function getContent()
+    {
+      return $this->finishRender();
+    }
+
+
+    public function __toString ()
+    {
+       return $this->finishRender();
     }
 
 

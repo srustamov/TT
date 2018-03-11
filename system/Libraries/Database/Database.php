@@ -11,6 +11,7 @@
 
 use PDO;
 use PDOStatement;
+use System\Facades\Cache;
 
 class Database extends Connection
 {
@@ -33,6 +34,7 @@ class Database extends Connection
     private $database;
 
     private $execute_data = [];
+
 
 
 
@@ -77,15 +79,13 @@ class Database extends Connection
 
         } catch (\PDOException $e) {
 
-            throw new DatabaseException
-            (
-              $e->getMessage()."<br />".
-              "[QUERY: $queryString] "
-            );
+            throw new DatabaseException($e->getMessage()."<br />"."[QUERY: $queryString] ");
         }
 
 
     }
+
+
 
     /**
      * @return string

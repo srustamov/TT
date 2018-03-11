@@ -104,7 +104,7 @@ class PrintConsole {
     public static function benchmark($finish)
     {
         return static::_printData('title',
-            'Execute Time:'.elapsed_time(APP_START,$finish)."\n"
+            'Execute Time:'.round($finish - APP_START,4)." seconds\n"
             );
     }
 

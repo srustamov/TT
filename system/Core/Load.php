@@ -21,22 +21,21 @@ class Load
      * @return mixed
      * @throws \Exception
      */
-    public static function class( $class)
+    public function class( String $class)
     {
+        if(strtolower($class) == 'load') {
+          return $this;
+        }
+
         if(isset(static::$loaded_classes[$class])) {
             return static::$loaded_classes[$class];
         } else {
-            if (class_exists($class)) {
-                static::$loaded_classes[$class] = new $class();
+            $app_classes = config('config.classes',[]);
+            if (array_key_exists( $class,$app_classes)) {
+                static::$loaded_classes[$class] = new $app_classes[$class]();
                 return static::$loaded_classes[$class];
-            } else {
-                $app_classes = config('config.classes',[]);
-
-                if (array_key_exists( $app_classes ,$class)) {
-                    static::$loaded_classes[$class] = new $app_classes[$class]();
-                    return static::$loaded_classes[$class];
-                }
             }
+
         }
         throw new \Exception('Class not found ['.$class.']');
     }
@@ -48,11 +47,11 @@ class Load
      * @return bool|mixed
      * @throws \Exception
      */
-    public static function config( $name, $default = false)
+    public function config( $name, $default = false)
     {
 
         if(file_exists(path('storage/system/configs.php'))) {
-            if(!empty(static::$loaded_config)) {
+            if(empty(static::$loaded_config)) {
                 static::$loaded_config = require_once path('storage/system/configs.php');
             }
         }
@@ -102,7 +101,7 @@ class Load
      * @return mixed
      * @throws \Exception
      */
-    public static function file( String $file)
+    public function file( String $file)
     {
         $file = str_replace(['/','\\'], DS, trim($file));
 
@@ -118,7 +117,7 @@ class Load
 
 
 
-    public static function settingVariables()
+    public function settingVariables()
     {
         $settingsFile = path ( 'storage/system/settings' );
 
@@ -201,10 +200,6 @@ class Load
             }
         }
     }
-
-
-
-
 
 
 }

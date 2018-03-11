@@ -6,10 +6,12 @@
  */
 
 
-
+use System\Facades\Load;
 
 class Router
 {
+
+
     protected static $routes = [
         'GET' => [] ,
         'POST' => [] ,
@@ -18,7 +20,7 @@ class Router
         'OPTIONS' => [] ,
         'PATCH' => []
     ];
-    
+
 
     private $notFound = 0;
 
@@ -34,11 +36,11 @@ class Router
 
     private $ajax = false;
 
-    
+
     /**
      * @param String $namespace
      */
-    public  function setNamespace(String $namespace)
+    public function setNamespace(String $namespace)
     {
         $this->namespace = trim($namespace, '\\');
     }
@@ -49,10 +51,11 @@ class Router
      * @param $handler
      * @return static
      */
-    public  function any(array $methods, $path, $handler)
+    public function any(array $methods, $path, $handler)
     {
-        foreach ($methods as $method) {
-            self::add(strtoupper($method), $path, $handler);
+        foreach ($methods as $method)
+        {
+            $this->add(strtoupper($method), $path, $handler);
         }
         return $this;
     }
@@ -83,8 +86,9 @@ class Router
      */
     public function form($path, $handler)
     {
-        foreach ([ 'GET' , 'POST' ] as $method) {
-            static::add($method, $path, $handler);
+        foreach ([ 'GET' , 'POST' ] as $method)
+        {
+            $this->add($method, $path, $handler);
         }
     }
 
@@ -119,60 +123,81 @@ class Router
         $middleware = false;
         $args       = [];
 
-        if (is_null($callback)) {
+        if (is_null($callback))
+        {
             $callback = $prefix;
             $_prefix = $this->prefix;
         }
 
-        if (is_array($prefix)) {
-            if (isset($prefix[ 'prefix' ])) {
+        if (is_array($prefix))
+        {
+            if (isset($prefix[ 'prefix' ]))
+            {
                 $_prefix = $prefix[ 'prefix' ];
             }
-            if (isset($prefix[ 'domain' ])) {
+            if (isset($prefix[ 'domain' ]))
+            {
                 $_domain = $prefix[ 'domain' ];
-                if(preg_match('/({.+?})/',$prefix[ 'domain' ])) {
+
+                if(preg_match('/({.+?})/',$prefix[ 'domain' ]))
+                {
                     $_domain = preg_replace_callback('/({.+?})/',function() {
                         return '[A-Za-z0-9\-\_]+';
                     },$prefix[ 'domain' ]);
+
                     $r_domain = explode('.',$prefix[ 'domain' ]);
+
                     $args     = array_diff(array_replace($r_domain, explode('.', $this->server('http_host'))), $r_domain);
                 }
-                if (!preg_match("#^$_domain$#",$this->server('http_host'))) {
+                if (!preg_match("#^$_domain$#",$this->server('http_host')))
+                {
                     return null;
-                } else {
-                    if(!empty($args)) {
+                }
+                else
+                {
+                    if(!empty($args))
+                    {
                         preg_match_all('/{(.+?)}/', $prefix[ 'domain' ], $_request_keys);
+
                         $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
-                        foreach ($_request_data as $key => $value) {
+
+                        foreach ($_request_data as $key => $value)
+                        {
                             $_REQUEST[$key] = $value;
                         }
-                        app('url')->setBase($prefix[ 'domain' ]);
+
+                        Load::class('url')->setBase($prefix[ 'domain' ]);
                     }
                 }
             }
         }
 
-        $requestUri = app('url')->request();
+        $requestUri = Load::class('url')->request();
 
         $prefixUri = strtolower($this->prefix . $_prefix);
 
-        if ($prefixUri == substr($requestUri, 0, strlen($this->prefix . $_prefix))) {
-            if (isset($prefix[ 'middleware' ])) {
+        if ($prefixUri == substr($requestUri, 0, strlen($this->prefix . $_prefix)))
+        {
+            if (isset($prefix[ 'middleware' ]))
+            {
                 $this->middleware[] = $prefix[ 'middleware' ];
                 $middleware = true;
             }
+
             $this->prefix .= $_prefix;
 
             call_user_func_array($callback,$this->getReflectionFunctionParameters($callback,$args));
 
-            if ($middleware && isset($this->middleware[ count($this->middleware) - 1 ])) {
+            if ($middleware && isset($this->middleware[ count($this->middleware) - 1 ]))
+            {
                 unset($this->middleware[ count($this->middleware) - 1 ]);
                 $middleware = false;
             }
             $this->prefix = substr($this->prefix, 0, strlen($this->prefix) - strlen($_prefix));
-            
-            if (isset($prefix[ 'domain' ])) {
-                app('url')->setBase();
+
+            if (isset($prefix[ 'domain' ]))
+            {
+                Load::class('url')->setBase();
             }
         }
     }
@@ -186,66 +211,103 @@ class Router
      */
     protected function match()
     {
-        $requestUri = app('url')->request();
+        $requestUri = Load::class('url')->request();
         $method     = $this->getRequestMethod();
-        $ajax       = app('http')->isAjax();
-        foreach (static::$routes[ $method ] as $resource) {
-            if ($resource['ajax'] && !$ajax) {
+        $ajax       = Load::class('http')->isAjax();
+
+        foreach (static::$routes[ $method ] as $resource)
+        {
+
+            if ($resource['ajax'] && !$ajax)
+            {
                 continue;
             }
-            $args = [];
-            $route = $resource[ 'path' ] != '/' ? rtrim($resource[ 'path' ], '/') : $resource[ 'path' ];
+
+            $args    = [];
+            $route   = $resource[ 'path' ] != '/' ? rtrim($resource[ 'path' ], '/') : $resource[ 'path' ];
             $handler = $resource[ 'handler' ];
-            if (preg_match('/({.+?})/', $route)) {
+
+            if (preg_match('/({.+?})/', $route))
+            {
                 list($args, $uri, $route) = $this->parseRoute($requestUri, $route, $resource[ 'pattern' ] ?? []);
             }
-            if (!preg_match("#^$route$#", $requestUri)) {
+
+            if (!preg_match("#^$route$#", $requestUri))
+            {
                 unset(self::$routes[ $method ]);
                 continue;
             }
-            if (isset($uri)) {
+
+            if (isset($uri))
+            {
                 preg_match_all('/{(.+?)}/', $uri, $_request_keys);
-                $_request_keys = array_map(function ($item) {
+                $_request_keys = array_map(function ($item)
+                {
                     return str_replace('?', '', $item);
                 }, $_request_keys[1]);
+
                 $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
-                foreach ($_request_data as $key => $value) {
+
+                foreach ($_request_data as $key => $value)
+                {
                     $_REQUEST[$key] = $value;
                 }
             }
 
-            if (is_string($handler) && strpos($handler, '@')) {
+            if (is_string($handler) && strpos($handler, '@'))
+            {
                 list($controller, $method) = explode('@', $handler);
-                if (strpos($controller, '/') !== false) {
+
+                if (strpos($controller, '/') !== false)
+                {
                     $controller = str_replace('/', '\\', $controller);
                 }
+
                 $controller_with_namespace = "\\" .$this->namespace."\\$controller";
 
-                if (method_exists($controller_with_namespace, $method)) {
+                if (method_exists($controller_with_namespace, $method))
+                {
                     $this->server('called_method',$method);
                     $this->server('called_controller',$controller);
-                    if (!empty($resource[ 'middlewares' ])) {
-                        foreach ($resource[ 'middlewares' ] as $middleware) {
+
+                    if (!empty($resource[ 'middlewares' ]))
+                    {
+                        foreach ($resource[ 'middlewares' ] as $middleware)
+                        {
                             Middleware::init($middleware);
                         }
                     }
-                    call_user_func_array(
-                              [new $controller_with_namespace(),$method],
-                              $this->getReflectionMethodParameters($controller_with_namespace, $method, $args)
-                            );
-                    return;
-                } else {
-                    abort(404);
+
+                    $args    = $this->getReflectionMethodParameters($controller_with_namespace, $method, $args);
+
+                    $content = call_user_func_array([new $controller_with_namespace(),$method],$args);
+
+                    return $this->response($content);
+
                 }
-            } elseif (is_callable($handler)) {
-              if (!empty($resource[ 'middlewares' ])) {
-                  foreach ($resource[ 'middlewares' ] as $middleware) {
+                else
+                {
+                    return abort(404);
+                }
+            }
+            elseif (is_callable($handler))
+            {
+              if (!empty($resource[ 'middlewares' ]))
+              {
+                  foreach ($resource[ 'middlewares' ] as $middleware)
+                  {
                       Middleware::init($middleware);
                   }
               }
-              call_user_func_array($handler, $this->getReflectionFunctionParameters($handler, $args));
-              return;
-            } else {
+
+              $args    = $this->getReflectionFunctionParameters($handler, $args);
+
+              $content = call_user_func_array($handler,$args);
+
+              return $this->response($content);
+            }
+            else
+            {
               throw new \Exception("Route Handler type undefined");
             }
 
@@ -253,16 +315,22 @@ class Router
         $this->notFound++;
     }
 
+
     /**
      * @return string
      */
-    private  function getRequestMethod()
+    private function getRequestMethod()
     {
         $method = ($this->server('request_method') == 'HEAD') ?  'GET' : $this->server('request_method');
-        if ($method == 'POST') {
+
+        if ($method == 'POST')
+        {
             $headers = getallheaders();
+
             $xhmo    = $headers[ 'X-HTTP-Method-Override' ] ?? false;
-            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
+
+            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' )))
+            {
                 $method = $xhmo;
             }
         }
@@ -278,22 +346,33 @@ class Router
     private function parseRoute($requestUri, $resource, $patterns): array
     {
         $route = preg_replace_callback('/({.+?})/', function ($matches) use ($patterns) {
+
             $matches[ 0 ] = str_replace([ '{' , '}' ], '', $matches[ 0 ]);
+
             $normalize = (substr($matches[ 0 ], -1) == '?') ? substr($matches[ 0 ], 0, -1) : $matches[ 0 ];
-            if (in_array($normalize, array_keys($patterns))) {
-                if ($matches[ 0 ][ strlen($matches[ 0 ]) - 1 ] == '?') {
+
+            if (in_array($normalize, array_keys($patterns)))
+            {
+                if ($matches[ 0 ][ strlen($matches[ 0 ]) - 1 ] == '?')
+                {
                     return '?(\/' . $patterns[ $normalize ] . ')?';
-                } else {
+                }
+                else
+                {
                     return $patterns[ $normalize ];
                 }
             }
-            if ($matches[ 0 ][ strlen($matches[ 0 ]) - 1 ] == '?') {
+
+            if ($matches[ 0 ][ strlen($matches[ 0 ]) - 1 ] == '?')
+            {
                 return '?(\/[a-zA-Z0-9_=\-\?]+)?';
             }
             return '[a-zA-Z0-9_=\-\?]+';
+
         }, $resource);
 
         $regUri = explode('/', str_replace('?}', '}', $resource));
+
         $args   = array_diff(array_replace($regUri, explode('/', $requestUri)), $regUri);
 
         return array( array_values($args) , $resource , $route);
@@ -309,13 +388,32 @@ class Router
     private  function getReflectionMethodParameters($class_name, $method, $args)
     {
         $reflection = new \ReflectionMethod($class_name, $method);
-        foreach ($reflection->getParameters() as $num => $param) {
+
+        $app_classes = array_flip(Load::config('config.classes'));
+
+        foreach ($reflection->getParameters() as $num => $param)
+        {
+
             if ($param->getClass()) {
+
                 $class = $param->getClass()->name;
-                $args[$num] = new $class();
-            } else {
-                if (!isset($args[$num])) {
-                    if ($param->isDefaultValueAvailable()) {
+
+                if(in_array($class,$app_classes))
+                {
+                  $args[$num] = Load::class($app_classes[$class]);
+                }
+                else
+                {
+                  $args[$num] = new $class();
+                }
+
+            }
+            else
+            {
+                if (!isset($args[$num]))
+                {
+                    if ($param->isDefaultValueAvailable())
+                    {
                         $args[$num] = $param->getDefaultValue();
                     }
                 }
@@ -332,14 +430,33 @@ class Router
      */
     private  function getReflectionFunctionParameters($function, $args)
     {
-        $reflection = new \ReflectionFunction($function);
-        foreach ($reflection->getParameters() as $num => $param) {
+        $reflection  = new \ReflectionFunction($function);
+
+        $app_classes = array_flip(Load::config('config.classes'));
+
+        foreach ($reflection->getParameters() as $num => $param)
+        {
+
             if ($param->getClass()) {
+
                 $class = $param->getClass()->name;
-                $args[$num] = new $class();
-            } else {
-                if (!isset($args[$num])) {
-                    if ($param->isDefaultValueAvailable()) {
+
+                if(in_array($class,$app_classes))
+                {
+                  $args[$num] = Load::class($app_classes[$class]);
+                }
+                else
+                {
+                  $args[$num] = new $class();
+                }
+
+            }
+            else
+            {
+                if (!isset($args[$num]))
+                {
+                    if ($param->isDefaultValueAvailable())
+                    {
                         $args[$num] = $param->getDefaultValue();
                     }
                 }
@@ -356,10 +473,15 @@ class Router
     public function __call($method, $args)
     {
         $methods  = array( 'GET' , 'POST' , 'PUT' , 'DELETE' , 'OPTIONS' , 'PATCH' );
-        if (in_array(strtoupper($method), $methods)) {
-            self::add(strtoupper($method), ...$args);
+
+        if (in_array(strtoupper($method), $methods))
+        {
+            $this->add(strtoupper($method), ...$args);
+
             return $this;
-        } else {
+        }
+        else
+        {
             throw new \BadMethodCallException("Call to undefined method Route::{$method}()");
         }
     }
@@ -389,20 +511,38 @@ class Router
 
     private function server(String $key,$value = null)
     {
-      if(!is_null($value)) {
+      if(!is_null($value))
+      {
         $_SERVER[strtoupper($key)] = $value;
-      } else {
+      }
+      else
+      {
         return $_SERVER[strtoupper($key)] ?? false;
       }
     }
 
-    /**
-     * @return int
-     */
+
+
+
+    private function response($content)
+    {
+      if(is_array($content))
+      {
+        echo '['.implode(',',$content).']';
+      }
+      else
+      {
+        echo $content;
+      }
+    }
+
+
     public function execute()
     {
         $this->match();
-        if ($this->notFound > 0) {
+
+        if ($this->notFound > 0)
+        {
             return abort(404);
         }
     }

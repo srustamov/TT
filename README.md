@@ -1,65 +1,67 @@
 # TT
-PHP simple mini mvc framework
-
-Download Project
-
+PHP simple and fastest mini mvc framework
 
 [Download](https://github.com/srustamov/TT/archive/master.zip)
 
 * Goto Command Line
 ```
-   root@samir  ~/Desktop/www/TT# composer install
+   root@samir  ~/yourpath/TT# composer install
 ```
 
 * Create app secret key
 ```
-   root@samir  ~/Desktop/www/TT# php manage key:generate
+   root@samir  ~/yourpath/TT# php manage key:generate
 ```
 
 * Create local server
 
 ```
-   root@samir  ~/Desktop/www/TT# php manage runserver 8000
+   root@samir  ~/yourpath/TT# php manage runserver 8000
 ```
    [http://localhost:8000](http://localhost:8000) - Open browser
 
 
 * Create controller:
 ```
-  root@samir  ~/Desktop/www/TT# php manage create:controller MainController
+  root@samir  ~/yourpath/TT# php manage create:controller MainController
+```
+
+* Create resource:
+```
+  root@samir  ~/yourpath/TT# php manage create:resource MainController
 ```
 
 * Create model:
 ````
-  root@samir  ~/Desktop/www/TT# php manage create:model ExampleModel
+  root@samir  ~/yourpath/TT# php manage create:model ExampleModel
 ````
 
 * Create middleware:
 ```
-  root@samir  ~/Desktop/www/TT# php manage create:middleware ExampleMiddleware
+  root@samir  ~/yourpath/TT# php manage create:middleware ExampleMiddleware
 ```
 
 * Create Database Session Table:
 ```
-  root@samir  ~/Desktop/www/TT# php manage session:table [--create tableName]
+  root@samir  ~/yourpath/TT# php manage session:table [--create tableName]
 ```
 
 * Create Users  Table:
 ```
-  root@samir  ~/Desktop/www/TT# php manage users:table
+  root@samir  ~/yourpath/TT# php manage users:table
 ```
 
 * Template Engine cache clear:
 ```
-  root@samir  ~/Desktop/www/TT# php manage view:cache
+  root@samir  ~/yourpath/TT# php manage view:cache
 ```
 
 * Config cache clear:
 ```
-  root@samir  ~/Desktop/www/TT# php manage config:cache
+  root@samir  ~/yourpath/TT# php manage config:cache
 ```
 
 * Create cache config files:
 ```
-  root@samir  ~/Desktop/www/TT# php manage config:cache --create
+  root@samir  ~/yourpath/TT# php manage config:cache --create
 ```

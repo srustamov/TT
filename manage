@@ -24,9 +24,11 @@ require __DIR__.'/vendor/autoload.php';
 
 
 //------------------------------------------
-// Application Bootstrapping and Routing
+// Application Bootstrapping
 //------------------------------------------
-Kernel::start(__DIR__);
+$TT = new System\Engine\Kernel(__DIR__);
+
+$TT->bootstrap()->callAppKernel();
 
 
 

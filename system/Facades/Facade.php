@@ -2,13 +2,13 @@
 
 
 
-
+use System\Core\Load;
 
 abstract class Facade
 {
 
 
-  protected static $instances;
+  protected static $load;
 
 
 
@@ -20,15 +20,7 @@ abstract class Facade
 
   protected static function resolveFacadeInstance($name)
   {
-      if (is_object($name)) {
-          return $name;
-      }
-
-      if (isset(static::$instances[$name])) {
-          return static::$instances[$name];
-      }
-
-      return static::$instances[$name] = app($name);
+      return static::getLoadAccessor()->class($name);
   }
 
 
@@ -47,5 +39,14 @@ abstract class Facade
       }
 
       return $instance->$method(...$args);
+  }
+
+
+  protected static function getLoadAccessor()
+  {
+    if(is_null(static::$load)) {
+      static::$load = new Load;
+    }
+    return static::$load;
   }
 }

@@ -7,12 +7,9 @@ class Kernel
 {
 
     public $middleware = [
-        \App\Middleware\CsrfToken::class,
+        \App\Middleware\CsrfProtected::class,
     ];
 
 
-    public function boot()
-    {
-        app('url')->setBase('localhost:5000');
-    }
+    public function boot(){}
 }

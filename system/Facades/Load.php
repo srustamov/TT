@@ -5,12 +5,12 @@
  * @link https://github.com/srustamov/TT
  */
 
+use System\Facades\Facade;
 
-
-class Cache extends Facade
+class Load extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'cache';
+        return 'load';
     }
 }

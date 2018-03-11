@@ -6,9 +6,7 @@
  */
 
 
-use System\Engine\Http\Request;
-
-
+use System\Facades\Load;
 
 class Middleware
 {
@@ -21,7 +19,7 @@ class Middleware
     public static function init( String $extension )
     {
 
-      $request  = new Request();
+      $request  = Load::class('request');
 
       $excepts  = [];
 
@@ -65,6 +63,8 @@ class Middleware
       {
           throw new \Exception("Middleware {$middleware} class not found");
       }
+
+
     }
 
 

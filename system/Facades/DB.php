@@ -5,7 +5,6 @@
  * @link https://github.com/srustamov/TT
  */
 
-use System\Facades\Facade;
 
 class DB extends Facade
 {

@@ -3,7 +3,7 @@
 use App\Controllers\Controller;
 use System\Engine\Http\Request;
 use System\Facades\Validator;
-use System\Libararies\Auth\Authentication;
+use Auth;
 
 class AdminLoginController extends Controller
 {
@@ -21,20 +21,20 @@ class AdminLoginController extends Controller
 
 
 
-    public function login(Request $request , Authentication $auth)
+    public function login(Request $request)
     {
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email',
                 'password' => 'required|min:6'
             ]);
 
-        if ($validation == false)
+        if (!$validation->check())
         {
             return redirect('admin/login')->withError(Validator::messages());
         }
         else
         {
-            $attempt = $auth->guard('admin')->attempt(
+            $attempt =  Auth::guard('admin')->attempt(
                 $request->only('email','password'), $request->remember
             );
 
@@ -44,7 +44,7 @@ class AdminLoginController extends Controller
             }
             else
             {
-                return redirect('admin/login')->withError(['login_incorrect' =>$auth->getMessage()]);
+                return redirect('admin/login')->withError(['login_incorrect' => Auth::getMessage()]);
             }
         }
     }
