@@ -18,7 +18,6 @@ define('APP_START', microtime(true));
 
 
 
-
 //------------------------------------------
 // Load Composer Autoload file
 //------------------------------------------

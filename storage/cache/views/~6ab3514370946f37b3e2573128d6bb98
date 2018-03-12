@@ -57,9 +57,9 @@
     <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
     <span><a href="<?php echo $this->escape(url('/home')); ?>">HOME</a></span>
 </div>
-<?php if($errors->first('auth')): ?>)
+<?php if($errors->has('auth')): ?>)
   <script type="text/javascript">
-    alert("<?php echo $this->escape($errors->auth); ?>");
+    alert("<?php echo $this->escape($errors->first('auth')); ?>");
   </script>
 <?php endif; ?>
 </body>

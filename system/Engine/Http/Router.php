@@ -6,7 +6,10 @@
  */
 
 
+use PHPMailer\PHPMailer\Exception;
 use System\Facades\Load;
+
+
 
 class Router
 {
@@ -20,7 +23,6 @@ class Router
         'OPTIONS' => [] ,
         'PATCH' => []
     ];
-
 
     private $notFound = 0;
 
@@ -49,7 +51,7 @@ class Router
      * @param array $methods
      * @param $path
      * @param $handler
-     * @return static
+     * @return Router
      */
     public function any(array $methods, $path, $handler)
     {
@@ -74,7 +76,7 @@ class Router
             'path' => $this->prefix . strtolower($path) ,
             'handler' => $handler ,
             'ajax' => $this->ajax ,
-            'middlewares' => $this->middleware,
+            'middleware' => $this->middleware,
             'pattern' => []
         ]);
     }
@@ -241,6 +243,7 @@ class Router
             if (isset($uri))
             {
                 preg_match_all('/{(.+?)}/', $uri, $_request_keys);
+
                 $_request_keys = array_map(function ($item)
                 {
                     return str_replace('?', '', $item);
@@ -270,9 +273,9 @@ class Router
                     $this->server('called_method',$method);
                     $this->server('called_controller',$controller);
 
-                    if (!empty($resource[ 'middlewares' ]))
+                    if (!empty($resource[ 'middleware' ]))
                     {
-                        foreach ($resource[ 'middlewares' ] as $middleware)
+                        foreach ($resource[ 'middleware' ] as $middleware)
                         {
                             Middleware::init($middleware);
                         }
@@ -292,23 +295,23 @@ class Router
             }
             elseif (is_callable($handler))
             {
-              if (!empty($resource[ 'middlewares' ]))
-              {
-                  foreach ($resource[ 'middlewares' ] as $middleware)
-                  {
-                      Middleware::init($middleware);
-                  }
-              }
+                if (!empty($resource[ 'middlewares' ]))
+                {
+                    foreach ($resource[ 'middlewares' ] as $middleware)
+                    {
+                        Middleware::init($middleware);
+                    }
+                }
 
-              $args    = $this->getReflectionFunctionParameters($handler, $args);
+                $args    = $this->getReflectionFunctionParameters($handler, $args);
 
-              $content = call_user_func_array($handler,$args);
+                $content = call_user_func_array($handler,$args);
 
-              return $this->response($content);
+                return $this->response($content);
             }
             else
             {
-              throw new \Exception("Route Handler type undefined");
+                throw new \Exception("Route Handler type undefined");
             }
 
         }
@@ -400,11 +403,11 @@ class Router
 
                 if(in_array($class,$app_classes))
                 {
-                  $args[$num] = Load::class($app_classes[$class]);
+                    $args[$num] = Load::class($app_classes[$class]);
                 }
                 else
                 {
-                  $args[$num] = new $class();
+                    $args[$num] = new $class();
                 }
 
             }
@@ -443,11 +446,11 @@ class Router
 
                 if(in_array($class,$app_classes))
                 {
-                  $args[$num] = Load::class($app_classes[$class]);
+                    $args[$num] = Load::class($app_classes[$class]);
                 }
                 else
                 {
-                  $args[$num] = new $class();
+                    $args[$num] = new $class();
                 }
 
             }
@@ -509,16 +512,18 @@ class Router
     }
 
 
+
+
     private function server(String $key,$value = null)
     {
-      if(!is_null($value))
-      {
-        $_SERVER[strtoupper($key)] = $value;
-      }
-      else
-      {
-        return $_SERVER[strtoupper($key)] ?? false;
-      }
+        if(!is_null($value))
+        {
+            $_SERVER[strtoupper($key)] = $value;
+        }
+        else
+        {
+            return $_SERVER[strtoupper($key)] ?? false;
+        }
     }
 
 
@@ -526,15 +531,16 @@ class Router
 
     private function response($content)
     {
-      if(is_array($content))
-      {
-        echo '['.implode(',',$content).']';
-      }
-      else
-      {
-        echo $content;
-      }
+        if(is_array($content))
+        {
+            echo '['.implode(',',$content).']';
+        }
+        else
+        {
+            echo $content;
+        }
     }
+
 
 
     public function execute()

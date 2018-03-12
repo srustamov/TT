@@ -8,10 +8,12 @@
 
 
 
-use System\Engine\Exception\TTException;
+
 use System\Facades\Load;
 use System\Facades\Route;
 use System\Libraries\Benchmark;
+use System\Engine\Http\Middleware;
+use System\Engine\Exception\TTException;
 
 class Kernel
 {
@@ -35,11 +37,11 @@ class Kernel
 
         $this->setPathDefines ();
 
-        require_once BASEPATH . '/system/Engine/helpers.php';
+        require_once __DIR__.'/helpers.php';
 
         Load::settingVariables ();
 
-        TTException::bootstrap();
+        TTException::register();
 
         $this->loadHelpers ();
 
@@ -56,16 +58,19 @@ class Kernel
     public function callAppKernel()
     {
 
-        if (class_exists ( '\App\Kernel' )) {
-
+        if (class_exists ( '\App\Kernel' ))
+        {
             $kernel = new \App\Kernel();
 
             $_middleware = $kernel->middleware;
 
-            foreach ($_middleware as $middleware) {
-                call_user_func_array ( [ new $middleware() , 'handle' ] , [ Load::class('request') , null ] );
+            foreach ($_middleware as $middleware)
+            {
+                Middleware::init($middleware,true);
             }
-            if (method_exists($kernel,'boot')) {
+
+            if (method_exists($kernel,'boot'))
+            {
                 $kernel->boot ();
             }
         }

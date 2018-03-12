@@ -19,25 +19,31 @@ class TTException
     {
         $this->writeErrorLog($e);
 
-        if (Load::config('config.debug') === true) {
-
+        if (Load::config('config.debug') === true)
+        {
             ob_get_clean();
 
-            if (!InConsole()) {
+            if (!InConsole())
+            {
 
                 $view_file =  __DIR__.'/resource/exception.php';
 
-                if(file_exists($view_file)) {
+                if(file_exists($view_file))
+                {
                     require_once $view_file;
-                } else {
+                }
+                else
+                {
                     echo $e->getMessage();
                 }
 
-            } else {
+            }
+            else
+            {
                 new PrintConsole('error',"\n\n".$e->getMessage()."\n\n");
             }
         } else {
-            abort(500);
+            return abort(500);
         }
     }
 
@@ -45,7 +51,7 @@ class TTException
 
     public function handler($e)
     {
-        throw $this->show($e);
+         return $this->show($e);
     }
 
 
@@ -66,7 +72,7 @@ class TTException
     }
 
 
-    public static function bootstrap()
+    public static function register()
     {
       $instance = new static();
 
@@ -85,17 +91,16 @@ class TTException
 
     public function handleError($level, $message, $file = '', $line = 0)
     {
-        if (error_reporting() & $level) {
+        if (error_reporting() & $level)
+        {
             $e = new class{
-
-                    private $data;
-
-                    public function setExceptionData($data) { $this->data = $data;}
-                    public function getFile() { return $this->data['file']; }
-                    public function getMessage() { return $this->data['message']; }
-                    public function getLine() { return $this->data['line']; }
-                    public function getCode() { return $this->data['code']; }
-                };
+                private $data;
+                public function setExceptionData($data){ $this->data = $data;}
+                public function getFile(){ return $this->data['file']; }
+                public function getMessage(){ return $this->data['message']; }
+                public function getLine(){ return $this->data['line']; }
+                public function getCode(){ return $this->data['code']; }
+            };
 
             $e->setExceptionData(array(
               'file' => $file,
@@ -104,8 +109,7 @@ class TTException
               'code' => $level
             ));
 
-
-            throw $this->show($e);
+            return $this->show($e);
         }
     }
 

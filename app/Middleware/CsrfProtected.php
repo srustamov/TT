@@ -16,7 +16,7 @@ class CsrfProtected
 
 
 
-    public function handle(Request $request)
+    public function handle(Request $request,\Closure $next)
     {
 
         if ($this->isReading($request) || $this->isConsole() || $this->isExcept() || $this->tokensMatch($request))

@@ -5,8 +5,12 @@ use System\Engine\Http\Request;
 use System\Facades\Validator;
 use Auth;
 
+
+
 class AdminLoginController extends Controller
 {
+
+
     public function __construct()
     {
         $this->middleware('guest:admin|logout');
@@ -30,7 +34,7 @@ class AdminLoginController extends Controller
 
         if (!$validation->check())
         {
-            return redirect('admin/login')->withError(Validator::messages());
+            return redirect('admin/login')->withErrors(Validator::messages());
         }
         else
         {
@@ -44,7 +48,7 @@ class AdminLoginController extends Controller
             }
             else
             {
-                return redirect('admin/login')->withError(['login_incorrect' => Auth::getMessage()]);
+                return redirect('admin/login')->withErrors('login' , Auth::getMessage());
             }
         }
     }

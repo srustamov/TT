@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>Home</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300,400,600">
     @css('/css/bootstrap.css')
     @yield('style')
   </head>
@@ -48,7 +49,7 @@
               <button style="border-radius:0;min-height:50px" class="btn btn-success">
                {{ Auth::name() }}
              </button>
-              <button onclick="window.location.href='/auth/logout'"
+              <button onclick="window.location.href='{{url('auth/logout')}}'"
                   style="border-radius:0;min-height:50px"
                   role="button" class="btn btn-danger">
                 Logout
@@ -66,7 +67,7 @@
       var elements = document.querySelectorAll('a.lang');
 
       elements.forEach(function (a) {
-          if(a.attributes.href.nodeValue.substr(-2) == locale) {
+          if(a.attributes.href.nodeValue.substr(-2) === locale) {
               a.parentElement.classList.add('active');
           }
       });
@@ -76,12 +77,11 @@
       var currentUrl = window.location.href;
 
       menus.forEach(function(menu){
-        if(menu.attributes.href.nodeValue == currentUrl) {
+        if(menu.attributes.href.nodeValue === currentUrl) {
           menu.parentElement.classList.add('active');
         }
       });
-
-
     </script>
+    @yield('js')
   </body>
 </html>

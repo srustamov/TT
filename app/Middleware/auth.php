@@ -21,12 +21,14 @@ class Auth
     ];
 
 
-    public function handle($request,$guard)
+    public function handle($request,\Closure $next,$guard)
     {
         if(Authentication::guard($guard)->guest())
         {
-            return redirect ($this->redirect[$guard])->withErrors([ 'auth' => 'Öncə giriş etməlisiz']);
+            return $next(redirect ('/')->withErrors('auth', 'Öncə giriş etməlisiz'));
         }
+
+
     }
 
 }

@@ -7,9 +7,12 @@ class Kernel
 {
 
     public $middleware = [
-        \App\Middleware\CsrfProtected::class,
+        Middleware\CsrfProtected::class,
     ];
 
 
-    public function boot(){}
+    public function boot()
+    {
+      
+    }
 }

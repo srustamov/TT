@@ -55,16 +55,16 @@
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Login User</h3><br>
-            @if(isset($success->register))
+            @if(($register_message = Session::flash('register')))
               <div class="alert  alert-success fade in" role="alert">
                  <button type="button" class="close" onclick="this.parentNode.style.display = 'none';">
                  <span aria-hidden="true">×</span>
                  </button>
-                 <strong>{{$success->register}}</strong>
+                 <strong>{{$register_message}}</strong>
              </div>
             @endif
           </div>
-          <form action="/auth/login" method="post">
+          <form action="{{url('auth/login')}}" method="post">
             @csrf
             <div class="panel-body">
               <div class="form-group">
@@ -88,7 +88,7 @@
                 @endif
               </div>
               <div class="form-group">
-                <label for="" style="line-height:30px;height:30px">
+                <label style="line-height:30px;height:30px">
                   <span  style="vertical-align:middle"><input type="checkbox" name="remember"></span>
                   <span>Remember Me</span>
                 </label>

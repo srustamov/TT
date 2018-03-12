@@ -45,7 +45,7 @@ class LoginController extends Controller
             }
             else
             {
-                return redirect('auth/login')->withErrors(['login' => $auth->getMessage()]);
+                return redirect('auth/login')->withErrors('login' , $auth->getMessage());
             }
         }
     }

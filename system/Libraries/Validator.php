@@ -9,104 +9,95 @@
  */
 
 
-use System\Facades\Language as VLang;
+use System\Facades\Language;
+use System\Facades\DB;
 
 class Validator
 {
 
-
-
-    protected static $messages  = [];
-
+    protected $translator;
 
 
 
+    protected $fields = [
+        'email','integer','numeric',
+        'ip','file','image'
+    ];
 
 
-    public function make(array $data, array $rules):Validator
+    protected $messages  = [];
+
+
+    public function __construct ()
     {
-        foreach ($data as $key => $value) {
-            if (isset($rules[$key])) {
+        $this->translator = Language::translate('validator');
+    }
+
+
+    public function make(array $data, array $rules,Array $messages = []):Validator
+    {
+
+        $this->messages = array_merge($this->messages,$messages);
+
+        foreach ($data as $key => $value)
+        {
+            if (isset($rules[$key]))
+            {
                 $fields = explode('|', $rules[$key]);
-                if (in_array('required', $fields)) {
-                    if (is_array($data[$key])) {
-                        if (count($value) == 0 or count($value) != count(array_filter($value))) {
-                            foreach ($value as $kk => $vv) {
-                                if (empty($value[$kk]) && $value[$kk] !== 0) {
-                                    static::$messages[$key][] = VLang::translate('validator.required', ['field' => $key]);
-                                    break;
-                                }
-                            }
+
+                if(!$this->required($fields,$data,$key,$value))
+                {
+                    break;
+                }
+
+                foreach ($this->fields as $f)
+                {
+                    if (in_array($f, $fields)) {
+                        if (!$this->is_mail($value)) {
+                            $this->translation($key,['field' => $key]);
                         }
-                    } else {
-                        if (empty(trim($data[$key]))) {
-                            static::$messages[$key][] = VLang::translate('validator.required', ['field' => $key]);
-                        }
-                    }
-                }
-                if (in_array('email', $fields)) {
-                    if (!$this->is_mail($value)) {
-                        static::$messages[$key][] = VLang::translate('validator.email');
-                    }
-                }
-                if (in_array('integer', $fields)) {
-                    if (!$this->is_integer($value)) {
-                        static::$messages[$key][] = VLang::translate('validator.integer', ['field' => $key]);
-                    }
-                }
-                if (in_array('numeric', $fields)) {
-                    if (!$this->is_numeric($value)) {
-                        static::$messages[$key][] = VLang::translate('validator.numeric', ['field' => $key]);
-                    }
-                }
-                if (in_array('ip', $fields)) {
-                    if (!$this->is_ip($value)) {
-                        static::$messages[$key][] = VLang::translate('validator.ip', ['field' => $key]);
-                    }
-                }
-                if (in_array('file', $fields)) {
-                    if (!$this->is_file($value)) {
-                        static::$messages[$key][] = VLang::translate('validator.file', ['field' => $key]);
-                    }
-                }
-                if (in_array('image', $fields)) {
-                    if (!$this->is_image($value)) {
-                        static::$messages[$key][] = VLang::translate('validator.image', ['field' => $key]);
                     }
                 }
 
-                foreach ($fields as $field) {
-                    if (strpos($field, ':')) {
+
+                foreach ($fields as $field)
+                {
+                    if (strpos($field, ':'))
+                    {
                         list($a, $b) = explode(':', $field, 2);
-                        switch ($a) {
-                          case 'unique':
-                            $control = app('db')->table($b)->where([$key => $value])->first();
-                            if ($control) {
-                                self::$messages[$key][] = VLang::translate('validator.unique', ['field' => $key]);
-                            }
-                            break;
 
-                          case 'max':
-                            if (mb_strlen($value) > $b) {
-                                self::$messages[$key][] = VLang::translate('validator.max_character', ['max' => $b]);
-                            }
-                            break;
+                        switch ($a)
+                        {
+                            case 'unique':
+                                $control = DB::table($b)->where($key , $value)->first();
+                                if ($control) {
+                                    $this->translation('unique',['field' => $key]);
+                                }
+                                break;
+                            case 'max':
+                                if (mb_strlen($value) > $b) {
+                                    $this->translation('max',['max' => $b]);
+                                }
+                                break;
+                            case 'min':
+                                if (mb_strlen($value) < $b) {
+                                    $this->translation('min',['min' => $b]);
+                                }
+                                break;
+                            case 'regex':
+                                if (!preg_match("#^$b$#",$value)) {
+                                    $this->translation('regex',['field' => $b]);
+                                }
+                                break;
+                            case 'confirm':
+                                if ($data[$b] != $value) {
+                                    $this->translation('confirm', ['field' => $key,'confirm' => $b]);
+                                }
+                                break;
 
-                          case 'min':
-                            if (mb_strlen($value) < $b) {
-                                self::$messages[$key][] = VLang::translate('validator.min_character', ['min' => $b]);
-                            }
-                            break;
-
-                          case 'confirm':
-                            if ($data[$b] != $value) {
-                                static::$messages[$key][] = VLang::translate('validator.confirm', ['field' => $key,'confirm' => $b]);
-                            }
-                            break;
-
-                          default:
-                            //
-                            break;
+                            default:
+                                //
+                                break;
                         }
 
                     }
@@ -117,18 +108,78 @@ class Validator
     }
 
 
+    public function setMessage(Array $messages)
+    {
+        $this->messages = array_merge($this->messages,$messages);
+    }
+
+
+    private function required($fields,$data,$key,$value)
+    {
+        if (in_array('required', $fields))
+        {
+            if (is_array($data[$key]))
+            {
+                if (empty($value) || count($value) != count(array_filter($value)))
+                {
+                    foreach ($value as $k => $v)
+                    {
+                        if (empty($value[$k]) && $value[$k] !== 0)
+                        {
+                            $this->translation('required', ['field' => $key]);
+                            return false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (empty(trim($data[$key])))
+                {
+                    $this->translation('required', ['field' => $key]);
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+    private function translation($field,$replace = [])
+    {
+
+        if(isset($this->translator[$field]))
+        {
+            if(!empty($replace))
+            {
+                $this->messages[$field][] = str_replace(
+                    array_map(function($item){
+                        return ":".$item;
+                    },array_keys($replace)),
+                    array_values($replace),
+                    $this->translator[$field]
+                );
+            }
+            else
+            {
+                $this->messages[$field][] = $this->translator[$field];
+            }
+        }
+    }
+
+
 
 
     public function check():Bool
     {
-        return !(count(static::$messages) > 0) ;
+        return !(count($this->messages) > 0) ;
     }
 
 
 
     public function messages():array
     {
-        return static::$messages;
+        return $this->messages;
     }
 
 
@@ -200,7 +251,7 @@ class Validator
 
     public function __get($key)
     {
-      return self::$messages[$key] ?? false;
+        return $this->messages[$key] ?? false;
     }
 
 }

@@ -13,12 +13,6 @@ use App\Controllers\Controller;
 class AdminController extends Controller
 {
 
-    function __construct()
-    {
-        $this->middleware('auth:admin');
-    }
-
-
     public function dashboard ()
     {
         // Dashboard

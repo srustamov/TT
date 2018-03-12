@@ -11,61 +11,118 @@ use System\Facades\Load;
 class Middleware
 {
 
+
+    private static $instance;
+
+
     /**
      * @param String $extension
+     * @param Bool $isClassName
      * @return bool|mixed
      * @throws \Exception
      */
-    public static function init( String $extension )
+
+    public static function init( String $extension ,Bool $isClassName = false)
     {
+        $request  = Load::class('request');
 
-      $request  = Load::class('request');
 
-      $excepts  = [];
+        if(!$isClassName)
+        {
+            list($name,$guard,$excepts) = static::getInstance()->getExceptsAndGuard($extension);
 
-      $name     = $extension;
 
-      if (strpos($extension, ':') !== false)
-      {
-          list($name, $guard) = explode(':', $name, 2);
+            foreach ($excepts as $action)
+            {
+                if (strtolower($request->action()) == strtolower($action))
+                {
+                    return true;
+                }
 
-          if(strpos($guard,'|') !== false)
-          {
-            list($guard,$excepts) = explode('|',$guard,2);
-            $excepts = explode(',',$excepts);
-          }
+            }
 
-      }
-      elseif (strpos($extension,'|') !== false)
-      {
-          list($name,$excepts) = explode('|',$extension,2);
-          $excepts = explode(',',$excepts);
-      }
-
-      foreach ($excepts as $action)
-      {
-        if (strtolower($request->action()) == strtolower($action)) {
-          return true;
+            $middleware = "\\App\\Middleware\\{$name}";
+        }
+        else
+        {
+            $middleware = $extension;
+            $guard      = null;
         }
 
-      }
+        $next = function($response)
+        {
+            static::getInstance()->response($response);
+        };
 
-      $middleware = "\\App\\Middleware\\{$name}";
-
-      if (class_exists($middleware))
-      {
-          call_user_func_array(
-              [ new $middleware() , "handle" ], [ $request  , $guard ?? "user" ]
-          );
-
-      }
-      else
-      {
-          throw new \Exception("Middleware {$middleware} class not found");
-      }
-
+        if (class_exists($middleware))
+        {
+            $content = call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
+        }
+        else
+        {
+            throw new \Exception("Middleware {$middleware} class not found");
+        }
 
     }
+
+
+
+    protected function getExceptsAndGuard($extension)
+    {
+        $excepts = [];
+
+        $guard   = 'user';
+
+        $name    = $extension;
+
+        if (strpos($extension, ':') !== false)
+        {
+            list($name, $guard) = explode(':', $name, 2);
+
+            if(strpos($guard,'|') !== false)
+            {
+                list($guard,$excepts) = explode('|',$guard,2);
+
+                $excepts = explode(',',$excepts);
+            }
+
+        }
+        elseif (strpos($extension,'|') !== false)
+        {
+            list($name,$excepts) = explode('|',$extension,2);
+
+            $excepts = explode(',',$excepts);
+        }
+
+
+        return array($name,$guard,$excepts);
+
+    }
+
+
+    private function response($content)
+    {
+        if(!is_array($content))
+        {
+            echo $content;
+        }
+        else
+        {
+            echo '['.implode(',',$content).']';
+        }
+    }
+
+
+    public static function getInstance()
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static();
+        }
+        return static::$instance;
+    }
+
+
+
 
 
 

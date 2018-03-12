@@ -28,7 +28,7 @@ require __DIR__.'/vendor/autoload.php';
 //------------------------------------------
 $TT = new System\Engine\Kernel(__DIR__);
 
-$TT->bootstrap()->callAppKernel();
+$TT->bootstrap();
 
 
 

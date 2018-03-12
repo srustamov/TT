@@ -44,15 +44,14 @@ class Language
         $this->lang = $this->_getdata($locale);
    }
 
-   /**
-    * @param String $word
-    * @param Array $replace
-    * @param Null $locale
-    * @return String
-    */
+    /**
+     * @param String $word
+     * @param array $replace
+     * @param Null $locale
+     * @return String|Array
+     */
 
-
-   public function translate ( $word = '' ,$replace = [] ,$locale = null):String
+   public function translate ( String $word  ,array $replace = [] ,$locale = null)
    {
 
       if(is_null($this->lang))

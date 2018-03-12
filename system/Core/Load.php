@@ -11,29 +11,73 @@ class Load
 {
 
 
-    protected static $loaded_classes = [];
+    protected static $classes = [];
 
-    protected static $loaded_config  = [];
+    protected static $configurations = [];
 
 
     /**
-     * @param $class
+     * @param String $class
+     * @param array $args
      * @return mixed
      * @throws \Exception
      */
-    public function class( String $class)
+    public function class( String $class,Array $args = [])
     {
-        if(strtolower($class) == 'load') {
+        if(strtoupper($class) == 'LOAD') {
           return $this;
         }
 
-        if(isset(static::$loaded_classes[$class])) {
-            return static::$loaded_classes[$class];
-        } else {
-            $app_classes = config('config.classes',[]);
-            if (array_key_exists( $class,$app_classes)) {
-                static::$loaded_classes[$class] = new $app_classes[$class]();
-                return static::$loaded_classes[$class];
+        if(isset(static::$classes[$class])) 
+        {
+            return static::$classes[$class];
+        } 
+        else 
+        {
+
+            $application_classes = $this->config('config.classes',[]);
+
+            if (array_key_exists( $class,$application_classes)) 
+            {
+
+                if (method_exists($class,'__construct'))
+                {
+                    $args = $this->getReflectionMethodParameters(
+                        $application_classes[$class],$application_classes ,$args
+                    );
+                    static::$classes[$class] = new $application_classes[$class](...$args);
+                }
+                else
+                {
+                    static::$classes[$class] = new $application_classes[$class];
+                }
+
+
+                static::$classes[$class] = new $application_classes[$class](...$args);
+
+                return static::$classes[$class];
+            }
+            else
+            {
+                if(strpos('\\',$class))
+                {
+                    $application_classes = array_flip($application_classes);
+
+                    if(array_key_exists($class,$application_classes))
+                    {
+                        return $this->class($application_classes[$class],$args);
+                    }
+                    else
+                    {
+                        $instance = new $class(...$this->getReflectionMethodParameters(
+                            $class,array_flip($application_classes) ,$args
+                        ));
+                        static::$classes[$class] = $instance;
+
+                        return $instance;
+                    }
+
+                }
             }
 
         }
@@ -50,9 +94,11 @@ class Load
     public function config( $name, $default = false)
     {
 
-        if(file_exists(path('storage/system/configs.php'))) {
-            if(empty(static::$loaded_config)) {
-                static::$loaded_config = require_once path('storage/system/configs.php');
+        if(file_exists(path('storage/system/configs.php'))) 
+        {
+            if(empty(static::$configurations)) 
+            {
+                static::$configurations = require_once path('storage/system/configs.php');
             }
         }
 
@@ -60,15 +106,16 @@ class Load
         {
             list($file, $item) = explode('.', $name);
 
-            if (isset(static::$loaded_config[$file])) {
-                return static::$loaded_config[$file][$item] ?? $default;
+            if (isset(static::$configurations[$file])) 
+            {
+                return static::$configurations[$file][$item] ?? $default;
             }
 
             if (file_exists(app_dir("Config/{$file}.php")))
             {
-                $config = require app_dir("Config/{$file}.php");
+                $config = require_once app_dir("Config/{$file}.php");
 
-                static::$loaded_config[$file] = $config;
+                static::$configurations[$file] = $config;
 
                 return $config[ $item ] ?? $default;
             }
@@ -79,15 +126,16 @@ class Load
         }
         else
         {
-            if(isset(static::$loaded_config[$name])) {
-                return static::$loaded_config[$name];
+            if(isset(static::$configurations[$name])) 
+            {
+                return static::$configurations[$name];
             }
 
             if (file_exists(app_dir("Config/{$name}.php")))
             {
-                static::$loaded_config[$name] = require app_dir("Config/{$name}.php");
+                static::$configurations[$name] = require_once app_dir("Config/{$name}.php");
 
-                return static::$loaded_config[$name];
+                return static::$configurations[$name];
             }
             else
             {
@@ -122,7 +170,8 @@ class Load
         $settingsFile = path ( 'storage/system/settings' );
 
 
-        if (!file_exists ( $settingsFile ) || filemtime ( $settingsFile ) < filemtime ( path ( '.settings' ) )) {
+        if (!file_exists ( $settingsFile ) || filemtime ( $settingsFile ) < filemtime ( path ( '.settings' ) ))
+        {
 
             $_auto_detect = ini_get ( 'auto_detect_line_endings' );
 
@@ -134,17 +183,22 @@ class Load
 
             $_settings = [];
 
-            foreach ($lines as $line) {
+            foreach ($lines as $line) 
+            {
                 $line = trim ( $line );
 
-                if (isset( $line[ 0 ] ) && $line[ 0 ] === '#') {
+                if (isset( $line[ 0 ] ) && $line[ 0 ] === '#') 
+                {
                     continue;
                 }
 
-                if (strpos ( $line , '=' ) !== false) {
+                if (strpos ( $line , '=' ) !== false) 
+                {
                     list( $name , $value ) = array_map ( 'trim' , explode ( '=' , $line , 2 ) );
                     $name = str_replace(['\'','"'],'',$name);
-                    if (preg_match ( '/\s+/' , $value ) > 0) {
+                    
+                    if (preg_match ( '/\s+/' , $value ) > 0) 
+                    {
                         throw new \RuntimeException( "setting variable value containing spaces must be surrounded by quotes" );
                     }
 
@@ -160,14 +214,19 @@ class Load
             }
 
 
-            foreach ($_settings as $key => $value) {
+            foreach ($_settings as $key => $value)
+            {
 
-                if (strpos ( $value , '$' ) !== false) {
+                if (strpos ( $value , '$' ) !== false) 
+                {
                     $value = preg_replace_callback ( '/\${([a-zA-Z0-9_]+)}/' ,
                         function ( $m ) use ( $_settings ) {
-                            if (isset( $_settings[ $m[ 1 ] ] )) {
+                            if (isset( $_settings[ $m[ 1 ] ] )) 
+                            {
                                 return $_settings[ $m[ 1 ] ];
-                            } else {
+                            } 
+                            else 
+                            {
                                 return ${"$m[1]"} ?? '${' . $m[ 1 ] . '}';
                             }
                         } ,
@@ -175,30 +234,65 @@ class Load
                     );
                 }
 
-                if(function_exists('putenv')) {
+                if(function_exists('putenv')) 
+                {
                     putenv("$key=$value");
                 }
-                if (function_exists('apache_setenv')) {
+                if (function_exists('apache_setenv')) 
+                {
                     apache_setenv($key,$value);
                 }
 
                 $_ENV[ $key ] = $value;
             }
             file_put_contents ( path ( 'storage/system/settings' ) , serialize ( $_ENV ) );
-        } else {
+        } 
+        else 
+        {
 
             $_settings = (array) unserialize ( file_get_contents ( path ( 'storage/system/settings' ) ) );
 
-            foreach ($_settings as $key => $value) {
-                if(function_exists('putenv')) {
+            foreach ($_settings as $key => $value) 
+            {
+                if(function_exists('putenv')) 
+                {
                     putenv("$key=$value");
                 }
-                if (function_exists('apache_setenv')) {
+                if (function_exists('apache_setenv')) 
+                {
                     apache_setenv($key,$value);
                 }
                 $_ENV[ $key ] = $value;
             }
         }
+    }
+
+
+
+    private function getReflectionMethodParameters($class_name,$application_classes,$args)
+    {
+        $reflection = new \ReflectionMethod($class_name, '__construct');
+
+        foreach ($reflection->getParameters() as $num => $param)
+        {
+
+            if ($param->getClass())
+            {
+
+                $class = $param->getClass()->name;
+
+                if(in_array($class,$application_classes))
+                {
+                    $args[$num] = $this->class($application_classes[$class]);
+                }
+                else
+                {
+                    $args[$num] = new $class();
+                }
+
+            }
+        }
+        return $args;
     }
 
 

@@ -8,21 +8,20 @@
 */
 
 
-use System\Libraries\View\View;
+
 use System\Libraries\Redirect;
 use System\Facades\Load;
 
 
-
 /**
  * @param String $class
+ * @param array $args
  * @return mixed
- * @throws Exception
  */
 
-function app(String $class)
+function app(String $class,Array $args = [])
 {
-  return Load::class($class);
+  return Load::class($class,$args);
 }
 
 
@@ -206,7 +205,7 @@ function abort(Int $http_code)
     header("HTTP/1.1 $http_code $message");
 
     if (file_exists(app_dir('Views/errors/'.$http_code.'.blade.php'))) {
-        view('errors.'.$http_code);
+        echo view('errors.'.$http_code);
     }
 
     exit();
@@ -269,14 +268,14 @@ if (!function_exists ( 'report' )) {
         }
 
         $report = '----------------------------' . PHP_EOL .
-            ' Report                     ' . PHP_EOL .
-            '----------------------------' . PHP_EOL .
-            '|IP: ' . Http::ip () . PHP_EOL .
-            '|Subject: ' . $subject . PHP_EOL .
-            '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
-            '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
-            '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
-            '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
+                ' Report                     ' . PHP_EOL .
+                '----------------------------' . PHP_EOL .
+                '|IP: ' . Load::class('http')->ip () . PHP_EOL .
+                '|Subject: ' . $subject . PHP_EOL .
+                '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
+                '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
+                '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
+                '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
         return Load::class('file')->append ( $logDir . $destination . $extension , $report );
     }
 }
@@ -302,61 +301,59 @@ if (!function_exists ( 'env' )) {
 
 
 if (!function_exists ( 'cookie' )) {
-    function cookie ( $key = false , $value = false , $time = null , $path = '/' , $domain = '' , $secure = false , $http_only = true )
+    function cookie()
     {
-        if ($key && !$value)
+
+        if(func_num_args() == 0)
         {
-            return Load::class('cookie')->get ( $key );
+            return Load::class('cookie');
         }
-        elseif (!$key)
+        else if(func_num_args() == 1)
         {
-          return Load::class('cookie');
+            return Load::class('cookie')->get(func_get_args()[0]);
         }
         else
         {
-            return Load::class('cookie')->http_only ( $http_only )
-                ->path ( $path )
-                ->domain ( $domain )
-                ->secure ( $secure )
-                ->set ( $key , $value , $time );
+            return Load::class('cookie',func_get_args());
         }
+
     }
 }
 
 
 if (!function_exists ( 'cache' )) {
-    function cache ( $key = false , $value = false , $expires = 10 )
+    function cache ()
     {
-        if (!$key)
+        if (func_num_args() == 0)
         {
             return Load::class('cache');
         }
-        elseif (!$value)
+        elseif (func_num_args() == 1)
         {
             return Load::class('cache')->get ( $key );
         }
-        elseif ($key && $value)
+        else
         {
-            return Load::class('cache')->put ( $key , $value , $expires );
+            return Load::class('cache')->put (...func_num_args());
         }
     }
 }
 
 
 if (!function_exists ( 'session' )) {
-    function session ( $key = null , $value = false )
+    function session ()
     {
-        if (is_null ( $key ))
+        if (func_num_args() == 0)
         {
             return Load::class('session');
         }
-        elseif ($key && !$value)
+        elseif (func_num_args() == 1)
         {
-            return Load::class('session')->get ( $key );
+            return Load::class('session')->get (func_get_arg(0));
         }
         else
         {
-            return Load::class('session')->set ( $key , $value );
+            return Load::class('session')->set (...func_num_args());
         }
     }
 }
@@ -667,19 +664,23 @@ if (!function_exists ( 'debug' )) {
     {
         ob_get_clean ();
 
-        if (is_array ( $data )) {
-            echo '<pre style="font-size:14px;word-wrap:break-word; white-space: pre-wrap;color:rgb(54, 12, 51)">';
-            print_r ( $data );
+        if (is_array ( $data ))
+        {
+            echo '<pre style="font-size:14px;color:rgb(54, 12, 51);word-break: break-all;white-space: pre-wrap">';
+             print_r($data);
             echo "</pre>";
-        } else {
+        }
+        else
+        {
             var_dump ( $data );
         }
-        die();
+        die(1);
     }
 }
 
 
-if (!function_exists ( 'valid_mail' )) {
+
+if (!function_exists ( 'is_mail' )) {
     function valid_mail ( String $mail )
     {
         return Load::class('validator')->is_mail ( $mail );
@@ -687,7 +688,7 @@ if (!function_exists ( 'valid_mail' )) {
 }
 
 
-if (!function_exists ( 'valid_url' )) {
+if (!function_exists ( 'is_url' )) {
     function valid_url ( String $url )
     {
         return Load::class('validator')->is_url ( $url );
@@ -695,7 +696,7 @@ if (!function_exists ( 'valid_url' )) {
 }
 
 
-if (!function_exists ( 'valid_ip' )) {
+if (!function_exists ( 'is_ip' )) {
     function valid_ip ( $ip )
     {
         return Load::class('validator')->is_ip ( $ip );

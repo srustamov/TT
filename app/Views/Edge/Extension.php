@@ -8,18 +8,17 @@ class Extension implements EdgeExtensionInterface
 
     public function getName()
     {
-            return 'my_extension';
+        return 'my_extension';
     }
 
     public function getDirectives()
     {
-            return array(
-                    'lang' => array($this, 'lang'),
-                    'benchmark' => array($this, 'benchmark'),
-                    'csrf' => array($this, 'csrf_field'),
-                    'css' => array($this, 'css'),
-                    'js' => array($this, 'js'),
-            );
+        return array(
+            'lang' => array($this, 'lang'),
+            'csrf' => array($this, 'csrf'),
+            'css' => array($this, 'css'),
+            'js' => array($this, 'js'),
+        );
     }
 
 
@@ -33,35 +32,35 @@ class Extension implements EdgeExtensionInterface
         return "<?php echo benchmark_panel(); ?>";
     }
 
-    public function csrf_field()
+    public function csrf()
     {
-      return '<input type="hidden" name="_token" value="<?php echo csrf_token(); ?>" />';
+        return '<input type="hidden" name="_token" value="<?php echo csrf_token(); ?>" />';
     }
 
     public function css()
     {
-      return '<?php echo css'.implode(',',func_get_args()).'; ?>';
+        return '<?php echo css'.implode(',',func_get_args()).'; ?>';
     }
 
     public function js()
     {
-      return '<?php echo js'.implode(',',func_get_args()).'; ?>';
+        return '<?php echo js'.implode(',',func_get_args()).'; ?>';
     }
 
     public function img()
     {
-      return '<?php echo img'.implode(',',func_get_args()).'; ?>';
+        return '<?php echo img'.implode(',',func_get_args()).'; ?>';
     }
 
 
     public function getGlobals()
     {
-            return array();
+        return array();
     }
 
     public function getParsers()
     {
-            return array();
+        return array();
     }
 
 }
