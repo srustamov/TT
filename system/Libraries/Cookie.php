@@ -4,20 +4,21 @@
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage    Libraries
+ * @subpackage    Library
  * @category    Cookie
  */
 
 
 
+use System\Facades\Load;
+use System\Facades\OpenSsl;
+use System\Exceptions\CookieException;
+use ArrayAccess;
 
-
-class Cookie
+class Cookie implements ArrayAccess
 {
 
-    const ENC_KEY = "1xo86bFafRcUx8IccN6mdFflstIkcmJiY+li7Qi7hWScfJS2StKBmwnff4378";
-
-    private static $config;
+    private $config;
 
     private $prefix = '';
 
@@ -30,17 +31,15 @@ class Cookie
     private $domain = '';
 
 
-    /**
-     * Cookie constructor.
-     */
-    public function __construct(...$args)
+
+    function __construct(...$args)
     {
-        if(is_null(static::$config))
+        if(is_null($this->config))
         {
-          static::$config = config('cookie');
+          $this->config = Load::config('cookie');
         }
 
-        $config = static::$config;
+        $config = $this->config;
 
         $this->prefix    = !empty($config['prefix'])    ? $config['prefix']    : $this->prefix;
         $this->http_only = is_bool($config['http_only'])? $config['http_only'] : $this->http_only;
@@ -48,7 +47,8 @@ class Cookie
         $this->path      = !empty($config['path'])      ? $config['path']      : $this->path;
         $this->domain    = !empty($config['domain'])    ? $config['domain']    : $this->domain;
 
-        if(!empty($args)) {
+        if(!empty($args))
+        {
           $this->set(...$args);
         }
     }
@@ -58,9 +58,9 @@ class Cookie
      * @param bool $http
      * @return $this|bool
      */
-    public function http_only($http = true)
+    public function http_only(Bool $http = true)
     {
-        $this->http_only = (bool) $http;
+        $this->http_only = $http;
 
         return $this;
     }
@@ -70,7 +70,7 @@ class Cookie
      * @param string $path
      * @return bool|Cookie
      */
-    public function path($path = '/')
+    public function path(String $path = '/')
     {
         $this->path = $path;
         return $this;
@@ -81,9 +81,9 @@ class Cookie
      * @param bool $domain
      * @return $this|bool
      */
-    public function domain($domain = '')
+    public function domain($domain = null)
     {
-        $this->domain = $domain ?? '';
+        $this->domain = $domain;
         return $this;
     }
 
@@ -91,13 +91,8 @@ class Cookie
     /**
      * @param bool $bool
      */
-    public function secure($bool = false)
+    public function secure(Bool $bool = true)
     {
-        if (!is_bool($bool))
-        {
-            return false;
-        }
-
         $this->secure = $bool;
 
         return $this;
@@ -142,7 +137,7 @@ class Cookie
 
         if (!empty(trim($value)))
         {
-            $value = $this->encrypt(json_encode($value));
+            $value = $this->encrypt(serialize($value));
         }
 
         $set = setcookie(
@@ -156,7 +151,7 @@ class Cookie
 
         if (!$set)
         {
-            throw new \Exception("Could not set the cookie!");
+            throw new CookieException("Could not set the cookie!");
         }
     }
 
@@ -184,7 +179,7 @@ class Cookie
         {
             if (isset($_COOKIE[ $this->prefix . $key ]))
             {
-                return json_decode($this->decrypt($_COOKIE[ $this->prefix . $key ]));
+                return unserialize($this->decrypt($_COOKIE[ $this->prefix . $key ]));
             }
             return false;
         }
@@ -194,22 +189,77 @@ class Cookie
 
     private function encrypt($data)
     {
-      $encrypt_key = config('config.encryption_key', self::ENC_KEY);
-
-      $encrypted_data = openssl_encrypt(
-        $data, "AES-256-CBC", mb_substr($encrypt_key,0,32),OPENSSL_RAW_DATA,mb_substr($encrypt_key,0,16)
-      );
-      return base64_encode ( $encrypted_data );
+      return OpenSsl::encrypt($data);
     }
 
 
     private function decrypt($data)
     {
-      $encrypt_key = config('config.encryption_key', self::ENC_KEY);
-
-      $decrypted_data = openssl_decrypt(
-        base64_decode($data), "AES-256-CBC", mb_substr($encrypt_key,0,32),OPENSSL_RAW_DATA,mb_substr($encrypt_key,0,16)
-      );
-      return $decrypted_data;
+      return OpenSsl::decrypt($data);
     }
+
+
+    /**
+     * Offset to retrieve
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
+     */
+    public function offsetGet ( $offset )
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * Offset to set
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet ( $offset , $value )
+    {
+        $this->set($offset,$value);
+    }
+
+    /**
+     * Offset to unset
+     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset ( $offset )
+    {
+        $this->forget($offset);
+    }
+
+    /**
+     * Whether a offset exists
+     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists ( $offset )
+    {
+        return $this->has($offset);
+    }
+
+
 }

@@ -4,7 +4,7 @@
 
 
 
-use System\Libraries\Database\Database as HandlerDB;
+use System\Facades\DB;
 
 
 class SessionDBStore implements \SessionHandlerInterface
@@ -12,13 +12,10 @@ class SessionDBStore implements \SessionHandlerInterface
 
 
   private $table;
-
-  private $db;
-
+    
 
   function __construct($table)
   {
-    $this->db     = new HandlerDB();
     $this->table  = $table;
   }
 
@@ -31,7 +28,7 @@ class SessionDBStore implements \SessionHandlerInterface
 
   public function read($id):String
   {
-    $result = $this->db->pdo()->query("SELECT data FROM {$this->table} WHERE session_id='{$id}'AND expires > ".time()."");
+    $result = DB::pdo()->query("SELECT data FROM {$this->table} WHERE session_id='{$id}'AND expires > ".time()."");
     if($result->rowCount() > 0)
     {
       return $result->fetch()->data;
@@ -44,7 +41,7 @@ class SessionDBStore implements \SessionHandlerInterface
   public function write($id,$data):Bool
   {
     $time    = time() + ini_get('session.gc_maxlifetime');
-    $result  = $this->db->pdo()->query("REPLACE INTO {$this->table} SET session_id ='{$id}',expires = {$time},data ='{$data}'");
+    $result  = DB::pdo()->query("REPLACE INTO {$this->table} SET session_id ='{$id}',expires = {$time},data ='{$data}'");
     return $result ? true :false;
 
   }
@@ -61,7 +58,7 @@ class SessionDBStore implements \SessionHandlerInterface
   {
     try
     {
-      $this->db->pdo()->query("DELETE FROM {$this->table} WHERE session_id = '{$id}'");
+      DB::pdo()->query("DELETE FROM {$this->table} WHERE session_id = '{$id}'");
     }
     catch (\PDOException $e){}
 
@@ -72,7 +69,7 @@ class SessionDBStore implements \SessionHandlerInterface
 
   public function gc($maxlifetime):Bool
   {
-    $this->db->pdo()->query("DELETE FROM {$this->table} WHERE expires < ".(time() + $maxlifetime));
+    DB::pdo()->query("DELETE FROM {$this->table} WHERE expires < ".(time() + $maxlifetime));
     return true;
   }
 

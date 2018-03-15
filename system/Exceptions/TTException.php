@@ -1,4 +1,4 @@
-<?php namespace System\Engine\Exception;
+<?php namespace System\Exceptions;
 
 //-------------------------------------------------------------
 /**
@@ -93,7 +93,8 @@ class TTException
     {
         if (error_reporting() & $level)
         {
-            $e = new class{
+            $e = new class
+            {
                 private $data;
                 public function setExceptionData($data){ $this->data = $data;}
                 public function getFile(){ return $this->data['file']; }
@@ -123,7 +124,5 @@ class TTException
             }
           }
         }
-
-
     }
 }

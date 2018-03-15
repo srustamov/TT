@@ -8,12 +8,13 @@
  * @category   View
  */
 
-
+use System\Exceptions\ViewException;
 use Windwalker\Edge\Cache\EdgeFileCache;
-use Windwalker\Edge\Edge;
 use Windwalker\Edge\Loader\EdgeFileLoader;
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
+use Windwalker\Edge\Edge;
 use System\Facades\Load;
+
 
 
 class View
@@ -92,7 +93,7 @@ class View
     {
 
         if(is_null($this->file)) {
-          throw new \Exception("View File not found");
+          throw new ViewException("View File not found");
         }
 
         $this->_withFlashData();
@@ -106,7 +107,7 @@ class View
 
         $edge = new Edge( $loader , null , new EdgeFileCache( Load::config ( 'view.cache_path' ) ) );
 
-        if ($extensions = config ( 'view.extensions')) {
+        if ($extensions = Load::config ( 'view.extensions')) {
 
             foreach ($extensions as $extension) {
                 if (new $extension instanceof EdgeExtensionInterface) {
@@ -120,7 +121,7 @@ class View
         $content = $edge->render ( $this->file , $this->data );
 
         if (is_null($this->minify)) {
-            $this->minify = config('view.minify');
+            $this->minify = Load::config('view.minify');
         }
 
         if ($this->minify) {

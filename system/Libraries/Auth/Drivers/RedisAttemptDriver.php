@@ -1,20 +1,19 @@
 <?php namespace System\Libraries\Auth\Drivers;
 
 
-use System\Libraries\Auth\Drivers\Attempt_Driver_Interface;
 use System\Facades\Redis as RDriver;
 use System\Facades\Http;
 
 
 
-class Redis_Attempt_Driver implements Attempt_Driver_Interface
+class RedisAttemptDriver implements AttemptDriverInterface
 {
 
 
 
   public function getAttemptsCountOrFail($guard)
   {
-       if (($result = RDriver::get("AUTH_ATTEMP_COUNT_{$guard}".Http::ip())))
+       if (($result = RDriver::get("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip())))
        {
          return (object) array('count' => $result);
        }
@@ -25,7 +24,7 @@ class Redis_Attempt_Driver implements Attempt_Driver_Interface
   {
       $count = $this->getAttemptsCountOrFail($guard);
 
-      RDriver::setex("AUTH_ATTEMP_COUNT_{$guard}".Http::ip(),60*60,
+      RDriver::setex("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip(),60*60,
           $count ? $count->count+1 :1
         );
 
@@ -37,30 +36,31 @@ class Redis_Attempt_Driver implements Attempt_Driver_Interface
   {
     $expire = strtotime("+ {$lock_time} seconds");
 
-    RDriver::expire("AUTH_ATTEMP_COUNT_{$guard}".Http::ip(), $expire);
+    RDriver::expire("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip(), $expire);
 
-    RDriver::setex("AUTH_ATTEMP_EXPIRE_{$guard}".Http::ip(),$expire,$expire);
+    RDriver::setex("AUTH_ATTEMPT_EXPIRE_{$guard}".Http::ip(),$expire,$expire);
   }
 
 
   public function deleteAttempt($guard)
   {
-    RDriver::delete("AUTH_ATTEMP_COUNT_{$guard}".Http::ip());
+    RDriver::delete("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip());
   }
 
 
 
-  public function expireDateOrFail($guard)
+  public function expireTimeOrFail($guard)
   {
-    return RDriver::get("AUTH_ATTEMP_EXPIRE_{$guard}".Http::ip());
+    return RDriver::get("AUTH_ATTEMPT_EXPIRE_{$guard}".Http::ip());
   }
 
 
   public function getRemainingSecondsOrFail($guard)
   {
-    if($expiredate = $this->expireDateOrFail($guard))
+    if(($expireTime = $this->expireTimeOrFail($guard)))
     {
-        $remaining_seconds = $expiredate - time();
+        $remaining_seconds = $expireTime - time();
+
         if($remaining_seconds > 0)
         {
             return $remaining_seconds;

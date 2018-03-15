@@ -1,13 +1,12 @@
 <?php namespace System\Libraries\Auth\Drivers;
 
 
-use System\Libraries\Auth\Drivers\Attempt_Driver_Interface;
 use System\Facades\DB;
 use System\Facades\Http;
 
 
 
-class Database_Attempt_Driver implements Attempt_Driver_Interface
+class DatabaseAttemptDriver implements AttemptDriverInterface
 {
 
 
@@ -44,7 +43,7 @@ class Database_Attempt_Driver implements Attempt_Driver_Interface
 
 
 
-  public function expireDateOrFail($guard)
+  public function expireTimeOrFail($guard)
   {
     $result = DB::pdo()->query("SELECT expiredate FROM attempts WHERE ip='{$this->ip()}' AND guard='{$guard}'");
     
@@ -59,9 +58,9 @@ class Database_Attempt_Driver implements Attempt_Driver_Interface
 
   public function getRemainingSecondsOrFail($guard)
   {
-    if($expiredate = $this->expireDateOrFail($guard))
+    if(($expireTime = $this->expireTimeOrFail($guard)))
     {
-        $remaining_seconds = $expiredate - time();
+        $remaining_seconds = $expireTime - time();
 
         if($remaining_seconds > 0)
         {

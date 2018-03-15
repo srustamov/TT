@@ -1,6 +1,6 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-use System\Libraries\Cache\CacheStore;
+
 
 class FileStore implements CacheStore
 {

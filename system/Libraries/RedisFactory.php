@@ -8,16 +8,19 @@ class RedisFactory
     private $redis;
 
 
-    public function __construct()
+    function __construct()
     {
-      
+
         $this->config = config('cache.redis');
 
         $this->redis = new \Redis();
 
-        try {
+        try
+        {
             $this->redis->connect($this->config['host'], $this->config['port']);
-        } catch (\RedisException $e) {
+        }
+        catch (\RedisException $e)
+        {
             throw new \RuntimeException('Redis message: '.$e->getMessage());
         }
 

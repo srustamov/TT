@@ -11,7 +11,7 @@
 
 use PDO;
 use PDOStatement;
-use System\Facades\Cache;
+use System\Exceptions\DatabaseException;
 
 class Database extends Connection
 {
@@ -79,7 +79,7 @@ class Database extends Connection
 
         } catch (\PDOException $e) {
 
-            throw new DatabaseException($e->getMessage()."<br />"."[QUERY: $queryString] ");
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
 
 
@@ -379,11 +379,7 @@ class Database extends Connection
           $this->reset();
           return $statement->rowCount () > 0;
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              "[INSERT] ".$e->getMessage()."<br />".
-              "[QUERY: $queryString]"
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
     }
 
@@ -416,11 +412,7 @@ class Database extends Connection
           $this->reset();
           return $statement->rowCount () > 0;
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              "[UPDATE] ".$e->getMessage()."<br />".
-              "[QUERY: $queryString]"
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
     }
 
@@ -453,11 +445,7 @@ class Database extends Connection
           $this->reset();
           return $statement->rowCount () > 0;
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              "[DELETE] ".$e->getMessage()."<br />".
-              "[QUERY: $queryString]"
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
     }
 
@@ -554,11 +542,7 @@ class Database extends Connection
         try {
             return ($this->pdo->exec ( $queryString ) === false);
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              $e->getMessage()."<br />".
-              "[QUERY: $queryString] "
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
 
 
@@ -576,11 +560,7 @@ class Database extends Connection
         try {
             return $this->pdo->exec ( $queryString ) === false ? false : true;
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              $e->getMessage()."<br />".
-              "[QUERY: $queryString] "
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
 
     }
@@ -602,11 +582,7 @@ class Database extends Connection
             }
             return null;
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              $e->getMessage()."<br />".
-              "[QUERY: $queryString] "
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
 
     }
@@ -625,11 +601,7 @@ class Database extends Connection
             }
             return null;
         } catch (\PDOException $e) {
-            throw new DatabaseException
-            (
-              $e->getMessage()."<br />".
-              "[QUERY: $queryString] "
-            );
+            throw new DatabaseException($e->getMessage(),$queryString);
         }
 
     }

@@ -3,7 +3,7 @@
 
 
 
-interface Attempt_Driver_Interface
+interface AttemptDriverInterface
 {
   public function getAttemptsCountOrFail($guard);
 
@@ -13,7 +13,7 @@ interface Attempt_Driver_Interface
 
   public function deleteAttempt($guard);
 
-  public function expireDateOrFail($guard);
+  public function expireTimeOrFail($guard);
 
   public function getRemainingSecondsOrFail($guard);
 }

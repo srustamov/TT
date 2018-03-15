@@ -1,26 +1,25 @@
 {
-    "name": "srustamov/tt",
-    "description": "php simple and fastest mini mvc framework",
-    "type": "project",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Samir Rustamov",
-            "email": "rustemovv96@gmail.com",
-            "homepage": "https://github.com/srustamov/TT",
-            "role": "Developer"
-        }
-    ],
-    "require": {
-      "php": ">=7.0.0",
-  	  "windwalker/edge": "~3.0",
-      "phpmailer/phpmailer": "^6.0"
-    },
-
-    "autoload": {
-        "psr-4":{
-          "App\\":"app/",
-          "System\\":"system/"
-        }
+  "name": "srustamov/tt",
+  "description": "php simple and fastest mini mvc framework",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Samir Rustamov",
+      "email": "rustemovv96@gmail.com",
+      "homepage": "https://github.com/srustamov/TT",
+      "role": "Developer"
     }
+  ],
+  "require": {
+    "php": ">=7.0.0",
+    "windwalker/edge": "~3.0",
+    "phpmailer/phpmailer": "^6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "System\\": "system/"
+    }
+  }
 }

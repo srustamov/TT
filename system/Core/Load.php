@@ -28,16 +28,16 @@ class Load
           return $this;
         }
 
-        if(isset(static::$classes[$class])) 
+        if(isset(static::$classes[$class]))
         {
             return static::$classes[$class];
-        } 
-        else 
+        }
+        else
         {
 
             $application_classes = $this->config('config.classes',[]);
 
-            if (array_key_exists( $class,$application_classes)) 
+            if (array_key_exists( $class,$application_classes))
             {
 
                 if (method_exists($class,'__construct'))
@@ -51,9 +51,6 @@ class Load
                 {
                     static::$classes[$class] = new $application_classes[$class];
                 }
-
-
-                static::$classes[$class] = new $application_classes[$class](...$args);
 
                 return static::$classes[$class];
             }
@@ -94,9 +91,9 @@ class Load
     public function config( $name, $default = false)
     {
 
-        if(file_exists(path('storage/system/configs.php'))) 
+        if(file_exists(path('storage/system/configs.php')))
         {
-            if(empty(static::$configurations)) 
+            if(empty(static::$configurations))
             {
                 static::$configurations = require_once path('storage/system/configs.php');
             }
@@ -106,7 +103,7 @@ class Load
         {
             list($file, $item) = explode('.', $name);
 
-            if (isset(static::$configurations[$file])) 
+            if (isset(static::$configurations[$file]))
             {
                 return static::$configurations[$file][$item] ?? $default;
             }
@@ -126,7 +123,7 @@ class Load
         }
         else
         {
-            if(isset(static::$configurations[$name])) 
+            if(isset(static::$configurations[$name]))
             {
                 return static::$configurations[$name];
             }
@@ -183,31 +180,34 @@ class Load
 
             $_settings = [];
 
-            foreach ($lines as $line) 
+            foreach ($lines as $line)
             {
                 $line = trim ( $line );
 
-                if (isset( $line[ 0 ] ) && $line[ 0 ] === '#') 
+                if (isset( $line[ 0 ] ) && $line[ 0 ] === '#')
                 {
                     continue;
                 }
 
-                if (strpos ( $line , '=' ) !== false) 
+                if (strpos ( $line , '=' ) !== false)
                 {
                     list( $name , $value ) = array_map ( 'trim' , explode ( '=' , $line , 2 ) );
                     $name = str_replace(['\'','"'],'',$name);
-                    
-                    if (preg_match ( '/\s+/' , $value ) > 0) 
+
+                    if (preg_match ( '/\s+/' , $value ) > 0)
                     {
                         throw new \RuntimeException( "setting variable value containing spaces must be surrounded by quotes" );
                     }
 
-                    if (strtolower ( $value ) == 'true') {
+                    if (strtolower ( $value ) == 'true')
+                    {
                         $value = true;
                     }
-                    if (strtolower ( $value ) == 'false') {
+                    elseif (strtolower ( $value ) == 'false')
+                    {
                         $value = false;
                     }
+
 
                     $_settings[ $name ] = $value;
                 }
@@ -217,28 +217,29 @@ class Load
             foreach ($_settings as $key => $value)
             {
 
-                if (strpos ( $value , '$' ) !== false) 
+                if (strpos ( $value , '$' ) !== false)
                 {
                     $value = preg_replace_callback ( '/\${([a-zA-Z0-9_]+)}/' ,
-                        function ( $m ) use ( $_settings ) {
-                            if (isset( $_settings[ $m[ 1 ] ] )) 
-                            {
-                                return $_settings[ $m[ 1 ] ];
-                            } 
-                            else 
-                            {
-                                return ${"$m[1]"} ?? '${' . $m[ 1 ] . '}';
-                            }
-                        } ,
-                        $value
-                    );
+                                  function ( $m ) use ( $_settings )
+                                  {
+                                      if (isset( $_settings[ $m[ 1 ] ] ))
+                                      {
+                                          return $_settings[ $m[ 1 ] ];
+                                      }
+                                      else
+                                      {
+                                          return ${"$m[1]"} ?? '${' . $m[ 1 ] . '}';
+                                      }
+                                  } ,
+                                  $value
+                              );
                 }
 
-                if(function_exists('putenv')) 
+                if(function_exists('putenv'))
                 {
                     putenv("$key=$value");
                 }
-                if (function_exists('apache_setenv')) 
+                if (function_exists('apache_setenv'))
                 {
                     apache_setenv($key,$value);
                 }
@@ -246,19 +247,19 @@ class Load
                 $_ENV[ $key ] = $value;
             }
             file_put_contents ( path ( 'storage/system/settings' ) , serialize ( $_ENV ) );
-        } 
-        else 
+        }
+        else
         {
 
             $_settings = (array) unserialize ( file_get_contents ( path ( 'storage/system/settings' ) ) );
 
-            foreach ($_settings as $key => $value) 
+            foreach ($_settings as $key => $value)
             {
-                if(function_exists('putenv')) 
+                if(function_exists('putenv'))
                 {
                     putenv("$key=$value");
                 }
-                if (function_exists('apache_setenv')) 
+                if (function_exists('apache_setenv'))
                 {
                     apache_setenv($key,$value);
                 }

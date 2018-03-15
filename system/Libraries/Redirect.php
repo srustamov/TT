@@ -41,7 +41,8 @@ class Redirect
 
     public function back($refresh = 0)
     {
-        if($refresh) {
+        if($refresh)
+        {
             $this->refresh = $refresh;
         }
 
@@ -138,7 +139,8 @@ class Redirect
         }
 
 
-        if($this->refresh) {
+        if($this->refresh)
+        {
             sleep($this->refresh);
         }
 

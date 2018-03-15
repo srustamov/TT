@@ -8,54 +8,55 @@
  * @category    Cache
  */
 
-use System\Libraries\Cache\CacheStore;
+
 use System\Libraries\Cache\Drivers\FileStore;
 use System\Libraries\Cache\Drivers\DatabaseStore;
 use System\Libraries\Cache\Drivers\MemcacheStore;
 use System\Libraries\Cache\Drivers\RedisStore;
+use System\Facades\Load;
 
 class Cache implements CacheStore
 {
 
 
-    private static $driver;
+    private $driver;
 
 
     function  __construct ()
     {
-        if (is_null(self::$driver))
+        if (is_null($this->driver))
         {
-            $driver = config('cache.driver','file');
+            $driver = Load::config('cache.driver','file');
 
             $this->driver($driver);
         }
     }
 
 
-    public static function driver($driver)
+    public  function driver($driver)
     {
         if($driver instanceof CacheStore)
         {
-            self::$driver = $driver;
+            $this->driver = $driver;
         }
         else
         {
             switch (strtolower($driver))
             {
                 case 'file':
-                    self::$driver = new FileStore();
+                    $this->driver = new FileStore();
                     break;
                 case 'database':
-                    self::$driver = new DatabaseStore();
+                    $this->driver = new DatabaseStore();
                     break;
                 case 'memcache':
-                    self::$driver = new MemcacheStore();
+                    $this->driver = new MemcacheStore();
                     break;
                 case 'redis':
-                    self::$driver = new RedisStore();
+                    $this->driver = new RedisStore();
                     break;
                 default:
-                    self::$driver = new FileStore();
+                    $this->driver = new FileStore();
                     break;
             }
         }
@@ -65,63 +66,54 @@ class Cache implements CacheStore
 
     public function put(String $key , $value ,$expires = 10)
     {
-        return self::$driver->put($key , $value ,$expires);
+        return $this->driver->put($key , $value ,$expires);
     }
 
 
     public function forever(String $key , $value )
     {
-        return self::$driver->forever($key , $value);
+        return $this->driver->forever($key , $value);
     }
 
 
     public function has($key)
     {
-        return self::$driver->has($key);
+        return $this->driver->has($key);
     }
 
 
     public function get($key)
     {
-        return self::$driver->get($key);
+        return $this->driver->get($key);
     }
 
 
     public function forget($key)
     {
-        return self::$driver->forget($key);
+        return $this->driver->forget($key);
     }
 
 
     public function expires(Int $expires)
     {
-        return self::$driver->expires($expires);
+        return $this->driver->expires($expires);
     }
 
 
     public function minutes(Int $minutes)
     {
-        return self::$driver->minutes($minutes);
+        return $this->driver->minutes($minutes);
     }
 
     public function flush ()
     {
-        self::$driver->flush();
+        $this->driver->flush();
     }
 
     public function __call($method,$args)
     {
       return $this->driver->$method(...$args);
     }
-
-
-
-    function __destruct()
-    {
-    }
-
-
-
 
 
 

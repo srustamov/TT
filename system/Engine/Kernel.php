@@ -13,7 +13,7 @@ use System\Facades\Load;
 use System\Facades\Route;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
-use System\Engine\Exception\TTException;
+use System\Exceptions\TTException;
 
 class Kernel
 {
@@ -23,7 +23,8 @@ class Kernel
 
     function __construct($basePath = null)
     {
-      if (is_null ( $basePath )) {
+      if (is_null ( $basePath ))
+      {
           $this->basePath = dirname ( dirname ( __DIR__ ) );
       } else {
           $this->basePath = $basePath;

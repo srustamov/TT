@@ -11,52 +11,69 @@
 
 use System\Libraries\Session\Drivers\SessionFileStore;
 use System\Libraries\Session\Drivers\SessionDBStore;
+use System\Libraries\Session\Drivers\SessionRedisStore;
 use System\Facades\OpenSsl;
+use System\Facades\Load;
+use ArrayAccess;
+use Countable;
 
-class Session
+class Session implements ArrayAccess,Countable
 {
-    protected static $config;
 
 
-    public function __construct()
+    protected $config;
+
+
+    function __construct()
     {
-        if (is_null(static::$config)) {
-            static::$config = config('session');
-            ini_set('session.cookie_httponly', static::$config['cookie']['http_only']);
-            ini_set('session.use_only_cookies', static::$config['only_cookies']);
-            ini_set('session.gc_maxlifetime', static::$config['lifetime']);
-            ini_set('session.save_path', static::$config['files_location']);
+
+
+        if (session_status() == PHP_SESSION_NONE)
+        {
+
+            $this->config = Load::config('session');
+
+            ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
+            ini_set('session.use_only_cookies', $this->config['only_cookies']);
+            ini_set('session.gc_maxlifetime', $this->config['lifetime']);
+            ini_set('session.save_path', $this->config['files_location']);
 
             session_set_cookie_params(
-              static::$config['lifetime'],
-              static::$config['cookie']['path'],
-              static::$config['cookie']['domain'],
-              static::$config['cookie']['secure'],
-              static::$config['cookie']['http_only']
+              $this->config['lifetime'],
+              $this->config['cookie']['path'],
+              $this->config['cookie']['domain'],
+              $this->config['cookie']['secure'],
+              $this->config['cookie']['http_only']
             );
 
-            session_name(static::$config['cookie']['name']);
+            session_name($this->config['cookie']['name']);
 
-            if (static::$config['driver'] == 'file') {
+            switch ($this->config['driver'])
+            {
+              case 'file':
                 $handler = new SessionFileStore();
-            } elseif (static::$config['driver'] == 'database') {
-                $handler = new SessionDBStore(static::$config['table']);
+                break;
+              case 'database':
+                $handler = new SessionDBStore($this->config['table']);
+                break;
+              case 'redis':
+                $handler = new SessionRedisStore();
+                break;
+              default:
+                //
+                break;
             }
 
-
-            if (isset($handler)) {
+            if (isset($handler))
+            {
                 session_set_save_handler($handler, true);
                 register_shutdown_function('session_write_close');
             }
 
+            session_start();
 
+            $this->token();
 
-            if (session_status() == PHP_SESSION_NONE)
-            {
-                session_start();
-
-                $this->token();
-            }
         }
     }
 
@@ -69,13 +86,17 @@ class Session
 
     public function set($key, $value)
     {
-        if (is_callable($value)) {
+        if (is_callable($value))
+        {
             return $this->set($key, call_user_func($value, $this));
-        } else {
+        }
+        else
+        {
             $_SESSION[ $key ] = $value;
 
-            if (static::$config['regenerate'] == true) {
-                @session_regenerate_id(session_id());
+            if ($this->config['regenerate'] == true)
+            {
+                session_regenerate_id(session_id());
             }
         }
     }
@@ -87,12 +108,17 @@ class Session
 
     private function token():String
     {
-        if (!$this->has('_token')) {
+        if (!$this->has('_token'))
+        {
             $token = base64_encode(OpenSsl::random(40));
+
             $this->set('_token', $token);
-        } else {
+        }
+        else
+        {
             $token = $this->get('_token');
         }
+
         return $token;
     }
 
@@ -104,27 +130,38 @@ class Session
 
     public function get($key)
     {
-        if (is_callable($key)) {
+        if (is_callable($key))
+        {
             return $this->get(call_user_func($key, $this));
-        } else {
-            if (isset($_SESSION[ $key ])) {
+        }
+        else
+        {
+            if (isset($_SESSION[ $key ]))
+            {
                 return $_SESSION[ $key ];
             }
         }
+
         return false;
     }
 
 
     public function flash($key,$value = null)
     {
-        if($value) {
+        if($value)
+        {
             $_SESSION['flash-data'][$key] = $value;
-        } else {
-            if (isset($_SESSION['flash-data'][$key])) {
+        }
+        else
+        {
+            if (isset($_SESSION['flash-data'][$key]))
+            {
                 $return = $_SESSION['flash-data'][$key];
+
                 unset($_SESSION['flash-data'][$key]);
 
-                if(empty($_SESSION['flash-data'])) {
+                if(empty($_SESSION['flash-data']))
+                {
                     unset($_SESSION['flash-data']);
                 }
                 return $return;
@@ -140,7 +177,8 @@ class Session
      */
     public function setArray(array $data)
     {
-        foreach ($data as $key => $value) {
+        foreach ($data as $key => $value)
+        {
             $this->set($key, $value);
         }
     }
@@ -172,15 +210,23 @@ class Session
 
     public function delete($key)
     {
-        if (is_callable($key)) {
+        if (is_callable($key))
+        {
             $this->delete(call_user_func($key, $this));
-        } else {
-            if (is_array($key)) {
-                foreach ($key as  $value) {
+        }
+        else
+        {
+            if (is_array($key))
+            {
+                foreach ($key as  $value)
+                {
                     $this->delete($value);
                 }
-            } else {
-                if (isset($_SESSION[ $key ])) {
+            }
+            else
+            {
+                if (isset($_SESSION[ $key ]))
+                {
                     unset($_SESSION[ $key ]);
                 }
             }
@@ -207,15 +253,16 @@ class Session
     {
         $cookie_params = session_get_cookie_params();
 
-        if (is_null($domain)) {
+        if (is_null($domain))
+        {
             return $cookie_params['domain'];
         }
 
         session_set_cookie_params(
-        $cookie_params['lifetime'],
-        $cookie_params['path'],
-        $domain
-      );
+          $cookie_params['lifetime'],
+          $cookie_params['path'],
+          $domain
+       );
 
         return $this;
     }
@@ -249,16 +296,87 @@ class Session
     }
 
 
-    public static function __callStatic($method, $args)
-    {
-        return (new static)->__call($method, $args);
-    }
-
-
-
     public function destroy()
     {
         $_SESSION = [];
         session_destroy();
+    }
+
+
+
+    /**
+     * Offset to retrieve
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
+     */
+    public function offsetGet ( $offset )
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * Offset to set
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet ( $offset , $value )
+    {
+        $this->set($offset,$value);
+    }
+
+    /**
+     * Offset to unset
+     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset ( $offset )
+    {
+        $this->delete($offset);
+    }
+
+    /**
+     * Whether a offset exists
+     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists ( $offset )
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * Count elements of an object
+     * @link http://php.net/manual/en/countable.count.php
+     * @return int The custom count as an integer.
+     * </p>
+     * <p>
+     * The return value is cast to an integer.
+     * @since 5.1.0
+     */
+    public function count ()
+    {
+        return count($this->all());
     }
 }

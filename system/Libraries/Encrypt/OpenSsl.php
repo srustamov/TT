@@ -9,6 +9,8 @@
  * @category    OpenSSL
  */
 
+use System\Facades\Load;
+use System\Exceptions\EncryptException;
 
 class OpenSsl
 {
@@ -29,7 +31,14 @@ class OpenSsl
 
   function __construct()
   {
-    $this->key = config ('config.encryption_key',sha1('fjf8uxkr0n322pkmc23bzt3UGUyf72354305i3m4x9trb673**O38r+'));
+    $key = Load::config ('config.encryption_key',false);
+
+    if(!$key)
+    {
+      throw new EncryptException("<b>Application Down</b> ! Application Encryption key not found!");
+    }
+
+    $this->key = $key;
   }
 
 
@@ -93,7 +102,7 @@ class OpenSsl
 
 
 
-  public function random(Int $length = 32)
+  public function random(Int $length)
   {
     return openssl_random_pseudo_bytes($length);
   }

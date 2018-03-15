@@ -29,22 +29,22 @@
             <li>
               <a href="{{url('/home')}}">@lang('home.home')</a>
             </li>
-            @if (Auth::guest())
+            @guest
               <li><a href="{{url('/auth/register')}}">@lang('home.register')</a></li>
               <li><a href="{{url('/auth/login')}}">@lang('home.login')</a></li>
-            @endif
+            @endguest
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li>
-              <a class="lang" href="/language/az">az</a>
+              <a class="lang" href="{{url('language/az')}}">az</a>
             </li>
             <li>
-              <a class="lang" href="/language/en">en</a>
+              <a class="lang" href="{{url('language/en')}}">en</a>
             </li>
             <li>
-              <a class="lang" href="/language/tr">tr</a>
+              <a class="lang" href="{{url('language/tr')}}">tr</a>
             </li>
-            @if (Auth::check())
+            @auth
             <li class="btn-group">
               <button style="border-radius:0;min-height:50px" class="btn btn-success">
                {{ Auth::name() }}
@@ -55,7 +55,7 @@
                 Logout
               </button>
             </li>
-            @endif
+            @endauth
           </ul>
         </div>
       </div>

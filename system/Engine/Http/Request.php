@@ -226,7 +226,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
-    public function validate(array $roles): Bool
+    public function validate(array $roles)
     {
         $validation =  Validator::make($this->all(), $roles);
 

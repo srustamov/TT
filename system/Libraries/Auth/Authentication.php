@@ -7,9 +7,9 @@
  * @category  Authentication
  */
 
-use System\Libraries\Auth\Drivers\Session_Attempt_Driver;
-use System\Libraries\Auth\Drivers\Database_Attempt_Driver;
-use System\Libraries\Auth\Drivers\Redis_Attempt_Driver;
+use Drivers\SessionAttemptDriver;
+use Drivers\DatabaseAttemptDriver;
+use Drivers\RedisAttemptDriver;
 use System\Facades\Session;
 use System\Facades\Cookie;
 use System\Facades\Load;
@@ -46,7 +46,7 @@ class Authentication
 
 
 
-    public function __construct()
+    function __construct()
     {
         $this->config = Load::config('authentication.guards');
 
@@ -156,7 +156,8 @@ class Authentication
             {
                 $this->setSession($user);
 
-                if ($remember) {
+                if ($remember)
+                {
                     $this->setRemember($user);
                 }
                 return true;
@@ -196,7 +197,7 @@ class Authentication
 
     public function guest()
     {
-        return !static::check();
+        return !$this->check();
     }
 
 
@@ -245,7 +246,8 @@ class Authentication
 
         $set_data = [];
 
-        foreach ($guard_data as $key => $value) {
+        foreach ($guard_data as $key => $value)
+        {
             if (array_search($key, $this->hidden[$this->guard]) !== false) {
                 continue;
             }
@@ -346,16 +348,16 @@ class Authentication
             switch ($config['attempts_driver'])
             {
               case 'session':
-                $this->driver[$guard] = new Session_Attempt_Driver();
+                $this->driver[$guard] = new SessionAttemptDriver();
                 break;
               case 'database':
-                $this->driver[$guard] = new Database_Attempt_Driver();
+                $this->driver[$guard] = new DatabaseAttemptDriver();
                 break;
               case 'redis':
-                $this->driver[$guard] = new Redis_Attempt_Driver();
+                $this->driver[$guard] = new RedisAttemptDriver();
                 break;
               default:
-                $this->driver[$guard] = new Session_Attempt_Driver();
+                $this->driver[$guard] = new SessionAttemptDriver();
                 break;
             }
         }
@@ -379,7 +381,8 @@ class Authentication
     {
         $guard = $args[ 0 ] ?? $this->guard;
 
-        if ($this->check($guard)) {
+        if ($this->check($guard))
+        {
             return Session::get($guard . '_' . $method);
         }
 

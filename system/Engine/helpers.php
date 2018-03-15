@@ -228,9 +228,11 @@ function csrf_token():String
 {
     static $token;
 
-    if (is_null($token)) {
+    if (is_null($token))
+    {
         $token = Load::class('session')->get('_token');
     }
+
     return $token;
 }
 
@@ -334,7 +336,7 @@ if (!function_exists ( 'cache' )) {
         }
         else
         {
-            return Load::class('cache')->put (...func_num_args());
+            return Load::class('cache')->put (...func_get_args());
         }
     }
 }
@@ -353,7 +355,7 @@ if (!function_exists ( 'session' )) {
         }
         else
         {
-            return Load::class('session')->set (...func_num_args());
+            return Load::class('session')->set (...func_get_args());
         }
     }
 }
@@ -438,11 +440,20 @@ if (!function_exists ( 'post' )) {
 
 
 if (!function_exists ( 'request' )) {
-    function request ( $name = null )
+    function request ()
     {
-        return !is_null ( $name )
-        ? Load::class('request')->{$name}
-        : Load::class('request');
+      if (func_num_args() == 0)
+      {
+          return Load::class('request');
+      }
+      elseif (func_num_args() == 1)
+      {
+          return Load::class('request')->{func_get_arg(0)};
+      }
+      else
+      {
+          return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
+      }
     }
 }
 
@@ -559,11 +570,16 @@ if (!function_exists ( 'len' )) {
      */
     function len ( $value , $encoding = null )
     {
-        if (is_string ( $value )) {
+        if (is_string ( $value ))
+        {
             return mb_strlen ( $value , $encoding );
-        } elseif (is_array ( $value )) {
+        }
+        elseif (is_array ( $value ))
+        {
             return count ( $value );
-        } else {
+        }
+        else
+        {
             return 0;
         }
 

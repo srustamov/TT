@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     @css('css/bootstrap.css')
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <title>{{ config('config.app_name') }}</title>
+    <title>{{ setting('APP_NAME') }}</title>
     <style>
         *{
           padding: 0;
@@ -17,12 +17,6 @@
           list-style: none;
           text-decoration: none;
         }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: rgb(255, 255, 255);
-        }
-
         #container {
             text-align: center;
             padding-top: 17vw;

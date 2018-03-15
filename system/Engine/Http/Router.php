@@ -6,9 +6,7 @@
  */
 
 
-use PHPMailer\PHPMailer\Exception;
 use System\Facades\Load;
-
 
 
 class Router

@@ -32,7 +32,6 @@ class LoginController extends Controller
             ]);
 
 
-
         if (!$validation->check())
         {
             return redirect('auth/login')->withErrors($validation->messages());

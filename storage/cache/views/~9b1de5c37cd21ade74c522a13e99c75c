@@ -36,13 +36,13 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li>
-              <a class="lang" href="/language/az">az</a>
+              <a class="lang" href="<?php echo $this->escape(url('language/az')); ?>">az</a>
             </li>
             <li>
-              <a class="lang" href="/language/en">en</a>
+              <a class="lang" href="<?php echo $this->escape(url('language/en')); ?>">en</a>
             </li>
             <li>
-              <a class="lang" href="/language/tr">tr</a>
+              <a class="lang" href="<?php echo $this->escape(url('language/tr')); ?>">tr</a>
             </li>
             <?php if(Auth::check()): ?>
             <li class="btn-group">

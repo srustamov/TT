@@ -18,6 +18,10 @@ class Extension implements EdgeExtensionInterface
             'csrf' => array($this, 'csrf'),
             'css' => array($this, 'css'),
             'js' => array($this, 'js'),
+            'auth' => array($this, 'auth'),
+            'endauth' => array($this, 'endauth'),
+            'guest' => array($this, 'guest'),
+            'endguest' => array($this, 'endguest'),
         );
     }
 
@@ -27,14 +31,32 @@ class Extension implements EdgeExtensionInterface
         return "<?php echo lang".implode(',',func_get_args())."; ?>";
     }
 
-    public function benchmark()
-    {
-        return "<?php echo benchmark_panel(); ?>";
-    }
 
     public function csrf()
     {
         return '<input type="hidden" name="_token" value="<?php echo csrf_token(); ?>" />';
+    }
+
+    public function auth($guard = 'user')
+    {
+        return '<?php if(Auth::check('.$guard.')): ?>';
+    }
+
+
+    public function endauth()
+    {
+        return '<?php endif; ?>';
+    }
+
+    public function guest($guard = 'user')
+    {
+        return '<?php if(Auth::guest('.$guard.')): ?>';
+    }
+
+
+    public function endguest()
+    {
+        return '<?php endif; ?>';
     }
 
     public function css()

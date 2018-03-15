@@ -1,7 +1,7 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
 
-use System\Libraries\Cache\CacheStore;
+use System\Facades\Load;
 
 class MemcacheStore implements CacheStore
 {
@@ -14,18 +14,16 @@ class MemcacheStore implements CacheStore
 
     private $memcache;
 
-    private static $config;
+    private $config;
 
     function __construct ()
     {
-        if (is_null(self::$config))
-        {
-            self::$config = config('cache.memcache');
-        }
+
+        $this->config = Load::config('cache.memcache');
 
         $this->memcache = new \Memcache;
 
-        $this->memcache->addServer(self::$config['host'],self::$config['port']);
+        $this->memcache->addServer($this->config['host'],$this->config['port']);
     }
 
     public function put ( String $key , $value , $expires = 10 )

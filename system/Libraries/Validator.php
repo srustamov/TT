@@ -4,7 +4,7 @@
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage    Libraries
+ * @subpackage    Library
  * @category    Validator
  */
 
@@ -18,7 +18,6 @@ class Validator
     protected $translator;
 
 
-
     protected $fields = [
         'email','integer','numeric',
         'ip','file','image'
@@ -28,7 +27,7 @@ class Validator
     protected $messages  = [];
 
 
-    public function __construct ()
+    function __construct ()
     {
         $this->translator = Language::translate('validator');
     }
@@ -52,9 +51,11 @@ class Validator
 
                 foreach ($this->fields as $f)
                 {
-                    if (in_array($f, $fields)) {
-                        if (!$this->is_mail($value)) {
-                            $this->translation($key,['field' => $key]);
+                    if (in_array($f, $fields))
+                    {
+                        if (!$this->is_mail($value))
+                        {
+                            $this->translation($f,$key,['field' => $key]);
                         }
                     }
                 }
@@ -70,28 +71,35 @@ class Validator
                         {
                             case 'unique':
                                 $control = DB::table($b)->where($key , $value)->first();
-                                if ($control) {
-                                    $this->translation('unique',['field' => $key]);
+
+                                if ($control)
+                                {
+                                    $this->translation('unique',$key,['field' => $key]);
                                 }
                                 break;
                             case 'max':
-                                if (mb_strlen($value) > $b) {
-                                    $this->translation('max',['max' => $b]);
+                                if (mb_strlen($value) > $b)
+                                {
+                                    $this->translation('max_character',$key,['field' => $key,'max' => $b]);
                                 }
                                 break;
                             case 'min':
-                                if (mb_strlen($value) < $b) {
-                                    $this->translation('min',['min' => $b]);
+                                //debug($key);
+                                if (mb_strlen($value) < (int) $b)
+                                {
+                                    $this->translation('min_character',$key,['field' => $key,'min' => $b]);
                                 }
                                 break;
                             case 'regex':
-                                if (!preg_match("#^$b$#",$value)) {
-                                    $this->translation('regex',['field' => $b]);
+                                if (!preg_match("#^$b$#",$value))
+                                {
+                                    $this->translation('regex',$key,['field' => $b]);
                                 }
                                 break;
                             case 'confirm':
-                                if ($data[$b] != $value) {
-                                    $this->translation('confirm', ['field' => $key,'confirm' => $b]);
+                                if ($data[$b] != $value)
+                                {
+                                    $this->translation('confirm',$key, ['field' => $key,'confirm' => $b]);
                                 }
                                 break;
 
@@ -145,24 +153,23 @@ class Validator
     }
 
 
-    private function translation($field,$replace = [])
+    private function translation($field,$key,$replace = [])
     {
 
         if(isset($this->translator[$field]))
         {
             if(!empty($replace))
             {
-                $this->messages[$field][] = str_replace(
-                    array_map(function($item){
+                $this->messages[$key][] = str_replace(array_map(function($item)
+                {
                         return ":".$item;
-                    },array_keys($replace)),
-                    array_values($replace),
-                    $this->translator[$field]
+                },
+                array_keys($replace)),array_values($replace),$this->translator[$field]
                 );
             }
             else
             {
-                $this->messages[$field][] = $this->translator[$field];
+                $this->messages[$key][] = $this->translator[$field];
             }
         }
     }
@@ -186,7 +193,8 @@ class Validator
 
     public function is_mail($email)
     {
-        if (is_array($email)) {
+        if (is_array($email))
+        {
             return false;
         }
         return filter_var(trim($email), FILTER_VALIDATE_EMAIL);
@@ -210,9 +218,12 @@ class Validator
 
     public function is_image($value):Bool
     {
-        if (isset($value['tmp_name'])) {
+        if (isset($value['tmp_name']))
+        {
             return \getimagesize($value['tmp_name']);
-        } else {
+        }
+        else
+        {
             return \getimagesize($value);
         }
 
@@ -222,7 +233,8 @@ class Validator
 
     public function is_file($value):Bool
     {
-        if (isset($value['tmp_name'])) {
+        if (isset($value['tmp_name']))
+        {
             return is_file($value['tmp_name']);
         }
         return false;
@@ -242,7 +254,8 @@ class Validator
 
     public function is_ip($ip)
     {
-        if (!is_string($ip)) {
+        if (!is_string($ip))
+        {
             return false;
         }
         return filter_var($ip, FILTER_VALIDATE_IP);

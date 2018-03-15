@@ -10,13 +10,11 @@
  * @category    Language
  */
 
-use Exception as LanguageException;
+use System\Exceptions\LanguageException;
 
 
 class Language
 {
-
-
 
     protected $lang;
 

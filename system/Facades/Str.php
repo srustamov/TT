@@ -5,7 +5,7 @@
  * @link https://github.com/srustamov/TT
  */
 
-use System\Facades\Facade;
+
 
 class Str extends Facade
 {

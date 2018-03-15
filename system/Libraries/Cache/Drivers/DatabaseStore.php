@@ -1,6 +1,7 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-use System\Libraries\Cache\CacheStore;
+use System\Facades\Load;
+use System\Facades\DB;
 
 class DatabaseStore implements CacheStore
 {
@@ -11,16 +12,12 @@ class DatabaseStore implements CacheStore
 
     private $expires;
 
-    private static $table;
+    private $table;
 
 
     function  __construct ()
     {
-        if (is_null(self::$table))
-        {
-            self::$table = config('cache.database',['table' => 'cache'])['table'];
-        }
-
+        $this->table = Load::config('cache.database',['table' => 'cache'])['table'];
         $this->gc();
     }
 
@@ -31,7 +28,7 @@ class DatabaseStore implements CacheStore
 
         $this->key = $key;
 
-        app('db')->table(self::$table)->set([
+        DB::table($this->table)->set([
             'cache_key' => $key,
             'cache_value' => $value,
             'expires' => time()+$expires
@@ -47,17 +44,17 @@ class DatabaseStore implements CacheStore
 
     public function has ( $key ):Bool
     {
-        return (bool) app('db')->table(self::$table)->where('cache_key',$key)->first();
+        return (bool) DB::table($this->table)->where('cache_key',$key)->first();
     }
 
     public function get ( $key )
     {
-        return app('db')->table(self::$table)->where('cache_key',$key)->first();
+        return DB::table($this->table)->where('cache_key',$key)->first();
     }
 
     public function forget ( $key )
     {
-        return app('db')->table(self::$table)->where('cache_key',$key)->delete();
+        return DB::table($this->table)->where('cache_key',$key)->delete();
     }
 
     public function expires ( Int $expires )
@@ -74,18 +71,18 @@ class DatabaseStore implements CacheStore
 
     public function flush ()
     {
-        app('db')->table(self::$table)->delete();
+        DB::table($this->table)->delete();
     }
 
     private function gc()
     {
-        app('db')->table(self::$table)->where('expires','<',time())->delete();
+        DB::table($this->table)->where('expires','<',time())->delete();
     }
 
-    
+
     public function __call($method,$args)
     {
-      throw new CacheDatabaseStoreException("Call to undefined method Cache::$method()");
+        throw new CacheDatabaseStoreException("Call to undefined method Cache::$method()");
     }
 
 
@@ -93,7 +90,7 @@ class DatabaseStore implements CacheStore
     {
         if ($this->put && !is_null($this->expires))
         {
-            app('db')->table(self::$table)->set([
+            DB::table($this->table)->set([
                 'expires' => time() + $this->expires
             ])->where('cache_key',$this->key)->update();
         }

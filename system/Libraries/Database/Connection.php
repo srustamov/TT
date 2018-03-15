@@ -11,6 +11,7 @@
 
 use PDO;
 use PDOException;
+use System\Exceptions\DatabaseException;
 
 abstract class Connection
 {
@@ -49,7 +50,7 @@ abstract class Connection
             }
             catch (PDOException $e)
             {
-                throw new \Exception( $e->getMessage() );
+                throw new DatabaseException( $e->getMessage() );
             }
         }
         else

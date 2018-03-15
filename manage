@@ -6,7 +6,6 @@
  */
 //------------------------------------------------------
 
-use System\Engine\Kernel;
 use System\Engine\Cli\Console;
 use System\Engine\Cli\PrintConsole;
 

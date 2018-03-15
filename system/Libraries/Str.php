@@ -4,7 +4,7 @@
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage    Libraries
+ * @subpackage    Library
  * @category    String
  */
 
@@ -93,7 +93,7 @@ class Str
      */
     public function limit($value, $limit = 100, $end = '...'):String
     {
-      if($this->length($value) > $limit) {
+      if($this->len($value) > $limit) {
         return mb_substr($value, 0 , $limit,"UTF-8").$end;
       }
       return $value;
@@ -135,7 +135,7 @@ class Str
      * @param null $encoding
      * @return int
      */
-    public function length ( $value , $encoding = null )
+    public function len ( $value , $encoding = null )
     {
         if ($encoding) {
             return mb_strlen ( $value , $encoding );

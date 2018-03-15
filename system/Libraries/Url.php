@@ -8,7 +8,7 @@
  * @category   Url
  */
 
-
+use System\Facades\Load;
 
 class Url
 {
@@ -33,7 +33,7 @@ class Url
     {
 
         $request = urldecode (
-            parse_url ( rtrim ( @$_SERVER[ 'REQUEST_URI' ] , '/' ) , PHP_URL_PATH )
+            parse_url ( rtrim ( $_SERVER[ 'REQUEST_URI' ] , '/' ) , PHP_URL_PATH )
         );
         $request = str_replace ( ' ' , '' , $request );
 
@@ -54,27 +54,41 @@ class Url
     }
 
 
+
+    public function secure()
+    {
+      return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off');
+    }
+
+
     /**
      * @param string $url
      * @return String
      */
     public function base ( $url = ''):String
     {
-        if(!is_null($this->baseUrl)) {
-            if(!preg_match('/^(https?://)/',$this->baseUrl)) {
+        if(!is_null($this->baseUrl))
+        {
+            if(!preg_match('/^(https?://)/',$this->baseUrl))
+            {
                 $base_url = $this->protocol().'://'.$this->baseUrl;
-            } else {
+            }
+            else
+            {
                 $base_url = $this->baseUrl;
             }
 
-        } else {
-            $base_url = trim(config('config.base_url'));
+        }
+        else
+        {
+            $base_url = trim(Load::config('config.base_url'));
 
             if(empty($base_url))
             {
                 $base_url = $this->protocol()."://".$this->host();
             }
         }
+
         return rtrim($base_url,'/') . '/' . ltrim($url,'/');
     }
 
