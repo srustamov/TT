@@ -7,9 +7,9 @@
  * @category  Authentication
  */
 
-use Drivers\SessionAttemptDriver;
-use Drivers\DatabaseAttemptDriver;
-use Drivers\RedisAttemptDriver;
+use System\Libraries\Auth\Drivers\SessionAttemptDriver;
+use System\Libraries\Auth\Drivers\DatabaseAttemptDriver;
+use System\Libraries\Auth\Drivers\RedisAttemptDriver;
 use System\Facades\Session;
 use System\Facades\Cookie;
 use System\Facades\Load;

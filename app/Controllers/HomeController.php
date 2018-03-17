@@ -21,7 +21,6 @@ class HomeController extends Controller
     }
 
 
-
     public function changeLanguage($lang)
     {
 

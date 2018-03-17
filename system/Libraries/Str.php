@@ -23,7 +23,8 @@ class Str
     {
         $position = strpos ( $subject , $search );
 
-        if ($position !== false) {
+        if ($position !== false)
+        {
             return substr_replace ( $subject , $replace , $position , strlen ( $search ) );
         }
 
@@ -38,11 +39,16 @@ class Str
       $alpha    = 'ABCDEFGHIJKLMNOQPRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
       $numeric  = '1234567890';
 
-      if(is_null($type)) {
+      if(is_null($type))
+      {
         $all = $alpha.$numeric;
-      } elseif ('alpha') {
+      }
+      elseif ('alpha')
+      {
         $all = $alpha;
-      } elseif ('numeric') {
+      }
+      elseif ('numeric')
+      {
         $all = $numeric;
       }
 
@@ -65,7 +71,8 @@ class Str
     {
         $position = strrpos ( $subject , $search );
 
-        if ($position !== false) {
+        if ($position !== false)
+        {
             return substr_replace ( $subject , $replace , $position , strlen ( $search ) );
         }
 
@@ -81,6 +88,7 @@ class Str
     public function slug ( $str , $separator = '-' ): String
     {
         $str = implode ( $separator , array_filter ( explode ( ' ' , $str ) ) );
+
         return $this->lower ( $str , 'UTF-8' );
     }
 
@@ -93,7 +101,8 @@ class Str
      */
     public function limit($value, $limit = 100, $end = '...'):String
     {
-      if($this->len($value) > $limit) {
+      if($this->len($value) > $limit)
+      {
         return mb_substr($value, 0 , $limit,"UTF-8").$end;
       }
       return $value;
@@ -137,7 +146,8 @@ class Str
      */
     public function len ( $value , $encoding = null )
     {
-        if ($encoding) {
+        if ($encoding)
+        {
             return mb_strlen ( $value , $encoding );
         }
 
@@ -153,7 +163,8 @@ class Str
      */
     public function replace_array ( $search , array $replace , $subject ): String
     {
-        foreach ($replace as $value) {
+        foreach ($replace as $value)
+        {
             $subject = str_replace_first ( $search , $value , $subject );
         }
 
@@ -162,7 +173,7 @@ class Str
 
 
 
-    public function FullTrim ( $str , $char = ' ' )
+    public function fullTrim ( $str , $char = ' ' )
     {
         return str_replace ( $char , '' , $str );
     }

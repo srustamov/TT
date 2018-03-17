@@ -8,10 +8,12 @@
  * @category    Database/Connection
  */
 
-
-use PDO;
-use PDOException;
 use System\Exceptions\DatabaseException;
+use System\Facades\Load;
+use PDOException;
+use PDO;
+
+
 
 abstract class Connection
 {
@@ -30,11 +32,13 @@ abstract class Connection
         $this->reconnect ();
     }
 
+
     public function reconnect ()
     {
-        if (!isset( $this->general[ $this->group ] )) {
+        if (!isset( $this->general[ $this->group ] )) 
+        {
 
-            $this->config[ $this->group ] = config ( "database.$this->group" );
+            $this->config[ $this->group ] = Load::config ( "database.$this->group" );
 
             $config = $this->config[ $this->group ];
 
@@ -59,15 +63,19 @@ abstract class Connection
         }
     }
 
+    
     public function pdo ()
     {
         return $this->pdo;
     }
 
+
     public function connect ( $group = 'default' )
     {
         $this->group = $group;
+
         $this->reconnect ();
+
         return $this;
     }
 
@@ -77,7 +85,8 @@ abstract class Connection
      */
     public function close ()
     {
-        if (isset( $this->general[ $this->group ] )) {
+        if (isset( $this->general[ $this->group ] )) 
+        {
             unset( $this->general[ $this->group ] );
 
             $this->group = 'default';

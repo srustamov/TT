@@ -12,8 +12,9 @@
 use System\Facades\Load;
 use System\Facades\Route;
 use System\Libraries\Benchmark;
-use System\Engine\Http\Middleware;
 use System\Exceptions\TTException;
+use System\Engine\Http\Middleware;
+
 
 class Kernel
 {
@@ -83,12 +84,18 @@ class Kernel
 
     private function setPublicPath ( )
     {
-        if (!defined ( 'PUBLIC_DIR' )) {
-            if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] )) {
+        if (!defined ( 'PUBLIC_DIR' ))
+        {
+            if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] ))
+            {
                 $_ = explode ( '/' , $_SERVER[ 'SCRIPT_FILENAME' ] );
+
                 array_pop ( $_ );
+
                 define ( 'PUBLIC_DIR' , implode ( '/' , $_ ) );
-            } else {
+            }
+            else
+            {
                 define ( 'PUBLIC_DIR' , BASEPATH . DS . 'public' );
             }
         }
@@ -98,7 +105,7 @@ class Kernel
 
     private function setAliases ()
     {
-        $aliases = config ( 'aliases' , [] );
+        $aliases = Load::config ( 'aliases' , [] );
 
         foreach ($aliases as $key => $value) {
             class_alias ( '\\' . $value , $key );
@@ -110,7 +117,9 @@ class Kernel
     public function routing ()
     {
         if (!InConsole ()) {
+
             import_dir_files ( path ( 'routes' ) );
+
             Route::execute ();
         }
         return $this;
@@ -139,9 +148,12 @@ class Kernel
 
     public function benchmark($finish)
     {
-      if(InConsole() || !Load::config('config.debug') || Load::class('http')->isAjax()) {
+      if(InConsole() || !Load::config('config.debug') || Load::class('http')->isAjax())
+      {
           return null;
-      } else {
+      }
+      else
+      {
         Benchmark::show($finish);
       }
     }

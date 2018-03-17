@@ -5,12 +5,12 @@
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage    Libraries/Encrypt
+ * @subpackage    Library/Encrypt
  * @category    OpenSSL
  */
 
-use System\Facades\Load;
 use System\Exceptions\EncryptException;
+use System\Facades\Load;
 
 class OpenSsl
 {

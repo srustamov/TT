@@ -21,11 +21,12 @@ class Console
      */
     public static function command ( $command , $shell = false )
     {
-        if ($shell == true) {
+        if ($shell == true)
+        {
             return shell_exec ( $command );
         }
 
-        $_command = \explode( ' ' , str_replace ( '  ' , ' ' , $command ) );
+        $_command = explode( ' ' , str_replace ( '  ' , ' ' , $command ) );
 
         static::run ( array_merge ( [ 'manage' ] , $_command ) );
 
@@ -40,9 +41,12 @@ class Console
         $instance = new static();
 
 
-        if (isset( $argv[ 1 ] )) {
+        if (isset( $argv[ 1 ] ))
+        {
             $manage = array_slice ( $argv , '1' );
-        } else {
+        }
+        else
+        {
             return PrintConsole::commandList ();
         }
 
@@ -74,9 +78,12 @@ class Console
                     "create:middleware",
                     "create:resource"
                 );
-                if(in_array($manage[ 0 ], $create)) {
+                if(in_array($manage[ 0 ], $create))
+                {
                     Create::execute($manage);
-                } else {
+                }
+                else
+                {
                     PrintConsole::commandList ();
                 }
 
@@ -88,10 +95,13 @@ class Console
 
     protected function startPhpDevelopmentServer ( array $manage )
     {
-        if(isset( $manage[ 1 ] ) && is_numeric ( $manage[ 1 ] )) {
+        if(isset( $manage[ 1 ] ) && is_numeric ( $manage[ 1 ] ))
+        {
             $port = $manage[ 1 ];
-        } else {
-            $port = "8000";
+        }
+        else
+        {
+            $port = 8000;
         }
 
         new PrintConsole ( 'green' ,"\nPhp Server Run <http://localhost:$port>\n" );
@@ -106,11 +116,16 @@ class Console
     protected function clearViewCache ()
     {
 
-        foreach (glob ( path ( 'storage/cache/views/*' ) ) as $file) {
-            if (is_file ( $file )) {
-                if (@\unlink ( $file )) {
+        foreach (glob ( path ( 'storage/cache/views/*' ) ) as $file)
+        {
+            if (is_file ( $file ))
+            {
+                if (\unlink ( $file ))
+                {
                     echo "Delete: [{$file}]\n";
-                } else {
+                }
+                else
+                {
                     new PrintConsole ( 'error' , 'Delete failed:[' . $file . ']' );
                 }
 
@@ -125,15 +140,18 @@ class Console
     {
         $settings_file = path ( '.settings' );
 
-        try {
+        try
+        {
             $file = fopen ( $settings_file , 'r+' );
 
-            while (( $line = fgets ( $file , 4096 ) ) !== false) {
-                if (strpos ( trim($line) , 'APP_KEY' ) === 0) {
-                    $replace = $line;
-                    break;
+            while (( $line = fgets ( $file , 4096 ) ) !== false)
+            {
+                if (strpos ( trim($line) , 'APP_KEY' ) === 0)
+                {
+                    $replace = $line; break;
                 }
             }
+
             fclose ( $file );
 
 
@@ -149,7 +167,9 @@ class Console
 
             new PrintConsole ( 'green' , $key );
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             new PrintConsole ( 'error' , $e->getMessage () . "\n" );
         }
 

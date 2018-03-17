@@ -12,9 +12,9 @@ use System\Engine\Http\Request;
 class :name
 {
 
-	 public function handle(Request $request ,$guard)
-     {
-        return true;
-     }
+	 public function handle(Request $request ,\Closure $next,$guard)
+   {
+      return true;
+   }
 
 }

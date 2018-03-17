@@ -96,8 +96,11 @@ class SessionFileStore implements SessionHandlerInterface
   private function newFile($session_id)
   {
     $file = fopen($this->file_path.$session_id,'c+b');
+
     flock($file,LOCK_EX);
+
     chmod($this->file_path.$session_id,0600);
+    
     fclose($file);
 
   }

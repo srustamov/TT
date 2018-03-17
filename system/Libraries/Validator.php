@@ -84,7 +84,6 @@ class Validator
                                 }
                                 break;
                             case 'min':
-                                //debug($key);
                                 if (mb_strlen($value) < (int) $b)
                                 {
                                     $this->translation('min_character',$key,['field' => $key,'min' => $b]);
@@ -134,7 +133,7 @@ class Validator
                     {
                         if (empty($value[$k]) && $value[$k] !== 0)
                         {
-                            $this->translation('required', ['field' => $key]);
+                            $this->translation('required', $key, ['field' => $key]);
                             return false;
                         }
                     }
@@ -144,7 +143,7 @@ class Validator
             {
                 if (empty(trim($data[$key])))
                 {
-                    $this->translation('required', ['field' => $key]);
+                    $this->translation('required',$key, ['field' => $key]);
                 }
             }
         }
@@ -169,7 +168,7 @@ class Validator
             }
             else
             {
-                $this->messages[$key][] = $this->translator[$field];
+                $this->messages[$key][] = $this->translator[$field] ?? '';
             }
         }
     }

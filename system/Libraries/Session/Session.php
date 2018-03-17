@@ -94,7 +94,7 @@ class Session implements ArrayAccess,Countable
         {
             $_SESSION[ $key ] = $value;
 
-            if ($this->config['regenerate'] == true)
+            if ($this->config['regenerate'] === true)
             {
                 session_regenerate_id(session_id());
             }
@@ -150,19 +150,19 @@ class Session implements ArrayAccess,Countable
     {
         if($value)
         {
-            $_SESSION['flash-data'][$key] = $value;
+            $_SESSION['_flash-data'][$key] = $value;
         }
         else
         {
-            if (isset($_SESSION['flash-data'][$key]))
+            if (isset($_SESSION['_flash-data'][$key]))
             {
-                $return = $_SESSION['flash-data'][$key];
+                $return = $_SESSION['_flash-data'][$key];
 
-                unset($_SESSION['flash-data'][$key]);
+                unset($_SESSION['_flash-data'][$key]);
 
-                if(empty($_SESSION['flash-data']))
+                if(empty($_SESSION['_flash-data']))
                 {
-                    unset($_SESSION['flash-data']);
+                    unset($_SESSION['_flash-data']);
                 }
                 return $return;
             }

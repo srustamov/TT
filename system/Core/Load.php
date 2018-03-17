@@ -108,9 +108,9 @@ class Load
                 return static::$configurations[$file][$item] ?? $default;
             }
 
-            if (file_exists(app_dir("Config/{$file}.php")))
+            if (file_exists(($config_file = path("app/Config/{$file}.php"))))
             {
-                $config = require_once app_dir("Config/{$file}.php");
+                $config = require_once $config_file;
 
                 static::$configurations[$file] = $config;
 
@@ -118,7 +118,7 @@ class Load
             }
             else
             {
-                throw new \Exception("Config file not found. Path : [".app_dir("Config/{$file}.php")."]");
+                throw new \Exception("Config file not found. Path : [".path("app/Config/{$file}.php")."]");
             }
         }
         else
@@ -128,15 +128,15 @@ class Load
                 return static::$configurations[$name];
             }
 
-            if (file_exists(app_dir("Config/{$name}.php")))
+            if (file_exists(($config_file = path("app/Config/{$name}.php"))))
             {
-                static::$configurations[$name] = require_once app_dir("Config/{$name}.php");
+                static::$configurations[$name] = require_once $config_file;
 
                 return static::$configurations[$name];
             }
             else
             {
-                throw new \Exception("Config file not found. Path : [".app_dir("Config/{$name}.php")." ]");
+                throw new \Exception("Config file not found. Path : [".path("app/Config/{$name}.php")." ]");
             }
         }
     }

@@ -28,11 +28,11 @@ class DatabaseStore implements CacheStore
 
         $this->key = $key;
 
-        DB::table($this->table)->set([
+        DB::table($this->table)->insert([
             'cache_key' => $key,
             'cache_value' => $value,
             'expires' => time()+$expires
-        ])->insert();
+        ]);
 
         return $this;
     }

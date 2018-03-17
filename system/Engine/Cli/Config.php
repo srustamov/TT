@@ -1,9 +1,8 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author  Samir Rustamov <rustemovv96@gmail.com>
+ * @link    https://github.com/srustamov/TT
  */
 
 
@@ -28,10 +27,12 @@ class Config {
 
     public static function clearConfigsCacheOrCreate($subCommand)
     {
-        if ($subCommand == '--create') {
+        if ($subCommand == '--create')
+        {
             $configsArray = [];
 
-            foreach (glob ( path ( 'app/Config/*.php' ) ) as $file) {
+            foreach (glob ( path ( 'app/Config/*.php' ) ) as $file)
+            {
                 $configsArray[ substr ( basename ( $file ) , 0 , -4 ) ] = require $file;
             }
 
@@ -44,9 +45,12 @@ class Config {
             file_put_contents ( $__file , ");" , FILE_APPEND );
 
             new PrintConsole ( 'green' , "\n\nConfigs cached successfully \n\n" );
-        } else {
-            if(file_exists(path ( 'storage/system/configs.php' ))) {
-                \unlink ( path ( 'storage/system/configs.php' ) );
+        }
+        else
+        {
+            if(file_exists(path ( 'storage/system/configs.php' )))
+            {
+                unlink ( path ( 'storage/system/configs.php' ) );
             }
 
             new PrintConsole ( 'green' , "\n\nCache configs clear successfully \n\n" );
@@ -56,9 +60,11 @@ class Config {
     protected static function create ( $configsArray )
     {
 
-        foreach ($configsArray as $key => $value) {
+        foreach ($configsArray as $key => $value)
+        {
 
-            if (is_array ( $value )) {
+            if (is_array ( $value ))
+            {
                 file_put_contents ( path ( 'storage/system/configs.php' ) ,
                     "\t'" . $key . "' => array(\n\n" , FILE_APPEND );
 
@@ -67,17 +73,26 @@ class Config {
                 file_put_contents ( path ( 'storage/system/configs.php' ) ,
                     "\t),\n\n" , FILE_APPEND );
 
-            } else {
-                if (\is_bool( $value )) {
+            }
+            else
+            {
+                if (is_bool( $value ))
+                {
                     $value = $value ? "true" : "false";
-                } elseif (\is_integer( $value )) {
-                } else {
+                }
+                elseif (\is_integer( $value ))
+                {}
+                else
+                {
                     $value = "'$value'";
                 }
 
-                if (\is_numeric ( $key )) {
+                if (is_numeric ( $key ))
+                {
                     file_put_contents ( path ( 'storage/system/configs.php' ) , "\t$value, \n\n" , FILE_APPEND );
-                } else {
+                }
+                else
+                {
                     file_put_contents ( path ( 'storage/system/configs.php' ) , "\t'" . $key . "' => $value, \n\n" , FILE_APPEND );
                 }
             }

@@ -1,11 +1,5 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
 * @author  Samir Rustamov <rustemovv96@gmail.com>
 * @link    https://github.com/srustamov/TT
@@ -20,33 +14,43 @@ namespace System\Engine\Cli;
  */
 
 use System\Engine\Cli\PrintConsole;
-
+use System\Facades\Load;
+use System\Facades\DB;
 
 class CreateTables {
 
-    
+
     public static function session($manage)
     {
         $table = false;
 
-        if (isset( $manage[ 1 ] ) && $manage[ 1 ] == '--create') {
-            if (isset( $manage[ 2 ] ) && !empty( $manage[ 2 ] )) {
+        if (isset( $manage[ 1 ] ) && $manage[ 1 ] == '--create')
+        {
+            if (isset( $manage[ 2 ] ) && !empty( $manage[ 2 ] ))
+            {
                 $table = $manage[ 2 ];
             }
         }
-        if (!$table) {
-            $table = config ( 'session.table' , 'sessions' );
+        if (!$table)
+        {
+            $table = Load::config ( 'session.table' , 'sessions' );
         }
 
-        try {
-            app('database')->exec (static::getSessionTableSql($table));
+        try
+        {
+            DB::exec (static::getSessionTableSql($table));
 
             new PrintConsole ( 'success' , "\n Create session table successfully \n\n" );
 
-        } catch (\PDOException $e) {
-            if ($e->getCode () == "42S01") {
+        }
+        catch (\PDOException $e)
+        {
+            if ($e->getCode () == "42S01")
+            {
                 new PrintConsole ( 'error' , "\n\n {$table} table or view already exists\n" );
-            } else {
+            }
+            else
+            {
                 new PrintConsole ( 'error' , "\n\n {$e->getmessage()}\n" );
             }
 
@@ -60,13 +64,20 @@ class CreateTables {
     public static function users()
     {
 
-        try {
-            app('database')->exec ( static::getUsersTableSql() );
+        try
+        {
+            DB::exec ( static::getUsersTableSql() );
+            
             new PrintConsole ( 'green' , "\nUsers table created successfully\n\n" );
-        } catch (\PDOException $e) {
-            if ($e->getCode () == "42S01") {
+        }
+        catch (\PDOException $e)
+        {
+            if ($e->getCode () == "42S01")
+            {
                 new PrintConsole ( 'error' , "\n\n users table or view already exists\n" );
-            } else {
+            }
+            else
+            {
                 new PrintConsole ( 'error' , "\n\n {$e->getmessage()}\n" );
             }
         }

@@ -33,6 +33,7 @@ class SessionRedisStore implements SessionHandlerInterface
   public function write($id,$session_data):Bool
   {
     DRedis::setex('session_'.$id,ini_get('session.gc_maxlifetime'),$session_data);
+    
     return true;
   }
 

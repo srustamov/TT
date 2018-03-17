@@ -1,66 +1,32 @@
 <?php namespace System\Core;
-
-//-------------------------------------------------------------
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
  */
-//-------------------------------------------------------------
 
 
 //-------------------------------------------------------------
-// Controller Class
+// Base Controller Class
 //-------------------------------------------------------------
 
-use System\Libraries\View\View;
+use System\Facades\View;
 use System\Engine\Http\Middleware;
 
 abstract class Controller
 {
 
 
-//-------------------------------------------------------------
-    private static $instance;
-//-------------------------------------------------------------
 
 
-//-------------------------------------------------------------
-//    Controller Constructor
-//-------------------------------------------------------------
-
-
-    function __construct()
+    protected function view(String $file, array $data = [])
     {
-        self::$instance =& $this;
+        return View::render($file, $data, $content);
     }
 
 
 
 
-
-//-------------------------------------------------------------
-//    Controller view
-//-------------------------------------------------------------
-
-    /**
-     * @param String $file
-     * @param array|bool $data
-     * @param bool $content
-     * @return \System\Libraries\View\View
-     */
-
-    public function view(String $file, array $data = [], $content = false)
-    {
-        return (new View)->render($file, $data, $content);
-    }
-
-
-
-//-------------------------------------------------------------
-//    Middleware
-//-------------------------------------------------------------
-
-    public function middleware()
+    protected function middleware()
     {
       if(func_num_args()  > 0)
       {
@@ -75,35 +41,27 @@ abstract class Controller
 
 
 
-
-//-------------------------------------------------------------
-//    Class Load
-//-------------------------------------------------------------
-
-
-    /**
-     * @param $class
-     * @param $namespace
-     * @throws \Exception
-     */
-    public function loadClass( $class, $namespace)
+    protected function callAction(String $action,Array $args = [],$namespace = 'App\\Controllers')
     {
-        $alias = $class;
+      if(strpos($action,'@') !== false)
+      {
+        list($controller,$method) = explode('@',$action);
 
-        if(strpos(':',$class) !== false)
-        {
-          list($class,$alias) = explode(':',$class,2);
-        }
+        $controller = '\\'.$namespace.'\\'.str_replace('/','\\',$controller);
 
-        if (class_exists("\\{$namespace}\\{$class}"))
-        {
-            $key = 'Class'.md5(uniqid());
-            class_alias("\\$namespace\\$class", "$key");
-            $this->{$alias} = new $key;
-        }
-        else
-        {
-            throw new \Exception("Class {$namespace}\\{$class}  not found");
-        }
+        return call_user_func_array([new $controller,$method], $args);
+
+      }
+      else
+      {
+
+        list($controller,$method) = array($this,$action);
+
+        return call_user_func_array([$this,$method], $args);
+
+      }
+
+
     }
+
 }

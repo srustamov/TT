@@ -76,7 +76,7 @@ class CsrfProtected
     protected function getTokenRequest(Request $request)
     {
         $input    = $request->input('_token');
-
+        
         $response = $request->cookie('XSRF-TOKEN');
 
         if(

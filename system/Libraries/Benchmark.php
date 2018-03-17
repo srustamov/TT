@@ -9,8 +9,9 @@
  */
 
 use Windwalker\Edge\Loader\EdgeFileLoader;
-use Windwalker\Edge\Edge;
 use Windwalker\Edge\Cache\EdgeFileCache;
+use Windwalker\Edge\Edge;
+use System\Facades\Load;
 
 class Benchmark
 {
@@ -68,7 +69,7 @@ class Benchmark
 
         $edge   = new Edge( $loader , null ,
                       new EdgeFileCache(
-                          config ( 'view.cache_path' )
+                          Load::config ( 'view.cache_path' )
                       )
                   );
 

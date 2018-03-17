@@ -24,16 +24,16 @@ class Cache implements CacheStore
 
     function  __construct ()
     {
-        if (is_null($this->driver))
-        {
-            $driver = Load::config('cache.driver','file');
 
-            $this->driver($driver);
-        }
+        $driver = Load::config('cache.driver','file');
+
+        $this->driver($driver);
+        
     }
 
+    
 
-    public  function driver($driver)
+    public function driver($driver)
     {
         if($driver instanceof CacheStore)
         {
