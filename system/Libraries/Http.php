@@ -5,7 +5,7 @@
  * @package TT
  * @author Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage Libraries
+ * @subpackage Library
  * @category  Http
  */
 
@@ -20,7 +20,7 @@ class Http
      */
     public function userAgent (): String
     {
-        return  $_SERVER[ 'HTTP_USER_AGENT' ]  ?? '';
+        return $_SERVER[ 'HTTP_USER_AGENT' ]  ?? '';
     }
 
 
@@ -47,9 +47,7 @@ class Http
      */
     public function language (): String
     {
-        return isset($_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ])
-            ? substr ( $_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] , 0 , 2 )
-            : 'en';
+        return substr ( $_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] ?? 'en' , 0 , 2 );
     }
 
 
@@ -65,11 +63,33 @@ class Http
     /**
      * @return String
      */
-    public function cookie ()
+    public function cookie ($key = null)
     {
-        return isset( $_SERVER[ 'HTTP_COOKIE' ] )
-            ? $_SERVER[ 'HTTP_COOKIE' ]
-            : false;
+        if(isset($_SERVER[ 'HTTP_COOKIE' ]))
+        {
+          $cookies_string_array = explode(';',$_SERVER[ 'HTTP_COOKIE' ]);
+
+          $cookies = [];
+
+          foreach ($cookies_string_array as $value)
+          {
+            list($cookie_key,$cookie_value) = explode('=',$value,2);
+
+            $cookies[$cookie_key] = $cookie_value;
+          }
+
+          if(!is_null($key))
+          {
+            return $cookies[$key] ?? false;
+          }
+          else
+          {
+            return !empty($cookies) ? $cookies : false;
+          }
+
+        }
+
+        return false;
     }
 
 
@@ -87,9 +107,12 @@ class Http
      */
     public function referer ()
     {
-        if( !isset( $_SERVER[ 'HTTP_REFERER' ] ) || trim($_SERVER[ 'HTTP_REFERER' ]) == '' ) {
+        if( !isset( $_SERVER[ 'HTTP_REFERER' ] ) || trim($_SERVER[ 'HTTP_REFERER' ]) == '' )
+        {
           return false;
-        } else {
+        }
+        else
+        {
           return trim ( $_SERVER[ 'HTTP_REFERER' ] );
         }
 
@@ -101,13 +124,19 @@ class Http
      */
     public function ip (): String
     {
-        if (!empty( $_SERVER[ 'HTTP_CLIENT_IP' ] )) {
+        if (!empty( $_SERVER[ 'HTTP_CLIENT_IP' ] ))
+        {
             $ip = $_SERVER[ 'HTTP_CLIENT_IP' ];
-        } elseif (!empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] )) {
+        }
+        elseif (!empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ))
+        {
             $ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
-        } else {
+        }
+        else
+        {
             $ip = $_SERVER[ 'REMOTE_ADDR' ] ?? '';
         }
+
         return $ip;
     }
 
@@ -117,11 +146,7 @@ class Http
      */
     public function isRobot (): Bool
     {
-        if (isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) && preg_match ( '/bot|crawl|slurp|spider/i' , $_SERVER[ 'HTTP_USER_AGENT' ] )) {
-            return true;
-        } else {
-            return false;
-        }
+        return  (isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) && preg_match ( '/bot|crawl|slurp|spider/i' , $_SERVER[ 'HTTP_USER_AGENT' ] )) ;
     }
 
 
@@ -139,11 +164,7 @@ class Http
      */
     public function isAjax (): Bool
     {
-        if (isset( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) && $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] === 'XMLHttpRequest') {
-            return true;
-        } else {
-            return false;
-        }
+        return  (isset( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) && $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] === 'XMLHttpRequest');
     }
 
 

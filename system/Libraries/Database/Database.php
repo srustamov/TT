@@ -49,8 +49,9 @@ class Database extends Connection
 
     /**
      * @param bool $first
+     * @param int $fetch
      * @return null|object
-     * @throws \System\Libraries\Database\DatabaseException
+     * @throws DatabaseException
      */
     public function get ( $first = false ,$fetch = PDO::FETCH_OBJ)
     {

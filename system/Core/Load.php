@@ -93,10 +93,7 @@ class Load
 
         if(file_exists(path('storage/system/configs.php')))
         {
-            if(empty(static::$configurations))
-            {
-                static::$configurations = require_once path('storage/system/configs.php');
-            }
+            static::$configurations = require_once path('storage/system/configs.php');
         }
 
         if (strpos($name, '.'))
@@ -192,6 +189,7 @@ class Load
                 if (strpos ( $line , '=' ) !== false)
                 {
                     list( $name , $value ) = array_map ( 'trim' , explode ( '=' , $line , 2 ) );
+
                     $name = str_replace(['\'','"'],'',$name);
 
                     if (preg_match ( '/\s+/' , $value ) > 0)

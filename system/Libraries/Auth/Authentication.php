@@ -10,6 +10,7 @@
 use System\Libraries\Auth\Drivers\SessionAttemptDriver;
 use System\Libraries\Auth\Drivers\DatabaseAttemptDriver;
 use System\Libraries\Auth\Drivers\RedisAttemptDriver;
+use System\Facades\Redirect;
 use System\Facades\Session;
 use System\Facades\Cookie;
 use System\Facades\Load;
@@ -50,7 +51,8 @@ class Authentication
     {
         $this->config = Load::config('authentication.guards');
 
-        foreach ($this->config as $guard => $config) {
+        foreach ($this->config as $guard => $config)
+        {
             $this->max_attempts[$guard] = $config['max_attempts'];
             $this->lock_time[$guard]    = $config['lock_time'];
             $this->table[$guard]        = $config['table'];
@@ -59,20 +61,24 @@ class Authentication
     }
 
 
-
-    protected function beforeLogin($guard, $login_user_data)
+    protected function beforeLogin($guard,$user)
     {
         //
     }
 
 
+    protected function afterLogin($guard,$user):Bool
+    {
+        return true;
+    }
+
 
     public function guard($guard)
     {
         $this->guard = $guard;
+
         return $this;
     }
-
 
 
     public function getGuard()
@@ -81,19 +87,17 @@ class Authentication
     }
 
 
-
-
-    public function attempt($data, $remember = false)
+    public function attempt(array $data, $remember = false)
     {
         $this->setAttemptDriver();
 
-        if ($attempts = $this->driver[$this->guard]->getAttemptsCountOrFail($this->guard))
+        if (($attempts = $this->driver[$this->guard]->getAttemptsCountOrFail($this->guard)))
         {
             if ($attempts->count >= $this->max_attempts[$this->guard])
             {
-                if ($seconds =  $this->driver[$this->guard]->getRemainingSecondsOrFail($this->guard))
+                if (($seconds =  $this->driver[$this->guard]->getRemainingSecondsOrFail($this->guard)))
                 {
-                    $this->message = "You have been temporarily locked out! Please wait {$this->convertTime($seconds)}";
+                    $this->message = $this->getLockMessage($seconds);
                     return false;
                 }
             }
@@ -102,15 +106,16 @@ class Authentication
         if(isset($data['password']))
         {
            $password = $data['password'];
+
            unset($data['password']);
         }
         else
         {
-          throw new \RuntimeException("Auth password not found");
+          throw new \InvalidArgumentException("Auth password not found");
         }
 
 
-        if ($result = DB::table($this->table[$this->guard])->where($data)->first())
+        if (($result = DB::table($this->table[$this->guard])->where($data)->first()))
         {
 
             if (password_verify($password, $result->password))
@@ -124,10 +129,10 @@ class Authentication
 
                 $this->beforeLogin($this->guard, $result);
 
-
                 $this->setSession($result);
 
-                return true;
+                return $this->afterLogin($this->guard, $result);
+
             }
         }
 
@@ -139,13 +144,10 @@ class Authentication
         {
             $this->driver[$this->guard]->startLockTime($this->guard, $this->lock_time[$this->guard]);
         }
-        $this->message = "Login or password incorrect! ".sprintf("%d attempts remaining !", $remaining);
+        $this->message = $this->getFailMessage($remaining);
 
         return false;
     }
-
-
-
 
 
     public function login($user, $remember = false)
@@ -171,8 +173,6 @@ class Authentication
     }
 
 
-
-
     public function check()
     {
         if (Session::get($this->guard.'_login') === true)
@@ -181,18 +181,19 @@ class Authentication
         }
         else
         {
-            if ($result = $this->remember($this->guard))
+            if (($result = $this->remember($this->guard)))
             {
                 $this->beforeLogin($this->guard, $result);
 
                 $this->setSession($result);
 
-                return true;
+                return $this->afterLogin($this->guard, $result);
+
             }
+
             return false;
         }
     }
-
 
 
     public function guest()
@@ -215,9 +216,9 @@ class Authentication
 
     public function setRemember($user)
     {
-        if ($_token = $user->remember_token)
+        if ($user->remember_token)
         {
-            Cookie::set('remember_' . $this->guard, base64_encode($_token), 3600 * 24 * 30);
+            Cookie::set('remember_' . $this->guard, base64_encode($user->remember_token), 3600 * 24 * 30);
         }
         else
         {
@@ -225,13 +226,11 @@ class Authentication
 
             Cookie::set('remember_'.$this->guard, base64_encode($_token), 3600 * 24 * 30);
 
-            DB::table($this->config[$this->guard]['table'])
-                ->where('id', $user->id)->update(['remember_token' => $_token]);
+            DB::table($this->config[$this->guard]['table'])->where('id', $user->id)->update(['remember_token' => $_token]);
         }
 
         return $this;
     }
-
 
 
     public function getMessage()
@@ -240,26 +239,28 @@ class Authentication
     }
 
 
-    private function setSession($guard_data)
+    protected function setSession($user)
     {
-        $guard_data = (array) $guard_data;
+        $user = (array) $user;
 
         $set_data = [];
 
-        foreach ($guard_data as $key => $value)
+        foreach ($user as $key => $value)
         {
-            if (array_search($key, $this->hidden[$this->guard]) !== false) {
+            if (array_search($key, $this->hidden[$this->guard]) !== false)
+            {
                 continue;
             }
+
             $set_data[$this->guard.'_'.$key] = $value;
         }
 
         $set_data[ $this->guard . '_login' ] = true;
 
         Session::setArray($set_data);
+
+        Session::regenerate();
     }
-
-
 
 
     public function logout()
@@ -280,6 +281,8 @@ class Authentication
                 return $data;
             });
 
+            Session::regenerate();
+
             if (Cookie::has('remember_'.$this->guard))
             {
                 Cookie::forget('remember_'.$this->guard);
@@ -296,14 +299,26 @@ class Authentication
 
     public function redirect()
     {
-        return redirect(...func_get_args());
+        return Redirect::to(...func_get_args());
     }
 
 
+    protected function getFailMessage($remaining)
+    {
+      return "Login or password incorrect! ".sprintf("%d attempts remaining !", $remaining);
+    }
 
-    private function convertTime($seconds)
+
+    protected function getLockMessage($seconds)
+    {
+      return "You have been temporarily locked out! Please wait {$this->convertTime($seconds)}";
+    }
+
+
+    protected function convertTime($seconds)
     {
         $minute = "";
+
         $second = "";
 
         if ($seconds >= 60)
@@ -341,7 +356,7 @@ class Authentication
     }
 
 
-    private function setAttemptDriver()
+    protected function setAttemptDriver()
     {
         foreach ($this->config as $guard => $config)
         {
@@ -376,7 +391,6 @@ class Authentication
     }
 
 
-
     public function __call($method, $args)
     {
         $guard = $args[ 0 ] ?? $this->guard;
@@ -387,5 +401,11 @@ class Authentication
         }
 
         return false;
+    }
+
+
+    public function __toString()
+    {
+      return $this->message;
     }
 }

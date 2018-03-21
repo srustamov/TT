@@ -32,7 +32,7 @@ class Cookie implements ArrayAccess
 
 
 
-    function __construct(...$args)
+    function __construct()
     {
         if(is_null($this->config))
         {
@@ -47,9 +47,9 @@ class Cookie implements ArrayAccess
         $this->path      = !empty($config['path'])      ? $config['path']      : $this->path;
         $this->domain    = !empty($config['domain'])    ? $config['domain']    : $this->domain;
 
-        if(!empty($args))
+        if(func_num_args() > 0)
         {
-          $this->set(...$args);
+          $this->set(...func_get_args());
         }
     }
 

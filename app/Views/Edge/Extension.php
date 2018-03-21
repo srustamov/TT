@@ -8,7 +8,7 @@ class Extension implements EdgeExtensionInterface
 
     public function getName()
     {
-        return 'my_extension';
+        return 'tt_extension';
     }
 
     public function getDirectives()

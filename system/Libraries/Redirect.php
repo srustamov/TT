@@ -17,7 +17,7 @@ class Redirect
 
 
 
-    protected $link;
+    protected $url;
 
     protected $refresh;
 
@@ -27,13 +27,12 @@ class Redirect
 
 
 
-    public function __construct($link = null, $refresh = 0, $http_response_code = 302)
+    function __construct()
     {
-        $this->link = $link;
-        $this->refresh = $refresh;
-        $this->http_response_code = $http_response_code;
-
-        return $this;
+        if(func_num_args() > 0)
+        {
+          call_user_func_array([$this,'to'], func_get_args());
+        }
     }
 
 
@@ -48,22 +47,27 @@ class Redirect
 
         if (($back = Load::class('http')->referer()))
         {
-            $this->link = $back;
+            $this->url = $back;
         }
         else
         {
-            $this->link = 'javascript://history.go(-1)';
+            $this->url = 'javascript://history.go(-1)';
         }
         return $this;
     }
 
 
-
-
-
-    public function to(String $link, $refresh = 0, $http_response_code = 302)
+    public function url(String $url)
     {
-        $this->link = $link;
+      $this->url = $url;
+
+      return $this;
+    }
+
+
+    public function to(String $url, $refresh = 0, $http_response_code = 302)
+    {
+        $this->url = $url;
 
         $this->refresh = $refresh;
 
@@ -78,6 +82,7 @@ class Redirect
     public function refresh(Int $refresh)
     {
         $this->refresh = $refresh;
+
         return $this;
     }
 
@@ -95,6 +100,32 @@ class Redirect
     }
 
 
+    public function redirect()
+    {
+        if (is_null($this->url))
+        {
+            throw new \Exception('Redirect location not found');
+        }
+
+
+        if (!preg_match('/^https?:\/\/|^www./', $this->url))
+        {
+            $this->url = Load::class('url')->base($this->url);
+        }
+
+
+        if($this->refresh)
+        {
+            sleep($this->refresh);
+        }
+
+        header("Location:" . $this->url, true, $this->http_response_code);
+
+        exit;
+    }
+
+
+
 
     public function __call($method, $args)
     {
@@ -103,7 +134,9 @@ class Redirect
         {
             if(strlen($method) > 4 && substr($method,0,4) == 'with')
             {
-                $var = strtolower(substr($method,4));
+                $method = strtolower($method);
+
+                $var  = substr($method,4);
 
                 $args = is_array($args[0]) ? $args[0] : [$args[0] => $args[1] ?? null];
 
@@ -124,30 +157,6 @@ class Redirect
         return $this;
     }
 
-
-    protected function redirect()
-    {
-        if (is_null($this->link))
-        {
-            throw new \Exception('Redirect location not found');
-        }
-
-
-        if (!preg_match('/^https?:\/\/|^www./', $this->link))
-        {
-            $this->link = Load::class('url')->base($this->link);
-        }
-
-
-        if($this->refresh)
-        {
-            sleep($this->refresh);
-        }
-
-        header("Location:" . $this->link, true, $this->http_response_code);
-        exit;
-
-    }
 
 
 

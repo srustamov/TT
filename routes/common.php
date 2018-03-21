@@ -24,9 +24,9 @@ Route::get('/language/{language}','HomeController@changeLanguage')->pattern(['la
 
 
 Route::group('/auth',function(){
-    Route::get('/login','Auth/LoginController@showlogin');
+    Route::get('/login','Auth/LoginController@show');
     Route::post('/login','Auth/LoginController@login');
-    Route::get('/register','Auth/RegisterController@showregister');
+    Route::get('/register','Auth/RegisterController@show');
     Route::post('/register','Auth/RegisterController@register');
     Route::get('/logout','Auth/LoginController@logout');
 });

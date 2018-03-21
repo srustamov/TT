@@ -14,27 +14,62 @@ class MemcacheStore implements CacheStore
 
     private $memcache;
 
-    private $config;
 
     function __construct ()
     {
 
-        $this->config = Load::config('cache.memcache');
+        $config = Load::config('cache.memcache');
 
-        $this->memcache = new \Memcache;
+        if(class_exists('\\Memcache'))
+        {
+          $this->memcache = new \Memcache;
+        }
+        elseif (class_exists('\\Memcached'))
+        {
+          $this->memcache = new \Memcached;
+        }
+        else
+        {
+          throw new \Exception("Class Memcache (Memcached) not found");
+        }
 
-        $this->memcache->addServer($this->config['host'],$this->config['port']);
+
+
+        $this->memcache->addServer($config['host'],$config['port']);
     }
 
-    public function put ( String $key , $value , $expires = 10 )
+
+
+    public function put ( String $key , $value , $expires = null )
     {
-        $this->put = true;
+      if(is_null($expires))
+      {
 
-        $this->key = $key;
+        if(is_null($this->expires))
+        {
+          $this->put = true;
 
+          $this->key = $key;
+
+          $this->memcache->set($key , $value , null ,10);
+
+        }
+        else
+        {
+          $this->memcache->set($key , $value , null ,$this->expires);
+
+          $this->expires = null;
+        }
+
+      }
+      else
+      {
         $this->memcache->set($key , $value , null ,$expires);
 
-        return $this;
+        $this->expires = null;
+      }
+
+      return $this;
     }
 
     public function forever ( String $key , $value )
@@ -59,13 +94,37 @@ class MemcacheStore implements CacheStore
 
     public function expires ( Int $expires )
     {
-        $this->expires = $expires;
+        if($this->put && !is_null($this->key))
+        {
+            $this->memcache->set($this->key,$this->memcache->get($this->key),null,$expires);
+
+            $this->put = false;
+
+            $this->key = null;
+        }
+        else
+        {
+            $this->expires = $expires;
+        }
+
         return $this;
     }
 
     public function minutes ( Int $minutes )
     {
-        $this->expires = $minutes*60;
+        if($this->put && !is_null($this->key))
+        {
+            $this->memcache->set($this->key,$this->memcache->get($this->key),null,$expires*60);
+
+            $this->put = false;
+
+            $this->key = null;
+        }
+        else
+        {
+            $this->expires = $minutes*60;
+        }
+
         return $this;
     }
 
@@ -85,13 +144,9 @@ class MemcacheStore implements CacheStore
       return $this->memcache->$method(...$args);
     }
 
-    public function __destruct ()
+    
+    public function close ()
     {
-        if ($this->put)
-        {
-            $this->memcache->set($this->key,$this->memcache->get($this->key),null,$this->expires);
-        }
-
         $this->memcache->close();
     }
 

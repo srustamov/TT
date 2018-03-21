@@ -3,7 +3,7 @@
 
 interface CacheStore
 {
-  public function put(String $key , $value ,$expires = 10);
+  public function put(String $key , $value ,$expires = null);
 
   public function forever(String $key , $value);
 
@@ -16,6 +16,8 @@ interface CacheStore
   public function expires(Int $expires);
 
   public function minutes(Int $minutes);
-  
+
   public function flush();
+
+  public function close();
 }

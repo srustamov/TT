@@ -61,6 +61,7 @@ class SessionAttemptDriver implements AttemptDriverInterface
         if(($expireTime = $this->expireTimeOrFail($guard)))
         {
             $remaining_seconds = $expireTime - time();
+
             if($remaining_seconds > 0)
             {
                 return $remaining_seconds;

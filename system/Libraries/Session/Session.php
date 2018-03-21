@@ -67,6 +67,7 @@ class Session implements ArrayAccess,Countable
             if (isset($handler))
             {
                 session_set_save_handler($handler, true);
+
                 register_shutdown_function('session_write_close');
             }
 
@@ -235,36 +236,9 @@ class Session implements ArrayAccess,Countable
 
 
 
-    public function path($path = null)
+    public function regenerate()
     {
-        $cookie_params = session_get_cookie_params();
-
-        if (is_null($path)) {
-            return $cookie_params['path'];
-        }
-
-        session_set_cookie_params($cookie_params['lifetime'], $path);
-
-        return $this;
-    }
-
-
-    public function domain($domain = null)
-    {
-        $cookie_params = session_get_cookie_params();
-
-        if (is_null($domain))
-        {
-            return $cookie_params['domain'];
-        }
-
-        session_set_cookie_params(
-          $cookie_params['lifetime'],
-          $cookie_params['path'],
-          $domain
-       );
-
-        return $this;
+      session_regenerate_id(session_id());
     }
 
 
@@ -290,6 +264,7 @@ class Session implements ArrayAccess,Countable
     public function __call($method, $args)
     {
         $value = $args[0] ?? null;
+
         return is_null($value)
              ? $this->get($method)
              : $this->set($method, $value);
@@ -299,6 +274,7 @@ class Session implements ArrayAccess,Countable
     public function destroy()
     {
         $_SESSION = [];
+
         session_destroy();
     }
 

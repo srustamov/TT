@@ -56,7 +56,7 @@ class Middleware
 
         if (class_exists($middleware))
         {
-            $content = call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
+            call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
         }
         else
         {

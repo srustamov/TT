@@ -8,7 +8,7 @@
          convertWarningsToExceptions="true"
          processIsolation="false">
     <testsuites>
-        <testsuite name="TT Test Suite">
+        <testsuite name="TT framework Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

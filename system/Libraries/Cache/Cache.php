@@ -4,18 +4,20 @@
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage    Libraries
+ * @subpackage    Library
  * @category    Cache
  */
-
 
 use System\Libraries\Cache\Drivers\FileStore;
 use System\Libraries\Cache\Drivers\DatabaseStore;
 use System\Libraries\Cache\Drivers\MemcacheStore;
 use System\Libraries\Cache\Drivers\RedisStore;
 use System\Facades\Load;
+use System\Facades\DB;
 
-class Cache implements CacheStore
+
+
+class Cache
 {
 
 
@@ -24,14 +26,12 @@ class Cache implements CacheStore
 
     function  __construct ()
     {
-
         $driver = Load::config('cache.driver','file');
 
         $this->driver($driver);
-        
     }
 
-    
+
 
     public function driver($driver)
     {
@@ -60,11 +60,36 @@ class Cache implements CacheStore
                     break;
             }
         }
-        return new static();
+        return $this;
     }
 
 
-    public function put(String $key , $value ,$expires = 10)
+    public function createDatabaseTable()
+    {
+      try
+      {
+        $table = Load::config('cache.database',[])['table'] ?? 'cache';
+
+        $create = DB::exec("CREATE TABLE IF NOT EXISTS $table(
+                              `id` int(11) NOT NULL AUTO_INCREMENT,
+                              `cache_key` varchar(255) NOT NULL,
+                              `cache_value` longtext NOT NULL,
+                              `expires` int(20) NOT NULL DEFAULT '0',
+                               PRIMARY KEY (`id`),
+                               UNIQUE KEY `cache_key` (`cache_key`)
+                              ) DEFAULT CHARSET=utf8
+                      ") !== false;
+
+        return $create ? $this : false;
+      }
+      catch (\PDOException $e)
+      {
+        throw new \Exception("Create database $table table failed.<br />[".$e->getMessage()."]");
+      }
+    }
+
+
+    public function put(String $key , $value ,$expires = null)
     {
         return $this->driver->put($key , $value ,$expires);
     }
@@ -113,6 +138,12 @@ class Cache implements CacheStore
     public function __call($method,$args)
     {
       return $this->driver->$method(...$args);
+    }
+
+
+    function __destruct()
+    {
+      $this->driver->close();
     }
 
 

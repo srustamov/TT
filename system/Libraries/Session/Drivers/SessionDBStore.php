@@ -4,10 +4,11 @@
 
 
 
+use SessionHandlerInterface;
 use System\Facades\DB;
 
 
-class SessionDBStore implements \SessionHandlerInterface
+class SessionDBStore implements SessionHandlerInterface
 {
 
 

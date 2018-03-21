@@ -16,8 +16,7 @@
 
      public function filter(String $str):String
      {
-         $str = html_entity_decode($str, ENT_QUOTES);
-         return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8', false);
+         return htmlspecialchars(trim(html_entity_decode($str, ENT_QUOTES)), ENT_QUOTES, 'UTF-8', false);
      }
 
 

@@ -21,16 +21,7 @@ class Input
         {
             if (!$name) return $_GET;
 
-            if (isset($_GET[ $name ]))
-            {
-                if (is_array($_GET[ $name ]))
-                {
-                    return array_map(function ($item) {
-                        return $this->filter($item);
-                    }, $_GET[ $name ]);
-                }
-                return $this->filter($_GET[ $name ]);
-            }
+            return $_GET[ $name ] ?? false;
         }
         return false;
     }
@@ -42,19 +33,7 @@ class Input
         {
             if (!$name) return $_POST;
 
-            if (isset($_POST[ $name ]))
-            {
-
-              if (is_array($_POST[ $name ]))
-              {
-                  return array_map(function ($item){
-                      return $this->filter($item);
-                  }, $_POST[ $name ]);
-              }
-
-              return $this->filter($_POST[ $name ]);
-
-            }
+            return $_POST[ $name ] ?? false;
         }
         return false;
     }
@@ -76,9 +55,12 @@ class Input
 
     public function all()
     {
-        if(is_null($this->data)) {
+        if(is_null($this->data))
+        {
           parse_str(file_get_contents('php://input'),$input_vars);
-        } else {
+        }
+        else
+        {
           $input_vars = $this->data;
         }
 
@@ -115,10 +97,13 @@ class Input
 
         $data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
 
-        do {
+        do
+        {
             $old_data = $data;
+
             $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
-        } while ($old_data !== $data);
+        }
+        while ($old_data !== $data);
 
         return $data;
     }
@@ -126,21 +111,27 @@ class Input
 
     public function filter(String $str):String
     {
-        $str = html_entity_decode($str, ENT_QUOTES);
-        return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8', false);
+        return htmlspecialchars(trim(html_entity_decode($str, ENT_QUOTES)), ENT_QUOTES, 'UTF-8', false);
     }
 
 
     public function __call($method,$args)
     {
-      if(in_array(strtoupper($method),['PUT' , 'DELETE' , 'PATCH'])) {
+      if(in_array(strtoupper($method),['PUT' , 'DELETE' , 'PATCH']))
+      {
         $data = $this->all();
-        if(isset($args[0]) && !is_array($args[0])) {
+
+        if(isset($args[0]) && !is_array($args[0]))
+        {
           return $data[$args[0]] ?? false;
-        } else {
+        }
+        else
+        {
           return $data;
         }
-      } else {
+      }
+      else
+      {
         throw new \BadMethodCallException("Call to undefined method Input::$method()");
       }
     }
@@ -149,8 +140,9 @@ class Input
     public function __get($key)
     {
       $data = $this->all();
-      
-      if (isset($data[$key])) {
+
+      if (isset($data[$key]))
+      {
         return !is_array($data[$key]) ? trim($data[$key]) : $data[$key];
       }
 

@@ -5,10 +5,6 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use System\Engine\Cli\PrintConsole;
-use System\Engine\Cli\Config;
-use System\Engine\Cli\CreateTables;
-
 
 class Console
 {
@@ -131,7 +127,7 @@ class Console
 
             }
         }
-        new PrintConsole ( 'green' , "\n\nCache clear successfully \n\n" );
+        new PrintConsole ( 'green' , "\n\nCache files clear successfully \n\n" );
 
     }
 
@@ -164,6 +160,11 @@ class Console
             $new_content = \preg_replace( "/{$replace}/" , $key , $content );
 
             file_put_contents ( path ( '.settings' ) , $new_content );
+
+            if(file_exists(path('storage/system/settings')))
+            {
+              unlink(path('storage/system/settings'));
+            }
 
             new PrintConsole ( 'green' , $key );
 

@@ -1,11 +1,12 @@
 <?php
 
 
+use System\Facades\Auth;
+
 /**
  * @param string $guard
  * @return \System\Facades\Auth
  */
-
 
 function auth( $guard = 'user')
 {

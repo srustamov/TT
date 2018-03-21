@@ -11,6 +11,7 @@
 
 
 use System\Facades\Auth as Authentication;
+use System\Facades\Redirect;
 
 class Auth
 {
@@ -25,7 +26,7 @@ class Auth
     {
         if(Authentication::guard($guard)->guest())
         {
-            return $next(redirect ('/')->withErrors('auth', 'Öncə giriş etməlisiz'));
+            return $next(Redirect::to('/')->withErrors('auth', 'Öncə giriş etməlisiz'));
         }
 
 

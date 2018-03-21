@@ -64,11 +64,12 @@ class Kernel
         {
             $kernel = new \App\Kernel();
 
-            $_middleware = $kernel->middleware;
-
-            foreach ($_middleware as $middleware)
+            if (property_exists($kernel, 'middleware'))
             {
-                Middleware::init($middleware,true);
+              foreach ($kernel->middleware as $middleware)
+              {
+                  Middleware::init($middleware,true);
+              }
             }
 
             if (method_exists($kernel,'boot'))
@@ -135,7 +136,6 @@ class Kernel
 
     private function setPathDefines ()
     {
-
         define ( 'BASEPATH' , $this->basePath );
 
         define ( 'DS' , DIRECTORY_SEPARATOR );

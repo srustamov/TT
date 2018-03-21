@@ -21,16 +21,24 @@ class Arr
     public function isAssoc(array $array):Bool
     {
         $keys = array_keys($array);
+
         return (array_keys($keys) !== $keys);
     }
 
 
-    public function each(&$array,\Closure $callback)
+    /**
+     * @param $array
+     * @param \Closure $callback
+     * @return array
+     */
+    public function each( array &$array, \Closure $callback)
     {
       foreach ($array as $key => $value)
       {
         $callback($key,$value);
       }
+
+      return $array;
 
     }
 
@@ -52,7 +60,8 @@ class Arr
      */
     public function forget(array &$array, $key):array
     {
-        if($this->exists($array, $key)) {
+        if($this->exists($array, $key))
+        {
             unset($array[ $key ]);
         }
         return $array;
@@ -66,6 +75,61 @@ class Arr
     public function exists(array $array, $key):Bool
     {
         return array_key_exists($key, $array);
+    }
+
+
+
+
+    public function only(array $array,array $only)
+    {
+
+      if($this->isAssoc($array))
+      {
+        $_only = array();
+
+        foreach ($only as $value)
+        {
+          if(isset($array[$value]))
+          {
+            $_only[$value] = $array[$value];
+          }
+        }
+
+        return $_only;
+      }
+      else
+      {
+        return $array;
+      }
+
+    }
+
+
+
+    public function except(array $array,array $except)
+    {
+      if($this->isAssoc($array))
+      {
+        foreach ($except as $value)
+        {
+          if(isset($array[$value]))
+          {
+            unset($array[$value]);
+          }
+        }
+      }
+      else
+      {
+        foreach ($except as $value)
+        {
+          if(($position = array_search($value, $array)))
+          {
+            unset($array[$position]);
+          }
+        }
+      }
+
+      return $array;
     }
 
 

@@ -4,6 +4,7 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 use System\Facades\Language;
+use System\Facades\Load;
 
 class Email extends PHPMailer
 {
@@ -23,7 +24,7 @@ class Email extends PHPMailer
 
         $this->setLanguage(Language::locale());
 
-        $this->config = config ('mail');
+        $this->config = Load::config ('mail');
 
         $this->isSMTP ();
 
@@ -55,6 +56,7 @@ class Email extends PHPMailer
     public function from ( $email , $name = null )
     {
         $this->From = $email;
+
         $this->AddReplyTo ( $email , $name );
 
         if (!is_null($name))

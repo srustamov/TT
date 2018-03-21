@@ -2,10 +2,10 @@
 
 
 /**
-* @author  Samir Rustamov <rustemovv96@gmail.com>
-* @link    https://github.com/srustamov/TT
-* @category Helper functions
-*/
+ * @author  Samir Rustamov <rustemovv96@gmail.com>
+ * @link    https://github.com/srustamov/TT
+ * @category Helper functions
+ */
 
 
 
@@ -15,7 +15,7 @@ use System\Facades\Load;
 
 function app(String $class,Array $args = [])
 {
-  return Load::class($class,$args);
+    return Load::class($class,$args);
 }
 
 
@@ -50,17 +50,17 @@ function import_dir_files($dir,$once = false)
 {
     if ($once)
     {
-      foreach (glob($dir."/*") as $file)
-      {
-          require_once $file;
-      }
+        foreach (glob($dir."/*") as $file)
+        {
+            require_once $file;
+        }
     }
     else
     {
-      foreach (glob($dir."/*") as $file)
-      {
-          require $file;
-      }
+        foreach (glob($dir."/*") as $file)
+        {
+            require $file;
+        }
     }
 }
 
@@ -235,14 +235,14 @@ if (!function_exists ( 'report' ))
         }
 
         $report = '----------------------------' . PHP_EOL .
-                ' Report                     ' . PHP_EOL .
-                '----------------------------' . PHP_EOL .
-                '|IP: ' . Load::class('http')->ip () . PHP_EOL .
-                '|Subject: ' . $subject . PHP_EOL .
-                '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
-                '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
-                '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
-                '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
+            ' Report                     ' . PHP_EOL .
+            '----------------------------' . PHP_EOL .
+            '|IP: ' . Load::class('http')->ip () . PHP_EOL .
+            '|Subject: ' . $subject . PHP_EOL .
+            '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
+            '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
+            '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
+            '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
         return Load::class('file')->append ( $logDir . $destination . $extension , $report );
     }
 }
@@ -304,7 +304,7 @@ if (!function_exists ( 'cache' ))
         }
         elseif (func_num_args() == 1)
         {
-            return Load::class('cache')->get ( $key );
+            return Load::class('cache')->get ( func_get_arg(0) );
         }
         else
         {
@@ -349,11 +349,11 @@ if (!function_exists ( 'redirect' ))
     {
         if ($link)
         {
-            return new Redirect( $link , $refresh , $http_response_code );
+            return Load::class('redirect')->to( $link , $refresh , $http_response_code );
         }
         else
         {
-            return ( new Redirect );
+            return Load::class('redirect');
         }
     }
 }
@@ -402,9 +402,9 @@ if (!function_exists ( 'validator' ))
 
 if (!function_exists ( 'get' ))
 {
-    function get ( $name = null , $xss_clean = false )
+    function get ( $name = false )
     {
-        return Load::class('input')->get ( $name , $xss_clean );
+        return Load::class('input')->get ( $name );
     }
 }
 
@@ -412,9 +412,9 @@ if (!function_exists ( 'get' ))
 if (!function_exists ( 'post' ))
 {
 
-    function post ( $name = null , $xss_clean = false )
+    function post ( $name = false)
     {
-        return Load::class('input')->post ( $name , $xss_clean );
+        return Load::class('input')->post ( $name  );
     }
 }
 
@@ -423,18 +423,18 @@ if (!function_exists ( 'request' ))
 {
     function request ()
     {
-      if (func_num_args() == 0)
-      {
-          return Load::class('request');
-      }
-      elseif (func_num_args() == 1)
-      {
-          return Load::class('request')->{func_get_arg(0)};
-      }
-      else
-      {
-          return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
-      }
+        if (func_num_args() == 0)
+        {
+            return Load::class('request');
+        }
+        elseif (func_num_args() == 1)
+        {
+            return Load::class('request')->{func_get_arg(0)};
+        }
+        else
+        {
+            return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
+        }
     }
 }
 
@@ -442,9 +442,9 @@ if (!function_exists ( 'request' ))
 if (!function_exists ( 'xssClean' ))
 {
 
-    function xssClean ( $data , $image = false )
+    function xssClean ( $data )
     {
-        return Load::class('input')->xssClean ( $data , $image );
+        return Load::class('input')->xssClean ( $data );
     }
 }
 
@@ -665,7 +665,7 @@ if (!function_exists ( 'debug' ))
         if (is_array ( $data ))
         {
             echo '<pre style="font-size:14px;color:rgb(54, 12, 51);word-break: break-all;white-space: pre-wrap">';
-             print_r($data);
+            print_r($data);
             echo "</pre>";
         }
         else

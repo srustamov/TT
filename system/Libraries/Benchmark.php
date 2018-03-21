@@ -50,10 +50,10 @@ class Benchmark
           'Controller'       => $this->server('called_controller'),
           'Action'           => $this->server('called_method'),
           'Request Method'   => $this->server('request_method'),
-          'Request Uri'      => app('url')->request(),
-          'IP'               => app('http')->ip(),
+          'Request Uri'      => Load::class('url')->request(),
+          'IP'               => Load::class('http')->ip(),
           'Document root'    => basename( $this->server('document_root')),
-          'Locale'           => app('language')->locale(),
+          'Locale'           => Load::class('language')->locale(),
           'Protocol'         => $this->server('server_protocol'),
           'Software'         => $this->server('server_software')
       );

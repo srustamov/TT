@@ -35,7 +35,7 @@ abstract class Connection
 
     public function reconnect ()
     {
-        if (!isset( $this->general[ $this->group ] )) 
+        if (!isset( $this->general[ $this->group ] ))
         {
 
             $this->config[ $this->group ] = Load::config ( "database.$this->group" );
@@ -63,10 +63,17 @@ abstract class Connection
         }
     }
 
-    
-    public function pdo ()
+
+    public function pdo (String $query = null)
     {
-        return $this->pdo;
+        if(!is_null($query))
+        {
+          return $this->pdo->query($query);
+        }
+        else
+        {
+          return $this->pdo;
+        }
     }
 
 
@@ -85,7 +92,7 @@ abstract class Connection
      */
     public function close ()
     {
-        if (isset( $this->general[ $this->group ] )) 
+        if (isset( $this->general[ $this->group ] ))
         {
             unset( $this->general[ $this->group ] );
 

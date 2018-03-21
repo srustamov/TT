@@ -12,16 +12,17 @@
 
 
 use System\Facades\Auth;
+use System\Facades\Redirect;
 
 class Guest
 {
 
     public function handle($request, \Closure $next,$guard)
     {
-      
+
       if(Auth::guard($guard)->check())
       {
-        $next(redirect()->back());
+        $next(Redirect::back());
       }
 
     }

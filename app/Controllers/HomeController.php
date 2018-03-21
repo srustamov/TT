@@ -1,33 +1,52 @@
-<?php namespace App\Controllers;
+<?php
 
 /**
- * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/srustamov/TT
+ * App\Controllers\HomeController file.
+ *
+ * @category Controller
+ *
+ * @package TT
+ * @author  SamirRustamov <rustemovv96@gmail.com>
+ * @link  https://github.com/srustamov/TT
  */
 
+namespace App\Controllers;
 
 
-//use App\Controllers\Controller;
-//use System\Engine\Http\Request;
 use System\Facades\Language;
+use System\Facades\Redirect;
+
 
 class HomeController extends Controller
 {
 
 
+
+    /**
+     * HomeController index method.Show Home page
+     *
+     * @return \System\Libraries\View\View
+     */
     public function index()
     {
         return view('home');
     }
 
 
+
+    /**
+     * HomeController changeLanguage method.Change site content language
+     *
+     * @return \System\Libraries\Redirect
+     */
     public function changeLanguage($lang)
     {
 
-        if (in_array($lang, ['az','en','tr'])) {
+        if (in_array($lang, array('az','en','tr')))
+        {
             Language::set($lang);
         }
 
-        return redirect()->back();
+        return Redirect::back();
     }
 }

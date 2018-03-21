@@ -9,6 +9,9 @@ use ArrayAccess;
 use Countable;
 use Serializable;
 use JsonSerializable;
+use System\Facades\Arr;
+use System\Facades\Load;
+use System\Facades\Redirect;
 use System\Facades\Validator;
 
 
@@ -25,19 +28,23 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
         $this->request_method = $this->server('request_method');
 
         $this->request = array(
-        'GET'    => $this->trim($_GET),
-        'POST'   => $this->trim($_POST),
-        'REQUEST'=> $this->trim($_REQUEST),
-      );
+          'GET'    => $this->trim($_GET),
+          'POST'   => $this->trim($_POST),
+          'REQUEST'=> $this->trim($_REQUEST),
+        );
     }
 
 
     private function trim($data)
     {
-        $data = array_map(function ($item) {
-            if (is_array($item)) {
+        $data = array_map(function ($item)
+        {
+            if (is_array($item))
+            {
                 return $this->trim($item);
-            } else {
+            }
+            else
+            {
                 return trim($item);
             }
         }, $data);
@@ -64,7 +71,8 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         $data = $this->request[ $this->request_method ];
 
-        if (isset($data[ '_token' ])) {
+        if (isset($data[ '_token' ]))
+        {
             unset($data[ '_token' ]);
         }
 
@@ -80,17 +88,20 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function session($key = null)
     {
-        if (is_null($key)) {
-          return app('session');
-        } else {
-          return app('session')->get($key);
+        if (is_null($key))
+        {
+          return Load::class('session');
+        }
+        else
+        {
+          return Load::class('session')->get($key);
         }
     }
 
 
     public function cookie($key)
     {
-        return app('cookie')->get($key);
+        return Load::class('cookie')->get($key);
     }
 
 
@@ -102,32 +113,40 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function input($name = null)
     {
-        if (!is_null($name)) {
-            return app('input')->{$this->method()}($name);
-        } else {
-            return app('input');
+        if (!is_null($name))
+        {
+            return Load::class('input')->{$this->method()}($name);
+        }
+        else
+        {
+            return Load::class('input');
         }
     }
 
 
     public function file($name)
     {
-        if (isset($_FILES[ $name ])) {
-            if ($_FILES[ $name ][ 'error' ] > 0) {
+        if (isset($_FILES[ $name ]))
+        {
+            if ($_FILES[ $name ][ 'error' ] > 0)
+            {
                 return false;
-            } else {
+            }
+            else
+            {
                 return $_FILES[ $name ];
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
 
     public function post($name)
     {
-        if (isset($this->request['POST'][$name])) {
-            if (!empty($this->request['POST'][$name])) {
+        if (isset($this->request['POST'][$name]))
+        {
+            if (!empty($this->request['POST'][$name]))
+            {
                 return $this->request['POST'][$name];
             }
         }
@@ -137,8 +156,10 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function get($name)
     {
-        if (isset($this->request['GET'][$name])) {
-            if (!empty($this->request['GET'][$name])) {
+        if (isset($this->request['GET'][$name]))
+        {
+            if (!empty($this->request['GET'][$name]))
+            {
                 return $this->request['GET'][$name];
             }
         }
@@ -150,12 +171,14 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         $method = $this->server('request_method');
 
-        if ($method == 'POST') {
+        if ($method == 'POST')
+        {
             $headers = getallheaders();
 
             $xhmo    = $headers[ 'X-HTTP-Method-Override' ] ?? false;
 
-            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
+            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' )))
+            {
                 $method = $xhmo;
             }
         }
@@ -165,7 +188,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function ajax(): String
     {
-        return app('http')->isAjax();
+        return Load::class('http')->isAjax();
     }
 
 
@@ -183,46 +206,31 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function only(): array
     {
-        $_data = [];
-
-        $all   = $this->all();
-
-        $args  = func_get_args();
-
-        if(isset($args[0])) {
-          if(is_array($args[0])) {
-            $args = $args[0];
-          }
+        if(func_num_args() == 0)
+        {
+          return [];
+        }
+        else
+        {
+          $only = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
         }
 
-        foreach ($args as $key) {
-            $_data[ $key ] = $all[$key] ?? false;
-        }
-
-        return $_data;
+        return Arr::only($this->all(),$only);
     }
 
 
     public function except()
     {
-        $data = $this->all();
+      if(func_num_args() == 0)
+      {
+        return $this->all();
+      }
+      else
+      {
+        $excepts = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+      }
 
-
-        $args  = func_get_args();
-
-        if(isset($args[0])) {
-          if(is_array($args[0])) {
-            $args = $args[0];
-          }
-        }
-
-        foreach ($args as $key) {
-            if (isset($data[$key])) {
-                unset($data[$key]);
-            }
-        }
-
-        return $data;
+      return Arr::except($this->all(),$excepts);
     }
 
 
@@ -230,8 +238,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         $validation =  Validator::make($this->all(), $roles);
 
-        if(!$validation->check()) {
-          return redirect()->back()->withErrors($validation->messages());
+        if(!$validation->check())
+        {
+          return Redirect::back()->withErrors($validation->messages());
         }
     }
 

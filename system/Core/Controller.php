@@ -16,11 +16,14 @@ abstract class Controller
 {
 
 
-
-
-    protected function view(String $file, array $data = [])
+    /**
+     * @param String $file
+     * @param array $data
+     * @return \System\Libraries\View\View
+     */
+    protected function view( String $file, array $data = [])
     {
-        return View::render($file, $data, $content);
+        return View::render($file, $data);
     }
 
 
@@ -54,11 +57,7 @@ abstract class Controller
       }
       else
       {
-
-        list($controller,$method) = array($this,$action);
-
-        return call_user_func_array([$this,$method], $args);
-
+        return call_user_func_array([$this,$action], $args);
       }
 
 

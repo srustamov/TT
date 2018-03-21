@@ -45,6 +45,7 @@ class RedisAttemptDriver implements AttemptDriverInterface
   public function deleteAttempt($guard)
   {
     RDriver::delete("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip());
+    RDriver::delete("AUTH_ATTEMPT_EXPIRE_{$guard}".Http::ip());
   }
 
 

@@ -14,6 +14,8 @@ class RedisStore implements CacheStore
 
     private $expires;
 
+
+
     public function put ( String $key , $value , $expires = null )
     {
 
@@ -102,7 +104,7 @@ class RedisStore implements CacheStore
       return DRedis::$method(...$args);
     }
 
-    public function __destruct ()
+    public function close ()
     {
         DRedis::close();
     }

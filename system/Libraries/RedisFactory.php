@@ -1,37 +1,38 @@
 <?php namespace System\Libraries;
 
+use System\Facades\Load;
+
 class RedisFactory
 {
-
-    private $config;
 
     private $redis;
 
 
     function __construct()
     {
-
-        $this->config = config('cache.redis');
-
-        $this->redis = new \Redis();
-
-        try
-        {
-            $this->redis->connect($this->config['host'], $this->config['port']);
-        }
-        catch (\RedisException $e)
-        {
-            throw new \RuntimeException('Redis message: '.$e->getMessage());
-        }
-
+        $this->connection();
     }
 
 
     public function connection()
     {
-        if(is_null($this->redis)) {
-            $this->__construct();
+        if (is_null($this->redis))
+        {
+          $config = Load::config('cache.redis');
+
+          $this->redis = new \Redis();
+
+          try
+          {
+              $this->redis->connect($config['host'], $config['port']);
+          }
+          catch (\RedisException $e)
+          {
+              throw new \RuntimeException('Redis message: '.$e->getMessage());
+          }
+
         }
+
         return $this->redis;
     }
 

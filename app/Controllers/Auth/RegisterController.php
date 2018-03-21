@@ -1,8 +1,25 @@
-<?php namespace App\Controllers\Auth;
+<?php
+
+/**
+ * App\Controllers\Auth\RegisterController file.
+ *
+ * @category Controller
+ *
+ * @package TT
+ * @author  SamirRustamov <rustemovv96@gmail.com>
+ * @link  https://github.com/srustamov/TT
+ */
+
+namespace App\Controllers\Auth;
+
+
+
+
 
 use App\Controllers\Controller;
 use System\Engine\Http\Request;
 use System\Facades\Validator;
+use System\Facades\Redirect;
 use System\Facades\Hash;
 use App\Models\User;
 
@@ -11,7 +28,10 @@ use App\Models\User;
 class RegisterController extends Controller
 {
 
-    public function __construct()
+
+
+
+    function __construct()
     {
         $this->middleware('guest');
     }
@@ -19,14 +39,25 @@ class RegisterController extends Controller
 
 
 
-
-    public function showregister()
+     /**
+     * RegisterController show method.Show register form page
+     *
+     * @return \System\Libraries\View\View
+     */
+    public function show()
     {
         return view('auth.register');
     }
 
 
 
+     /**
+     * RegisterController register method.Post data validate and Create user
+     *
+     * @param \System\Engine\Http\Request
+     *
+     * @return \System\Libraries\Redirect
+     */
     public function register(Request $request)
     {
         $validation =  Validator::make($request->all(), [
@@ -37,7 +68,7 @@ class RegisterController extends Controller
 
         if (!$validation->check())
         {
-            return redirect('/auth/register')->withErrors(Validator::messages());
+            return Redirect::url('/auth/register')->withErrors(Validator::messages());
         }
         else
         {
@@ -49,11 +80,11 @@ class RegisterController extends Controller
 
             if ($create)
             {
-                return redirect('auth/login')->with('register', 'Register successfully');
+                return Redirect::url('auth/login')->with('register', 'Register successfully');
             }
             else
             {
-                return redirect('auth/register')->with('register' , 'User register error occurred.Please try again');
+                return Redirect::url('auth/register')->with('register' , 'User register error occurred.Please try again');
             }
         }
     }

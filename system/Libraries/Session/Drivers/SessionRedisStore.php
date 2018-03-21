@@ -18,7 +18,7 @@ class SessionRedisStore implements SessionHandlerInterface
 
   public function close():Bool
   {
-    return $this->gc(ini_get('session.gc_maxlifetime'));
+    return true;
   }
 
 

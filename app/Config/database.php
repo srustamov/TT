@@ -1,43 +1,38 @@
 <?php
 
-/**
- * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link 		https://github.com/srustamov/TT
- */
-
 return array(
 
-          'default' => array(
-                "hostname"  => setting('DB_HOST'),
+    'default' => array(
+        "hostname"  => setting('DB_HOST'),
 
-                "username"  => setting('DB_USER'),
+        "username"  => setting('DB_USER'),
 
-                "password"  => setting('DB_PASS'),
+        "password"  => setting('DB_PASS'),
 
-                "dbname"    => setting('DB_NAME'),
+        "dbname"    => setting('DB_NAME'),
 
-                'prefix'    => setting('DB_PREFIX'),
+        'prefix'    => setting('DB_PREFIX'),
 
-                "charset"   => setting('DB_CHARSET'),
+        "charset"   => setting('DB_CHARSET'),
 
-          ),
+    ),
 
-          /*
-          'connect2' => array(  // DB::connect('connect2')->...;
-                "hostname"  => 'localhost',
+    /*
+    'connect2' => array(  // DB::connect('connect2')->...;
+          "hostname"  => 'localhost',
 
-                "username"  => 'root',
+          "username"  => 'root',
 
-                "password"  => '',
+          "password"  => '',
 
-                "dbname"    => 'auth',
+          "dbname"    => 'auth',
 
-                'prefix'    => '',
+          'prefix'    => '',
 
-                "charset"   => 'utf8',
+          "charset"   => 'utf8',
 
-           ),
-           */
+     ),
+     */
 
 
 

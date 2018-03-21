@@ -42,7 +42,9 @@ class TTException
             {
                 new PrintConsole('error',"\n\n".$e->getMessage()."\n\n");
             }
-        } else {
+        }
+        else
+        {
             return abort(500);
         }
     }
@@ -62,9 +64,11 @@ class TTException
         $message = $e->getMessage();
 
         $date     = date('Y-m-d H:m:s');
+
         $log_file = path('/storage/logs/error.log');
 
-        if (!file_exists($log_file)) {
+        if (!file_exists($log_file))
+        {
             touch($log_file);
         }
 

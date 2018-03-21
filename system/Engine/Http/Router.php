@@ -82,7 +82,6 @@ class Router
     /**
      * @param $path
      * @param $handler
-     * @return static
      */
     public function form($path, $handler)
     {
@@ -293,9 +292,9 @@ class Router
             }
             elseif (is_callable($handler))
             {
-                if (!empty($resource[ 'middlewares' ]))
+                if (!empty($resource[ 'middleware' ]))
                 {
-                    foreach ($resource[ 'middlewares' ] as $middleware)
+                    foreach ($resource[ 'middleware' ] as $middleware)
                     {
                         Middleware::init($middleware);
                     }

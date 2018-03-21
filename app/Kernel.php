@@ -2,7 +2,6 @@
 
 
 
-
 class Kernel
 {
 
@@ -13,6 +12,5 @@ class Kernel
 
     public function boot()
     {
-      
     }
 }

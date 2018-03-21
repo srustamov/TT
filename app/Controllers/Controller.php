@@ -1,17 +1,21 @@
-<?php namespace App\Controllers;
+<?php
 
 /**
- * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/srustamov/TT
+ * App\Controllers\Controller file.
+ *
+ * @category Controllers
+ *
+ * @package TT
+ * @author  SamirRustamov <rustemovv96@gmail.com>
+ * @link  https://github.com/srustamov/TT
  */
+
+namespace App\Controllers;
 
 
 
 use System\Core\Controller as BaseController;
 
-
-
 class Controller extends BaseController
 {
-
 }

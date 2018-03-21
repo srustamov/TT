@@ -21,8 +21,6 @@ abstract class Model
 {
 
 
-    private static $instance;
-
     private static $data;
 
     protected $table;
@@ -32,16 +30,6 @@ abstract class Model
     protected $fillable   = ['*'];
 
 
-
-
-    function __construct()
-    {
-        if (is_null($this->table))
-        {
-            $called_class = explode('\\', get_called_class());
-            $this->table  = strtolower(array_pop($called_class)).'s';
-        }
-    }
 
 
 
@@ -76,7 +64,7 @@ abstract class Model
      */
     public static function create($data = []):Bool
     {
-        return DB::table(static::getModelInstance()->table)->insert($data);
+        return DB::table((new static)->getTable())->insert($data);
     }
 
 
@@ -88,11 +76,9 @@ abstract class Model
     {
         $find  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
-        $first = (count($in) == 1);
+        $first = (count($find) == 1);
 
-        return DB::table(static::getModelInstance()->table)
-                   ->whereIn(static::getModelInstance()->primaryKey,$find)
-                   ->get($first);
+        return DB::table((new static)->getTable())->whereIn((new static)->primaryKey,$find)->get($first);
     }
 
 
@@ -102,9 +88,9 @@ abstract class Model
      */
     public static function all($select = null)
     {
-        $select = !empty(func_get_args()) ? func_get_args() : static::getModelInstance()->fillable;
+        $select = !empty(func_get_args()) ? func_get_args() : (new static)->fillable;
 
-        $result =  DB::table(static::getModelInstance()->table)->select($select)->get();
+        $result =  DB::table((new static)->getTable())->select($select)->get();
 
         return $result;
     }
@@ -115,7 +101,21 @@ abstract class Model
     public function setPrimaryKey($key)
     {
       $this->primaryKey = $key;
+
       return $this;
+    }
+
+
+    public function getTable()
+    {
+      if (is_null($this->table))
+      {
+          $called_class = explode('\\', get_called_class());
+
+          $this->table  = strtolower(array_pop($called_class)).'s';
+      }
+
+      return $this->table;
     }
 
 
@@ -128,26 +128,17 @@ abstract class Model
 
     public function _call($name, $arguments)
     {
-        return DB::table($this->table)->select($this->fillable)->{$name}(...$arguments);
+        return DB::table($this->getTable())->select($this->fillable)->{$name}(...$arguments);
     }
 
 
 
     public static function __callStatic($name, $arguments)
     {
-        return static::getModelInstance()->_call($name, $arguments);
+        return (new static)->_call($name, $arguments);
     }
 
 
-    public static function getModelInstance()
-    {
-        if(is_null(self::$instance))
-        {
-            self::$instance = new static;
-        }
-
-        return self::$instance;
-    }
 
 
 }

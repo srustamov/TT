@@ -6,12 +6,12 @@
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @subpackage    Libraries
+ * @subpackage    Library
  * @category    Language
  */
 
 use System\Exceptions\LanguageException;
-
+use System\Facades\Load;
 
 class Language
 {
@@ -46,7 +46,7 @@ class Language
      * @param String $word
      * @param array $replace
      * @param Null $locale
-     * @return String|Array
+     * @return String|array
      */
 
    public function translate ( String $word  ,array $replace = [] ,$locale = null)
@@ -58,7 +58,7 @@ class Language
       }
 
 
-      if(!is_null($locale) && $locale != app("session")->get('_LOCALE'))
+      if(!is_null($locale) && $locale != Load::class("session")->get('_LOCALE'))
       {
          $lang = $this->_getdata($locale);
       }
@@ -93,7 +93,7 @@ class Language
 
 
 
-   public function data ($locale = false):Array
+   public function data ($locale = false):array
    {
      return $this->_getdata($locale ?:$this->locale());
    }
@@ -107,21 +107,21 @@ class Language
    {
       if(!is_null($locale))
       {
-         app('session')->set('_LOCALE',$locale);
+         Load::class('session')->set('_LOCALE',$locale);
 
          return $locale;
       }
       else
       {
-        if($locale = app('session')->get('_LOCALE'))
+        if($locale = Load::class('session')->get('_LOCALE'))
         {
            return $locale;
         }
         else
         {
-           $locale  = config('config.locale','en');
+           $locale  = Load::config('config.locale','en');
 
-           app('session')->set('_LOCALE',$locale);
+           Load::class('session')->set('_LOCALE',$locale);
 
            return $locale;
         }
@@ -137,23 +137,23 @@ class Language
     /**
      * @param String $locale
      * @throws LanguageException
-     * @return Array
+     * @return array
      */
 
-    private function _getdata(String $locale):Array
+    private function _getdata(String $locale):array
     {
         $lang = [];
 
-        if (is_dir (app_dir('Language/'.$locale)))
+        if (is_dir (path('app/Language/'.$locale)))
         {
-           foreach (glob(app_dir("Language/{$locale}/*\.ini")) as $file)
+           foreach (glob(path("app/Language/{$locale}/*.ini")) as $file)
            {
              $lang[basename(substr($file,0,-4))] =  parse_ini_file($file);
            }
         }
         else
         {
-          throw new LanguageException("Language folder not found. Path :".app_dir('Language/'.$locale));
+          throw new LanguageException("Language folder not found. Path :".path('app/Language/'.$locale));
         }
 
         return $lang;

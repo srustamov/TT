@@ -11,7 +11,10 @@
 namespace System\Libraries\View;
 
 
-class Errors implements \ArrayAccess , \Countable
+use ArrayAccess;
+use Countable;
+
+class Errors implements ArrayAccess , Countable
 {
 
 
@@ -26,10 +29,14 @@ class Errors implements \ArrayAccess , \Countable
 
     public function first($key)
     {
-      if (isset($this->errors[$key])) {
-        if (is_array($this->errors[$key])) {
+      if (isset($this->errors[$key]))
+      {
+        if (is_array($this->errors[$key]))
+        {
           return $this->errors[$key][0] ?? false;
-        } else {
+        }
+        else
+        {
           return $this->errors[$key] ?? false;
         }
       }
