@@ -95,11 +95,9 @@ abstract class Connection
         if (isset( $this->general[ $this->group ] ))
         {
             unset( $this->general[ $this->group ] );
-
-            $this->group = 'default';
-
-            $this->reconnect ();
         }
+
+        $this->pdo = null;
 
     }
 

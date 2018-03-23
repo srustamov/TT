@@ -16,8 +16,6 @@ class SessionFileStore implements SessionHandlerInterface
 
 
 
-
-
     public function open($save_path,$name):Bool
     {
         if(!is_dir($save_path))
@@ -38,7 +36,7 @@ class SessionFileStore implements SessionHandlerInterface
 
     public function close():Bool
     {
-        return $this->gc(ini_get('session.gc_maxlifetime'));
+        return $this->gc((int) ini_get('session.gc_maxlifetime'));
     }
 
 
@@ -88,6 +86,7 @@ class SessionFileStore implements SessionHandlerInterface
             {
                 unlink($file);
             }
+
         }
         return true;
     }

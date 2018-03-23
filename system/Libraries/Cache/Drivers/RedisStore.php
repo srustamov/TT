@@ -74,19 +74,24 @@ class RedisStore implements CacheStore
         return $this;
     }
 
+    
     public function minutes ( Int $minutes )
     {
-        if(!is_null($this->put))
-        {
-            DRedis::expire($this->key,$minutes*60);
-        }
-        else
-        {
-            $this->expires = $minutes*60;
-        }
-
-        return $this;
+      return $this->expires($minutes * 60);
     }
+
+
+    public function hours ( Int $hours )
+    {
+      return $this->expires($hours * 3600);
+    }
+
+
+    public function day ( Int $day )
+    {
+      return $this->expires($day * 3600 * 24);
+    }
+
 
     public function flush()
     {

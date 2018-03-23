@@ -190,20 +190,19 @@ class FileStore implements CacheStore
 
     public function minutes ( Int $minutes )
     {
-        if($this->put && !is_null($this->key))
-        {
-            touch($this->fullpath,time() + ($expires*60));
+      return $this->expires($minutes * 60);
+    }
 
-            $this->put = false;
 
-            $this->key = null;
-        }
-        else
-        {
-            $this->expires = $minutes*60;
-        }
+    public function hours ( Int $hours )
+    {
+      return $this->expires($hours * 3600);
+    }
 
-        return $this;
+
+    public function day ( Int $day )
+    {
+      return $this->expires($day * 3600 * 24);
     }
 
 
@@ -305,7 +304,7 @@ class FileStore implements CacheStore
     }
 
 
-    
+
     public function close ()
     {
         return true;

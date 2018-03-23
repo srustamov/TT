@@ -110,22 +110,22 @@ class MemcacheStore implements CacheStore
         return $this;
     }
 
+
     public function minutes ( Int $minutes )
     {
-        if($this->put && !is_null($this->key))
-        {
-            $this->memcache->set($this->key,$this->memcache->get($this->key),null,$expires*60);
+      return $this->expires($minutes * 60);
+    }
 
-            $this->put = false;
 
-            $this->key = null;
-        }
-        else
-        {
-            $this->expires = $minutes*60;
-        }
+    public function hours ( Int $hours )
+    {
+      return $this->expires($hours * 3600);
+    }
 
-        return $this;
+
+    public function day ( Int $day )
+    {
+      return $this->expires($day * 3600 * 24);
     }
 
     public function flush()
@@ -144,7 +144,7 @@ class MemcacheStore implements CacheStore
       return $this->memcache->$method(...$args);
     }
 
-    
+
     public function close ()
     {
         $this->memcache->close();

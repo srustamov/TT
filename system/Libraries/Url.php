@@ -18,31 +18,30 @@ class Url
 
 
     /**
-     * @param String|null $baseUrl
+     * @param String $baseUrl
      */
-    public function setBase( String $baseUrl = null)
+    public function setBase( String $baseUrl)
     {
         $this->baseUrl = $baseUrl;
     }
 
 
     /**
-     * @return mixed|string
+     * @return string
      */
     public function request()
     {
-
         $request = urldecode (
-            parse_url ( rtrim ( $_SERVER[ 'REQUEST_URI' ] , '/' ) , PHP_URL_PATH )
+            parse_url ($_SERVER[ 'REQUEST_URI' ] , PHP_URL_PATH )
         );
         $request = str_replace ( ' ' , '' , $request );
 
-        return  $request == '' ? '/' : $request;
+        return  ($request == '' || $request == '/') ? '/' : rtrim($request,'/');
     }
 
 
     /**
-     * @return string
+     * @return String
      */
     public function protocol()
     {
@@ -54,50 +53,73 @@ class Url
     }
 
 
-
-    public function secure()
+    /**
+    * @return Bool
+    */
+    public function secure():Bool
     {
       return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off');
     }
 
 
     /**
-     * @param string $url
+     * @param String $url
+     * @param Array $parameters
      * @return String
      */
-    public function base ( $url = ''):String
+    public function base ( $url = '',$parameters = []):String
     {
-        if(!is_null($this->baseUrl))
-        {
-            if(!preg_match('/^(https?://)/',$this->baseUrl))
-            {
-                $base_url = $this->protocol().'://'.$this->baseUrl;
-            }
-            else
-            {
-                $base_url = $this->baseUrl;
-            }
 
+        if(preg_match('/^(https?:\/\/)/',$url))
+        {
+          return trim($url,'/').(
+            !empty($parameters) ? '/?'.http_build_query($parameters) : '/'
+          );
         }
         else
         {
-            $base_url = trim(Load::config('config.base_url'));
+          if(is_null($this->baseUrl))
+          {
+            $base_url = Load::config('config.base_url');
 
-            if(empty($base_url))
+            if(!$base_url || empty($base_url))
             {
-                $base_url = $this->protocol()."://".$this->host();
+              $base_url  = $this->protocol().'://'.$this->host();
             }
+          }
+          else
+          {
+            $base_url = $this->baseUrl;
+          }
+
+          if(!preg_match('/^(https?:\/\/)/',$base_url))
+          {
+            $base_url = $this->protocol().'://'.$base_url;
+          }
+
+
         }
 
-        return rtrim($base_url,'/') . '/' . ltrim($url,'/');
+
+        return rtrim($base_url,'/') . '/' . ltrim($url,'/').(
+          !empty($parameters) ? '/?'.http_build_query($parameters) : ''
+        );
     }
 
+
+    /**
+     * @return String
+     */
+    public function to()
+    {
+      return $this->base(...func_get_args());
+    }
 
     /**
      * @param null $url
      * @return String
      */
-    public function current ( $url = null ):String
+   public function current ( $url = null ):String
     {
         return rtrim($this->base().trim ( $this->request() , '/' ),'/') . '/' . $url;
     }
@@ -117,9 +139,9 @@ class Url
         else
         {
             $host = $_SERVER['HTTP_HOST']   ??
-                $_SERVER['SERVER_NAME'] ??
-                $_SERVER['SERVER_ADDR'] ??
-                '';
+                    $_SERVER['SERVER_NAME'] ??
+                    $_SERVER['SERVER_ADDR'] ??
+                    '';
         }
 
         return trim($host);
@@ -128,7 +150,7 @@ class Url
 
     /**
      * @param Int $number
-     * @return bool|mixed
+     * @return Bool|Mixed
      */
     public function segment ( Int $number )
     {
@@ -137,7 +159,7 @@ class Url
 
 
     /**
-     * @return array
+     * @return Array
      */
     public function segments ():array
     {

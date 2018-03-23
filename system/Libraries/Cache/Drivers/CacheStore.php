@@ -17,6 +17,10 @@ interface CacheStore
 
   public function minutes(Int $minutes);
 
+  public function hours(Int $hours);
+
+  public function day(Int $day);
+
   public function flush();
 
   public function close();

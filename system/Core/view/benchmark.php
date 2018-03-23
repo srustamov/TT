@@ -54,6 +54,7 @@
         cursor: pointer;
         border-radius: 0;
         border:1px solid dodgerblue;
+        z-index: 2;
     }
 
     p.http_status {
@@ -75,121 +76,93 @@
         display: inline-block;
         width: 49%;
     }
+
     div#bench-autohide-loadtime{
-        display: inline-block;
-        position: absolute;
-        padding:0 15px;
-        width: 200px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0;
+        border:none;
+        box-sizing: border-box;
+        max-width: 80px;
+        height: 40px;
+        opacity: 1;
+        padding: 0 3px;
+        box-shadow: 1px rgb(57, 47, 59) !important;
+        background-color:#2d8546;
+        position: fixed;
         text-align: center;
-        background-color: #00a65a;
-        border:1px solid dodgerblue;
         color:#fff;
         font-weight:bold;
-        top:-50px;
-        right: 10px;
-        z-index: calc(999 * 999);
+        bottom:0;
+        right: 0;
+        z-index: 1;
         animation: loadtime 10s 1;
         -moz-animation: loadtime 10s 1;
         -webkit-animation:loadtime 10s 1;
         transition: 0.7s;
 
     }
-    @keyframes loadtime{
-        5%{
-            opacity: 1;
-            top:0;
-        }
-        30%{
-            opacity:1;
-            top:10px;
-        }
-        50%{
-            opacity: 0.8;
-            right:6px;
-            transition: 0.7s;
-        }
-        80%{
-            opacity: 0.7;
-            right:3px;
-            transition: 0.7s;
-        }
-        90%{
-            opacity: 0.6;
-            right:0;
-            transition: 0.7s;
-        }
-        100%{
-            opacity: 0.1;
-            right: -200px;
-            display: none;
-        }
-    }
+
     @-webkit-keyframes loadtime{
-        5%{
-            opacity: 1;
-            top:0;
-        }
-        30%{
-            opacity:1;
-            top:10px;
-        }
-        50%{
-            opacity: 0.8;
-            right:6px;
-            transition: 0.7s;
-        }
-        80%{
-            opacity: 0.7;
-            right:3px;
-            transition: 0.7s;
-        }
-        90%{
-            opacity: 0.6;
-            right:0;
-            transition: 0.7s;
-        }
-        100%{
-            opacity: 0.1;
-            right: -200px;
-            display: none;
-        }
+      10%{
+        right:40px;
+      }
+      100%{
+        right:0;
+      }
+    }
+    @keyframes loadtime{
+      10%{
+        right:40px;
+      }
+      100%{
+        right:0;
+      }
     }
 </style>
 <div id="bench-autohide-loadtime">
-    load time : {{substr($data['Load time'],0,-6)}}
+    <?php echo substr($data['Load time'],0,-6) ?>
 </div>
 <div id="bench-container" style="display: none">
     <p class="http_status">
-        <span>{{http_response_code()}}</span>
-        <span class="bench_app_name">{{setting ( 'APP_NAME' , 'TT' )}}</span>
+        <span><?php echo http_response_code() ?></span>
+        <span class="bench_app_name"><?php echo setting ( 'APP_NAME' , 'TT' ) ?></span>
     </p>
     <p>
-        <span style="color:green"> <span>root@</span>{{strtolower(setting('APP_NAME', 'TT'))}}</span>
+        <span style="color:green"> <span>root@</span><?php echo strtolower(setting('APP_NAME', 'TT')) ?></span>
         :~<span style="color:red">#</span> benchmark
     </p>
     <table border="1">
-        @foreach ($data as $name => $value)
+      <?php foreach ($data as $name => $value): ?>
             <tr>
-                <td><i style="color:rgb(190, 49, 3)">{{$name}}</i></td>
-                <td><i style="color:green">{{$value}}</i></td>
+                <td><i style="color:rgb(190, 49, 3)"><?php echo $name ?></i></td>
+                <td><i style="color:green"><?php echo $value ?></i></td>
             </tr>
-        @endforeach
+      <?php endforeach; ?>
     </table>
 </div>
 <button onclick="benchToggle(this)" class="bench_button">B</button>
 <script>
+    setTimeout(function(){
+      document.getElementById('bench-autohide-loadtime').style.display = 'none';
+    },10000);
 
-    function benchToggle($this) {
+    function benchToggle($this)
+    {
         let bench = document.getElementById("bench-container");
-        if (bench.style.display !== "none") {
-            $this.style.height = "40px";
-            $this.innerHTML = "B";
+
+        if (bench.style.display !== "none")
+        {
+            $this.style.height  = "40px";
+            $this.innerHTML     = "B";
             bench.style.display = "none";
         }
-        else {
-            $this.innerHTML = "X";
+        else
+        {
+            $this.innerHTML     = "X";
             bench.style.display = "inline-block";
-            $this.style.height = bench.offsetHeight + "px";
+            $this.style.height  = bench.offsetHeight + "px";
         }
     }
 </script>

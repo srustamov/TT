@@ -65,17 +65,18 @@ class View
     }
 
 
-    protected function _withFlashData()
+    protected function withFlashData()
     {
-        if (Load::class('session')->has ( 'view-errors' ))
+        if (($errors = Load::class('session')->get ( 'view-errors' )))
         {
-            $errors = new Errors(Load::class('session')->get('view-errors'));
+            $errors = new Errors($errors);
 
             Load::class('session')->delete ( 'view-errors' );
         }
 
-        if(!isset($this->data['errors'])) {
-            $this->data['errors'] = $errors ?? new Errors;
+        if(!isset($this->data['errors']))
+        {
+            $this->data['errors'] = $errors ?: new Errors;
         }
     }
 
@@ -92,39 +93,42 @@ class View
     protected function finishRender()
     {
 
-        if(is_null($this->file)) {
+        if(is_null($this->file))
+        {
           throw new ViewException("View File not found");
         }
 
-        $this->_withFlashData();
+        $this->withFlashData();
 
         $loader = new EdgeFileLoader( array( path ( 'app/Views' ) ) );
 
-
-        foreach (Load::config ( 'view.file_extensions',[]) as $file_extension) {
+        foreach (Load::config ( 'view.file_extensions',[]) as $file_extension)
+        {
           $loader->addFileExtension ( $file_extension );
         }
 
         $edge = new Edge( $loader , null , new EdgeFileCache( Load::config ( 'view.cache_path' ) ) );
 
-        if ($extensions = Load::config ( 'view.extensions')) {
-
-            foreach ($extensions as $extension) {
-                if (new $extension instanceof EdgeExtensionInterface) {
+        if ($extensions = Load::config ( 'view.extensions'))
+        {
+            foreach ($extensions as $extension)
+            {
+                if (new $extension instanceof EdgeExtensionInterface)
+                {
                     $edge->addExtension ( new $extension() );
                 }
-
             }
-
         }
 
         $content = $edge->render ( $this->file , $this->data );
 
-        if (is_null($this->minify)) {
+        if (is_null($this->minify))
+        {
             $this->minify = Load::config('view.minify');
         }
 
-        if ($this->minify) {
+        if ($this->minify)
+        {
             $content  = preg_replace('/([\n]+)|([\s]{2})/','',$content);
         }
 

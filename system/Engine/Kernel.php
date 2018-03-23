@@ -43,10 +43,12 @@ class Kernel
 
         Load::settingVariables ();
 
-        TTException::register();
+        $exception = new TTException;
+
+        $exception->register();
 
         $this->loadHelpers ();
-
+        
         $this->setAliases ();
 
         setlocale ( LC_ALL , Load::config ( 'datetime.setLocale' ) );

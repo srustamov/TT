@@ -13,6 +13,47 @@ class File
 
 
 
+
+    public function open(String $fileAndMode,Callable $callback = null )
+    {
+
+
+      if(strpos('|',$fileAndMode))
+      {
+        list($file,$mode) = explode('|', $fileAndMode,2);
+      }
+      else
+      {
+        list($file,$mode) = array($fileAndMode,'r+');
+      }
+
+
+      if(is_null($callback))
+      {
+        return fopen($file,$mode);
+      }
+      else
+      {
+        return $callback(fopen($file,$mode),$this);
+      }
+    }
+
+
+    public function close($file)
+    {
+      return is_resource($file) ? fclose($file) :false;
+    }
+
+
+
+    public function dirIsEmpty($dir)
+    {
+      $iterator = new \FilesystemIterator($dir);
+
+      return !$iterator->valid();
+    }
+
+
     public function size($path)
     {
         return filesize($path);
@@ -24,6 +65,8 @@ class File
     {
         return filemtime($path);
     }
+
+
 
 
     public function isImage($file):Bool
@@ -124,9 +167,26 @@ class File
     }
 
 
+
     public function write($path, $contents, $lock = false)
     {
-        return file_put_contents($path, $contents, $lock ? \LOCK_EX : 0);
+        if(is_resource($path))
+        {
+          $return  = fwrite($path,$content);
+
+          if($lock)
+          {
+            flock($path);
+          }
+
+          fclose($path);
+
+          return $return;
+        }
+        else
+        {
+          return file_put_contents($path, $contents, $lock ? \LOCK_EX : 0);
+        }
     }
 
 
@@ -205,10 +265,4 @@ class File
     }
 
 
-    public function dirIsEmpty($dir)
-    {
-      $iterator = new \FilesystemIterator($dir);
-
-      return !$iterator->valid();
-    }
 }

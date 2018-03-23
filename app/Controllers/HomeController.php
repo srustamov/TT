@@ -41,10 +41,9 @@ class HomeController extends Controller
      */
     public function changeLanguage($lang)
     {
-
         if (in_array($lang, array('az','en','tr')))
         {
-            Language::set($lang);
+            Language::locale($lang);
         }
 
         return Redirect::back();

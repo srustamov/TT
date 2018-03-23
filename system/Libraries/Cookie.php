@@ -18,8 +18,6 @@ use ArrayAccess;
 class Cookie implements ArrayAccess
 {
 
-    private $config;
-
     private $prefix = '';
 
     private $http_only = true;
@@ -34,12 +32,8 @@ class Cookie implements ArrayAccess
 
     function __construct()
     {
-        if(is_null($this->config))
-        {
-          $this->config = Load::config('cookie');
-        }
 
-        $config = $this->config;
+        $config = Load::config('cookie');
 
         $this->prefix    = !empty($config['prefix'])    ? $config['prefix']    : $this->prefix;
         $this->http_only = is_bool($config['http_only'])? $config['http_only'] : $this->http_only;
@@ -73,6 +67,7 @@ class Cookie implements ArrayAccess
     public function path(String $path = '/')
     {
         $this->path = $path;
+
         return $this;
     }
 
@@ -84,6 +79,7 @@ class Cookie implements ArrayAccess
     public function domain($domain = null)
     {
         $this->domain = $domain;
+        
         return $this;
     }
 

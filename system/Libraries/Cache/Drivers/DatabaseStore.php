@@ -96,23 +96,22 @@ class DatabaseStore implements CacheStore
         return $this;
     }
 
+    
     public function minutes ( Int $minutes )
     {
-        if($this->put && !is_null($this->key))
-        {
+      return $this->expires($minutes * 60);
+    }
 
-            DB::table($this->table)->where('cache_key',$this->key)->update(['expires'=> time() + $minutes*60]);
 
-            $this->put = false;
+    public function hours ( Int $hours )
+    {
+      return $this->expires($hours * 3600);
+    }
 
-            $this->key = null;
-        }
-        else
-        {
-            $this->expires = $minutes*60;
-        }
 
-        return $this;
+    public function day ( Int $day )
+    {
+      return $this->expires($day * 3600 * 24);
     }
 
 

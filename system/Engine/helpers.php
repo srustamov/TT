@@ -596,15 +596,15 @@ if (!function_exists ( 'str_replace_array' ))
 
 if (!function_exists ( 'url' ))
 {
-    function url ( $url = null )
+    function url ($url = null, $parameters = [])
     {
-        if (is_null ( $url ))
+        if (is_null($url))
         {
             return Load::class('url');
         }
         else
         {
-            return Load::class('url')->base ( $url );
+            return Load::class('url')->base ($url,$parameters);
         }
 
     }

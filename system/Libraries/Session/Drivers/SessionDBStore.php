@@ -32,7 +32,7 @@ class SessionDBStore implements SessionHandlerInterface
   public function read($id):String
   {
     $result = DB::pdo()->query("SELECT data FROM {$this->table} WHERE session_id='{$id}'AND expires > ".time()."");
-    
+
     if($result->rowCount() > 0)
     {
       return $result->fetch()->data;
@@ -45,10 +45,10 @@ class SessionDBStore implements SessionHandlerInterface
   public function write($id,$data):Bool
   {
 
-    $time    = time() + ini_get('session.gc_maxlifetime');
+    $time    = time() + (int) ini_get('session.gc_maxlifetime');
 
     $result  = DB::pdo()->query("REPLACE INTO {$this->table} SET session_id ='{$id}',expires = {$time},data ='{$data}'");
-    
+
     return $result ? true :false;
 
   }
@@ -56,7 +56,7 @@ class SessionDBStore implements SessionHandlerInterface
 
   public function close():Bool
   {
-    return $this->gc(ini_get('session.gc_maxlifetime'));
+    return $this->gc((int) ini_get('session.gc_maxlifetime'));
   }
 
 
@@ -67,7 +67,9 @@ class SessionDBStore implements SessionHandlerInterface
     {
       DB::pdo()->query("DELETE FROM {$this->table} WHERE session_id = '{$id}'");
     }
-    catch (\PDOException $e){}
+    catch (\PDOException $e)
+    {
+    }
 
     return  true;
   }
@@ -77,7 +79,7 @@ class SessionDBStore implements SessionHandlerInterface
   public function gc($maxlifetime):Bool
   {
     DB::pdo()->query("DELETE FROM {$this->table} WHERE expires < ".(time() + $maxlifetime));
-    
+
     return true;
   }
 

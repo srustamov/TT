@@ -8,9 +8,7 @@
  * @category  Benchmark
  */
 
-use Windwalker\Edge\Loader\EdgeFileLoader;
-use Windwalker\Edge\Cache\EdgeFileCache;
-use Windwalker\Edge\Edge;
+
 use System\Facades\Load;
 
 class Benchmark
@@ -65,15 +63,11 @@ class Benchmark
 
   private function view($data)
   {
-        $loader = new EdgeFileLoader( array( path('system/Core/view') ) );
+        ob_start();
 
-        $edge   = new Edge( $loader , null ,
-                      new EdgeFileCache(
-                          Load::config ( 'view.cache_path' )
-                      )
-                  );
+        require_once path('system/Core/view/benchmark.php');
 
-        $content  =  $edge->render('benchmark',compact('data'));
+        $content  =  ob_get_clean();
 
         $content  = preg_replace('/([\n]+)|([\s]{2})/','',$content);
 

@@ -130,6 +130,16 @@ class Cache
         return $this->driver->minutes($minutes);
     }
 
+    public function hours(Int $hours)
+    {
+        return $this->driver->hours($hours);
+    }
+
+    public function day(Int $day)
+    {
+        return $this->driver->day($day);
+    }
+
     public function flush ()
     {
         $this->driver->flush();
