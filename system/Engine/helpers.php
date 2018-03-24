@@ -1,6 +1,4 @@
 <?php
-
-
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -9,7 +7,6 @@
 
 
 
-use System\Libraries\Redirect;
 use System\Facades\Load;
 
 
@@ -19,9 +16,9 @@ function app(String $class,Array $args = [])
 }
 
 
-function config(String $extension, $default = null)
+function config(String $name, $default = null)
 {
-    return Load::config($extension, $default);
+    return Load::config($name, $default);
 }
 
 
@@ -100,7 +97,7 @@ function path( $path, $path_name = null)
 
 
 
-function abort(Int $http_code)
+function abort(Int $http_code,$message = null)
 {
     $messages = [
         100 => 'Continue',
@@ -163,7 +160,7 @@ function abort(Int $http_code)
         511 => 'Network Authentication Required',
     ];
 
-    $message = $messages[$http_code] ?? '';
+    $message = !is_null($message) ? $message : $messages[$http_code] ?? '';
 
     http_response_code($http_code);
 
@@ -664,7 +661,7 @@ if (!function_exists ( 'debug' ))
 
         if (is_array ( $data ))
         {
-            echo '<pre style="font-size:14px;color:rgb(54, 12, 51);word-break: break-all;white-space: pre-wrap">';
+            echo '<pre style="background-color:#fff; color:#222; line-height:1.2em; font-weight:normal; font:12px Monaco, Consolas, monospace; word-wrap: break-word; white-space: pre-wrap; position:relative; z-index:100000">';
             print_r($data);
             echo "</pre>";
         }

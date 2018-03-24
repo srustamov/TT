@@ -89,6 +89,7 @@ return array(
         'session' => 'System\Libraries\Session\Session',
         'str' => 'System\Libraries\Str',
         'string' => 'System\Libraries\Str',
+        'storage' => 'System\Libraries\Storage',
         'url' => 'System\Libraries\Url',
         'validator' => 'System\Libraries\Validator',
         'view' => 'System\Libraries\View\View',

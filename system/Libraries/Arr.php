@@ -78,30 +78,19 @@ class Arr
     }
 
 
+    public function suffle(Array $array)
+    {
+      shuffle($array);
+
+      return $array;
+    }
+
+
 
 
     public function only(array $array,array $only)
     {
-
-      if($this->isAssoc($array))
-      {
-        $_only = array();
-
-        foreach ($only as $value)
-        {
-          if(isset($array[$value]))
-          {
-            $_only[$value] = $array[$value];
-          }
-        }
-
-        return $_only;
-      }
-      else
-      {
-        return $array;
-      }
-
+      return array_intersect_key($array, array_flip((array) $only));
     }
 
 

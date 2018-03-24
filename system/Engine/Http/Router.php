@@ -280,7 +280,9 @@ class Router
 
                     $args    = $this->getReflectionMethodParameters($controller_with_namespace, $method, $args);
 
-                    $content = call_user_func_array([new $controller_with_namespace(),$method],$args);
+                    $contstructorArgs = $this->getReflectionMethodParameters($controller_with_namespace, '__construct');
+
+                    $content = call_user_func_array([new $controller_with_namespace($contstructorArgs),$method],$args);
 
                     return $this->response($content);
 
@@ -385,7 +387,7 @@ class Router
      * @param $args
      * @return mixed
      */
-    private  function getReflectionMethodParameters($class_name, $method, $args)
+    private  function getReflectionMethodParameters($class_name, $method, $args = [])
     {
         $reflection = new \ReflectionMethod($class_name, $method);
 
@@ -428,7 +430,7 @@ class Router
      * @param $args
      * @return mixed
      */
-    private  function getReflectionFunctionParameters($function, $args)
+    private  function getReflectionFunctionParameters($function, $args = [])
     {
         $reflection  = new \ReflectionFunction($function);
 

@@ -74,11 +74,33 @@ abstract class Model
      */
     public static function find()
     {
+        $primaryKey = (new static)->primaryKey;
+
+        if (is_null($primaryKey)) {
+          throw new Exception('No primary key defined on model.');
+        }
+
         $find  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
-        $first = (count($find) == 1);
+        return   DB::table((new static)->getTable())
+                      ->whereIn($primaryKey,$find)
+                      ->get((count($find) == 1));
+    }
 
-        return DB::table((new static)->getTable())->whereIn((new static)->primaryKey,$find)->get($first);
+
+    public static function destroy()
+    {
+      $primaryKey = (new static)->primaryKey;
+
+      if (is_null($primaryKey)) {
+        throw new Exception('No primary key defined on model.');
+      }
+
+      $ids  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+
+      return   DB::table((new static)->getTable())
+                    ->whereIn($primaryKey,$ids)
+                    ->delete();
     }
 
 
@@ -90,9 +112,7 @@ abstract class Model
     {
         $select = !empty(func_get_args()) ? func_get_args() : (new static)->fillable;
 
-        $result =  DB::table((new static)->getTable())->select($select)->get();
-
-        return $result;
+        return    DB::table((new static)->getTable())->select($select)->get();
     }
 
 
@@ -122,6 +142,7 @@ abstract class Model
     public function setTable($table)
     {
       $this->table = $table;
+
       return $this;
     }
 

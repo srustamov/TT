@@ -109,12 +109,6 @@ class Input
     }
 
 
-    public function filter(String $str):String
-    {
-        return htmlspecialchars(trim(html_entity_decode($str, ENT_QUOTES)), ENT_QUOTES, 'UTF-8', false);
-    }
-
-
     public function __call($method,$args)
     {
       if(in_array(strtoupper($method),['PUT' , 'DELETE' , 'PATCH']))
