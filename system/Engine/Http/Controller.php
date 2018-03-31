@@ -1,4 +1,4 @@
-<?php namespace System\Core;
+<?php namespace System\Engine\Http;
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -10,7 +10,6 @@
 //-------------------------------------------------------------
 
 use System\Facades\View;
-use System\Engine\Http\Middleware;
 
 abstract class Controller
 {

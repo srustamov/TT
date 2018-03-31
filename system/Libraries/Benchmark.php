@@ -65,7 +65,7 @@ class Benchmark
   {
         ob_start();
 
-        require_once path('system/Core/view/benchmark.php');
+        require_once path('system/Engine/view/benchmark.php');
 
         $content  =  ob_get_clean();
 

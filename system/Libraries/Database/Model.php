@@ -1,11 +1,11 @@
-<?php namespace System\Core;
+<?php namespace System\Libraries\Database;
 
-//-------------------------------------------------------------
+
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
  */
-//-------------------------------------------------------------
+
 
 
 
