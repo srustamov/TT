@@ -2,11 +2,11 @@ APP_DEBUG = TRUE
 
 APP_NAME  = TT
 
-APP_KEY =
+APP_KEY = bEaenLneRiA9KKb1Mjvx7uUdXyMWuaG3CQrPt5Oe1bFR0R4TSZtJfg
 
 LOCALE = en
 
-URL  = http://localhost:8000
+URL  = http://framework.tt
 
 
 #DATABASE CONFIGURATION

@@ -6,7 +6,7 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use System\Core\Model;
+use System\Libraries\Database\Model;
 
 
 class :name extends Model

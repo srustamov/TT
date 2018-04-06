@@ -9,9 +9,9 @@
  */
 
 
-use System\Libraries\Session\Drivers\SessionFileStore;
-use System\Libraries\Session\Drivers\SessionDBStore;
-use System\Libraries\Session\Drivers\SessionRedisStore;
+use System\Libraries\Session\Drivers\SessionFileHandler;
+use System\Libraries\Session\Drivers\SessionDBHandler;
+use System\Libraries\Session\Drivers\SessionRedisHandler;
 use System\Facades\OpenSsl;
 use System\Facades\Load;
 use ArrayAccess;
@@ -23,6 +23,8 @@ class Session implements ArrayAccess,Countable
 
     protected $config;
 
+    protected $handler;
+
 
     function __construct()
     {
@@ -30,7 +32,6 @@ class Session implements ArrayAccess,Countable
 
         if (session_status() == PHP_SESSION_NONE)
         {
-
             $this->config = Load::config('session');
 
             ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
@@ -39,34 +40,34 @@ class Session implements ArrayAccess,Countable
             ini_set('session.save_path', $this->config['files_location']);
 
             session_set_cookie_params(
-              $this->config['lifetime'],
-              $this->config['cookie']['path'],
-              $this->config['cookie']['domain'],
-              $this->config['cookie']['secure'],
-              $this->config['cookie']['http_only']
+                $this->config['lifetime'],
+                $this->config['cookie']['path'],
+                $this->config['cookie']['domain'],
+                $this->config['cookie']['secure'],
+                $this->config['cookie']['http_only']
             );
 
             session_name($this->config['cookie']['name']);
 
             switch ($this->config['driver'])
             {
-              case 'file':
-                $handler = new SessionFileStore();
-                break;
-              case 'database':
-                $handler = new SessionDBStore($this->config['table']);
-                break;
-              case 'redis':
-                $handler = new SessionRedisStore();
-                break;
-              default:
-                //
-                break;
+                case 'file':
+                    $this->handler = new SessionFileHandler();
+                    break;
+                case 'database':
+                    $this->handler = new SessionDBHandler($this->config['table']);
+                    break;
+                case 'redis':
+                    $this->handler = new SessionRedisHandler();
+                    break;
+                default:
+                    //
+                    break;
             }
 
-            if (isset($handler))
+            if (!is_null($this->handler))
             {
-                session_set_save_handler($handler, true);
+                session_set_save_handler($this->handler, true);
 
                 register_shutdown_function('session_write_close');
             }
@@ -97,7 +98,7 @@ class Session implements ArrayAccess,Countable
 
             if ($this->config['regenerate'] === true)
             {
-                session_regenerate_id(session_id());
+                $this->regenerate();
             }
         }
     }
@@ -238,7 +239,17 @@ class Session implements ArrayAccess,Countable
 
     public function regenerate()
     {
-      session_regenerate_id(session_id());
+
+        if($this->config['driver'] != 'file')
+        {
+            //$id = $this->handler->regenerate(session_id());
+
+            //$this->destroy();
+        }
+        else
+        {
+            session_regenerate_id(true);
+        }
     }
 
 
@@ -266,8 +277,8 @@ class Session implements ArrayAccess,Countable
         $value = $args[0] ?? null;
 
         return is_null($value)
-             ? $this->get($method)
-             : $this->set($method, $value);
+            ? $this->get($method)
+            : $this->set($method, $value);
     }
 
 

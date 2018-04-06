@@ -29,7 +29,6 @@ class Auth
             return $next(Redirect::to('/')->withErrors('auth', 'Öncə giriş etməlisiz'));
         }
 
-
     }
 
 }

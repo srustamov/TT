@@ -29,16 +29,6 @@ class RegisterController extends Controller
 {
 
 
-
-
-    function __construct()
-    {
-        $this->middleware('guest');
-    }
-
-
-
-
      /**
      * RegisterController show method.Show register form page
      *
@@ -68,7 +58,7 @@ class RegisterController extends Controller
 
         if (!$validation->check())
         {
-            return Redirect::url('/auth/register')->withErrors(Validator::messages());
+            return Redirect::to('/auth/register')->withErrors(Validator::messages());
         }
         else
         {
@@ -80,11 +70,11 @@ class RegisterController extends Controller
 
             if ($create)
             {
-                return Redirect::url('auth/login')->with('register', 'Register successfully');
+                return Redirect::to('auth/login')->with('register', 'Register successfully');
             }
             else
             {
-                return Redirect::url('auth/register')->with('register' , 'User register error occurred.Please try again');
+                return Redirect::to('auth/register')->with('register' , 'User register error occurred.Please try again');
             }
         }
     }

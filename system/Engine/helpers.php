@@ -97,79 +97,16 @@ function path( $path, $path_name = null)
 
 
 
-function abort(Int $http_code,$message = null)
+function abort(Int $http_code)
 {
-    $messages = [
-        100 => 'Continue',
-        101 => 'Switching Protocols',
-        102 => 'Processing',
-        200 => 'OK',
-        201 => 'Created',
-        202 => 'Accepted',
-        203 => 'Non-Authoritative Information',
-        204 => 'No Content',
-        205 => 'Reset Content',
-        206 => 'Partial Content',
-        207 => 'Multi-status',
-        208 => 'Already Reported',
-        300 => 'Multiple Choices',
-        301 => 'Moved Permanently',
-        302 => 'Found',
-        303 => 'See Other',
-        304 => 'Not Modified',
-        305 => 'Use Proxy',
-        306 => 'Switch Proxy',
-        307 => 'Temporary Redirect',
-        400 => 'Bad Request',
-        401 => 'Unauthorized',
-        402 => 'Payment Required',
-        403 => 'Forbidden',
-        404 => 'Not Found',
-        405 => 'Method Not Allowed',
-        406 => 'Not Acceptable',
-        407 => 'Proxy Authentication Required',
-        408 => 'Request Time-out',
-        409 => 'Conflict',
-        410 => 'Gone',
-        411 => 'Length Required',
-        412 => 'Precondition Failed',
-        413 => 'Request Entity Too Large',
-        414 => 'Request-URI Too Large',
-        415 => 'Unsupported Media Type',
-        416 => 'Requested range not satisfiable',
-        417 => 'Expectation Failed',
-        418 => 'I\'m a teapot',
-        422 => 'Unprocessable Entity',
-        423 => 'Locked',
-        424 => 'Failed Dependency',
-        425 => 'Unordered Collection',
-        426 => 'Upgrade Required',
-        428 => 'Precondition Required',
-        429 => 'Too Many Requests',
-        431 => 'Request Header Fields Too Large',
-        451 => 'Unavailable For Legal Reasons',
-        500 => 'Internal Server Error',
-        501 => 'Not Implemented',
-        502 => 'Bad Gateway',
-        503 => 'Service Unavailable',
-        504 => 'Gateway Time-out',
-        505 => 'HTTP Version not supported',
-        506 => 'Variant Also Negotiates',
-        507 => 'Insufficient Storage',
-        508 => 'Loop Detected',
-        511 => 'Network Authentication Required',
-    ];
-
-    $message = !is_null($message) ? $message : $messages[$http_code] ?? '';
-
-    http_response_code($http_code);
-
-    header("HTTP/1.1 $http_code $message");
-
     if (file_exists(app_dir('Views/errors/'.$http_code.'.blade.php')))
     {
-        echo view('errors.'.$http_code);
+        $content =  view('errors.'.$http_code);
     }
+
+    $response = Load::class('response')->make($content ?? null,$http_code);
+
+    $response->send();
 
     exit();
 }
@@ -203,12 +140,46 @@ function csrf_field():String
 }
 
 
+function route($name,Array $parameters = [])
+{
+  return Load::class('route')->getName($name,$parameters);
+}
+
+
+
+if (!function_exists ( 'flash' ))
+{
+    function flash ( $key )
+    {
+        return Load::class('session')->flash($key);
+    }
+}
+
 
 if (!function_exists ( 'is_base64' ))
 {
     function is_base64 ( String $string ):Bool
     {
         return base64_encode ( base64_decode ( $string ) ) == $string;
+    }
+}
+
+
+
+if (!function_exists ( 'response' ))
+{
+    function response ()
+    {
+        return Load::class('response',func_get_args());
+    }
+}
+
+
+if (!function_exists ( 'json' ))
+{
+    function json ( $data )
+    {
+      return Load::class('response')->json($data);
     }
 }
 
@@ -232,14 +203,14 @@ if (!function_exists ( 'report' ))
         }
 
         $report = '----------------------------' . PHP_EOL .
-            ' Report                     ' . PHP_EOL .
-            '----------------------------' . PHP_EOL .
-            '|IP: ' . Load::class('http')->ip () . PHP_EOL .
-            '|Subject: ' . $subject . PHP_EOL .
-            '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
-            '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
-            '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
-            '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
+                  ' Report                     ' . PHP_EOL .
+                  '----------------------------' . PHP_EOL .
+                  '|IP: ' . Load::class('http')->ip () . PHP_EOL .
+                  '|Subject: ' . $subject . PHP_EOL .
+                  '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
+                  '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
+                  '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
+                  '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
         return Load::class('file')->append ( $logDir . $destination . $extension , $report );
     }
 }
@@ -356,14 +327,6 @@ if (!function_exists ( 'redirect' ))
 }
 
 
-if (!function_exists ( 'set_lang' ))
-{
-    function set_lang ( $lang = null )
-    {
-        return Load::class('language')->set ( $lang );
-    }
-}
-
 
 if (!function_exists ( 'lang' ))
 {
@@ -438,7 +401,6 @@ if (!function_exists ( 'request' ))
 
 if (!function_exists ( 'xssClean' ))
 {
-
     function xssClean ( $data )
     {
         return Load::class('input')->xssClean ( $data );
@@ -448,7 +410,6 @@ if (!function_exists ( 'xssClean' ))
 
 if (!function_exists ( 'fullTrim' ))
 {
-
     function fullTrim ( $str , $char = ' ' ): String
     {
         return str_replace ( $char , '' , $str );
@@ -458,7 +419,6 @@ if (!function_exists ( 'fullTrim' ))
 
 if (!function_exists ( 'encode_php_tag' ))
 {
-
     function encode_php_tag ( $str ): String
     {
         return str_replace ( array( '<?' , '?>' ) , array( '&lt;?' , '?&gt;' ) , $str );
@@ -485,7 +445,6 @@ if (!function_exists ( 'preg_replace_array' ))
 
 if (!function_exists ( 'str_replace_first' ))
 {
-
     function str_replace_first ( $search , $replace , $subject ): String
     {
         return Load::class('str')->replace_first ( $search , $replace , $subject );
@@ -495,7 +454,6 @@ if (!function_exists ( 'str_replace_first' ))
 
 if (!function_exists ( 'str_replace_last' ))
 {
-
     function str_replace_last ( $search , $replace , $subject ): String
     {
         return Load::class('str')->replace_last ( $search , $replace , $subject );
@@ -505,7 +463,6 @@ if (!function_exists ( 'str_replace_last' ))
 
 if (!function_exists ( 'str_slug' ))
 {
-
     function str_slug ( $str , $separator = '-' ): String
     {
         return Load::class('str')->slug ( $str , $separator );
@@ -601,7 +558,7 @@ if (!function_exists ( 'url' ))
         }
         else
         {
-            return Load::class('url')->base ($url,$parameters);
+            return Load::class('url')->to (...func_get_args());
         }
 
     }

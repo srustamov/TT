@@ -39,7 +39,7 @@ class HomeController extends Controller
      *
      * @return \System\Libraries\Redirect
      */
-    public function changeLanguage($lang)
+    public function language($lang)
     {
         if (in_array($lang, array('az','en','tr')))
         {

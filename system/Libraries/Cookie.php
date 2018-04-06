@@ -28,6 +28,8 @@ class Cookie implements ArrayAccess
 
     private $domain = '';
 
+    private $encrypt_except_keys = [];
+
 
 
     function __construct()
@@ -40,10 +42,11 @@ class Cookie implements ArrayAccess
         $this->secure    = is_bool($config['secure'])   ? $config['secure']    : $this->secure;
         $this->path      = !empty($config['path'])      ? $config['path']      : $this->path;
         $this->domain    = !empty($config['domain'])    ? $config['domain']    : $this->domain;
+        $this->encrypt_except_keys = $config['encrypt_except_key'] ?? [];
 
         if(func_num_args() > 0)
         {
-          $this->set(...func_get_args());
+            $this->set(...func_get_args());
         }
     }
 
@@ -64,7 +67,7 @@ class Cookie implements ArrayAccess
      * @param string $path
      * @return bool|Cookie
      */
-    public function path(String $path = '/')
+    public function path(String $path)
     {
         $this->path = $path;
 
@@ -76,18 +79,19 @@ class Cookie implements ArrayAccess
      * @param bool $domain
      * @return $this|bool
      */
-    public function domain($domain = null)
+    public function domain($domain)
     {
         $this->domain = $domain;
-        
+
         return $this;
     }
 
 
     /**
-     * @param bool $bool
+     * @param Bool $bool
+     * @return Cookie
      */
-    public function secure(Bool $bool = true)
+    public function secure(Bool $bool)
     {
         $this->secure = $bool;
 
@@ -110,7 +114,7 @@ class Cookie implements ArrayAccess
 
 
     /**
-     * @param $Key
+     * @param $key
      */
     public function forget($key)
     {
@@ -121,8 +125,9 @@ class Cookie implements ArrayAccess
     /**
      * @param $key
      * @param $value
-     * @param null $time
-     * @throws \Exception
+     * @param int|null $time
+     * @return mixed
+     * @throws CookieException
      */
     public function set($key, $value, $time = 3600 * 24)
     {
@@ -133,7 +138,7 @@ class Cookie implements ArrayAccess
 
         if (!empty(trim($value)))
         {
-            $value = $this->encrypt(serialize($value));
+            $value = $this->encrypt($value,$key);
         }
 
         $set = setcookie(
@@ -149,6 +154,8 @@ class Cookie implements ArrayAccess
         {
             throw new CookieException("Could not set the cookie!");
         }
+
+        return $this;
     }
 
 
@@ -162,20 +169,20 @@ class Cookie implements ArrayAccess
     }
 
     /**
-     * @param $Key
+     * @param $key
      * @return bool
      */
     public function get($key)
     {
         if (is_callable($key))
         {
-            return $this->get(call_user_func($key, $this), $encode);
+            return $this->get(call_user_func($key, $this));
         }
         else
         {
             if (isset($_COOKIE[ $this->prefix . $key ]))
             {
-                return unserialize($this->decrypt($_COOKIE[ $this->prefix . $key ]));
+                return $this->decrypt($_COOKIE[ $this->prefix . $key ],$key);
             }
             return false;
         }
@@ -183,15 +190,25 @@ class Cookie implements ArrayAccess
 
 
 
-    private function encrypt($data)
+    private function encrypt($data,$key)
     {
-      return OpenSsl::encrypt($data);
+        if(in_array($this->prefix.$key,$this->encrypt_except_keys))
+        {
+            return $data;
+        }
+
+        return OpenSsl::encrypt(serialize($data));
     }
 
 
-    private function decrypt($data)
+    private function decrypt($data,$key)
     {
-      return OpenSsl::decrypt($data);
+        if(in_array($this->prefix.$key,$this->encrypt_except_keys))
+        {
+            return $data;
+        }
+
+        return unserialize(OpenSsl::decrypt($data));
     }
 
 

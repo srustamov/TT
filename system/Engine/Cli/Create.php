@@ -13,7 +13,6 @@ namespace System\Engine\Cli;
  * @author Samir Rustamov
  */
 
-use System\Engine\Cli\PrintConsole;
 
 class Create {
 
@@ -23,6 +22,10 @@ class Create {
 
         $type= explode ( ':' , $manage[ 0 ] , 2 )[1];
 
+        if($type == 'facade')
+        {
+            return static::facade($manage[1]);
+        }
 
         $is_resource = false;
 
@@ -107,15 +110,43 @@ class Create {
                 try {
                     file_put_contents ( "app/{$type}/$manage[1].php" , $write_data );
 
-                    new PrintConsole ( "success" , "\nCreate $name {$_type} successfully\n\n" );
+                    new PrintConsole ( "green" , "\nCreate $name {$_type} successfully\n\n" );
                 } catch (\Exception $e) {
                 }
             } else {
-                new PrintConsole ( "success" , "\nCreate file failed\n\n" );
+                new PrintConsole ( "error" , "\nCreate file failed\n\n" );
             }
 
         } else {
             new PrintConsole ( "error" , "\nThe file was already created\n\n" );
+        }
+    }
+
+
+    protected static function facade($name)
+    {
+        if(!file_exists($file = path('system/Facades/'.ucfirst($name).'.php')))
+        {
+            $content = str_replace(
+                [':namespace',':name',':accessor'],
+                ['namespace System\\Facades',ucfirst($name),strtolower($name)],
+                file_get_contents(__DIR__.'/resource/facade.mask')
+            );
+
+            $create_and_put = file_put_contents($file,$content);
+
+            if($create_and_put)
+            {
+                new PrintConsole ( "green" , "\nCreate Facade successfully\n\n" );
+            }
+            else
+            {
+                new PrintConsole ( "error" , "\nCreate Facade failed\n\n" );
+            }
+        }
+        else
+        {
+            new PrintConsole ( "error" , "\nFacade already exists\n\n" );
         }
     }
 

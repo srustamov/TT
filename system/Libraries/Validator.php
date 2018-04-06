@@ -219,11 +219,11 @@ class Validator
     {
         if (isset($value['tmp_name']))
         {
-            return \getimagesize($value['tmp_name']);
+            return @getimagesize($value['tmp_name']) ? true : false;
         }
         else
         {
-            return \getimagesize($value);
+            return @getimagesize($value) ? true : false;
         }
 
     }
@@ -236,7 +236,10 @@ class Validator
         {
             return is_file($value['tmp_name']);
         }
-        return false;
+        else
+        {
+          return is_file($value);
+        }
     }
 
 

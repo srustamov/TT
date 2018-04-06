@@ -9,6 +9,12 @@
 +---------------------------+--------------------------------------+
 + create:model              + create:model FooModel                +
 +---------------------------+--------------------------------------+
++ route:cache               + Routes cache file clear              +
++---------------------------+--------------------------------------+
++ route:cache --create      + Routes cache                         +
++---------------------------+--------------------------------------+
++ route:list                + Routes List                          +
++---------------------------+--------------------------------------+
 + create:middleware         + create:middleware FooMiddleware      +
 +---------------------------+--------------------------------------+
 + session:table [table name]+ Database Migrate Sessions table      +

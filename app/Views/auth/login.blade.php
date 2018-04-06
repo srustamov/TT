@@ -72,7 +72,7 @@
                 <input type="text" class="form-control" name="email"  placeholder="Email" required>
                 @if ($errors->has('email'))
                 <strong class="text-danger custom">
-                  <span onclick="this.parentNode.style.display = 'none';">x</span>
+                  <span onclick="this.parentNode.style.display = 'none';">&times;</span>
                   {{$errors->first('email')}}
                 </strong>
                 @endif
@@ -82,7 +82,7 @@
                 <input type="password" class="form-control" name="password" placeholder="Password">
                 @if ($errors->has('password'))
                 <strong class="text-danger custom">
-                  <span onclick="this.parentNode.style.display = 'none';">x</span>
+                  <span onclick="this.parentNode.style.display = 'none';">&times;</span>
                   {{$errors->first('password')}}
                 </strong>
                 @endif

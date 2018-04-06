@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>Home</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300,400,600">
-    @css('/css/bootstrap.css')
+    <link rel="stylesheet" href="/css/bootstrap.css">
     @yield('style')
   </head>
   <body>

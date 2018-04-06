@@ -31,8 +31,14 @@ require __DIR__.'/../vendor/autoload.php';
 
 $TT = new System\Engine\Kernel(realpath('../'));
 
+
 $TT->bootstrap()->callAppKernel()->routing();
 
+
+//------------------------------------------
+// Response content and headers send
+//------------------------------------------
+$TT->response()->send();
 
 
 //------------------------------------------

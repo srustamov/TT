@@ -10,6 +10,10 @@ return array(
 
     'path'      => '/',
 
-    'prefix'    => ''
+    'prefix'    => '',
+
+    'encrypt_except_key' => array(
+
+    )
 
 );

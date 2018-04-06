@@ -26,19 +26,16 @@ class Middleware
     {
         $request  = Load::class('request');
 
-
         if(!$isClassName)
         {
-            list($name,$guard,$excepts) = static::getInstance()->getExceptsAndGuard($extension);
-
+            list($name,$guard,$excepts) = static::instance()->getExceptsAndGuard($extension);
 
             foreach ($excepts as $action)
             {
-                if (strtolower($request->action()) == strtolower($action))
+                if ($request->controller(true) == strtolower($action))
                 {
                     return true;
                 }
-
             }
 
             $middleware = "\\App\\Middleware\\{$name}";
@@ -49,9 +46,8 @@ class Middleware
             $guard      = null;
         }
 
-        $next = function($response)
-        {
-            static::getInstance()->response($response);
+        $next = function($response) {
+            Load::class('response')->make($response)->send();
         };
 
         if (class_exists($middleware))
@@ -66,8 +62,11 @@ class Middleware
     }
 
 
-
-    protected function getExceptsAndGuard($extension)
+    /**
+     * @param $extension
+     * @return array
+     */
+    protected function getExceptsAndGuard( $extension)
     {
         $excepts = [];
 
@@ -100,20 +99,8 @@ class Middleware
     }
 
 
-    private function response($content)
-    {
-        if(!is_array($content))
-        {
-            echo $content;
-        }
-        else
-        {
-            echo '['.implode(',',$content).']';
-        }
-    }
 
-
-    public static function getInstance()
+    public static function instance()
     {
         if (is_null(static::$instance)) {
             static::$instance = new static();

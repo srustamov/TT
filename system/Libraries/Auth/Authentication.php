@@ -222,7 +222,7 @@ class Authentication
         }
         else
         {
-            $_token = hash_hmac('sha256', $user->email . $user->name, Load::config('config.encryption_key'));
+            $_token = hash_hmac('sha256', $user->email . $user->name, Load::config('app.encryption_key'));
 
             Cookie::set('remember_'.$this->guard, base64_encode($_token), 3600 * 24 * 30);
 

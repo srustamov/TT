@@ -5,6 +5,7 @@
  * @link    https://github.com/srustamov/TT
  */
 
+use System\Engine\Cli\Route as CliRoute;
 
 class Console
 {
@@ -64,6 +65,12 @@ class Console
             case 'config:cache':
                 Config::clearConfigsCacheOrCreate ( $manage[ 1 ] ?? null );
                 break;
+            case 'route:cache':
+                CliRoute::clearRoutesCacheOrCreate ( $manage[ 1 ] ?? null );
+                break;
+            case 'route:list':
+                CliRoute::list ();
+                break;
             case 'key:generate':
                 $instance->keyGenerate ();
                 break;
@@ -72,7 +79,8 @@ class Console
                     "create:controller",
                     "create:model",
                     "create:middleware",
-                    "create:resource"
+                    "create:resource",
+                    "create:facade",
                 );
                 if(in_array($manage[ 0 ], $create))
                 {

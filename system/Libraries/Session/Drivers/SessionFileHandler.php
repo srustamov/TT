@@ -6,7 +6,7 @@ use SessionHandlerInterface;
 
 
 
-class SessionFileStore implements SessionHandlerInterface
+class SessionFileHandler implements SessionHandlerInterface
 {
 
 

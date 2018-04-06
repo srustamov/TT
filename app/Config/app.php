@@ -66,7 +66,7 @@ return array(
 
     'classes'  => array(
         'array' => 'System\Libraries\Arr',
-        'auth' => 'System\Libraries\Auth\Authentication',
+        'authentication' => 'System\Libraries\Auth\Authentication',
         'cache' => 'System\Libraries\Cache\Cache',
         'console' => 'System\Engine\Cli\Console',
         'cookie' => 'System\Libraries\Cookie',
@@ -85,6 +85,7 @@ return array(
         'redirect' => 'System\Libraries\Redirect',
         'redis' => 'System\Libraries\RedisFactory',
         'request' => 'System\Engine\Http\Request',
+        'response' => 'System\Engine\Http\Response',
         'router' => 'System\Engine\Http\Router',
         'session' => 'System\Libraries\Session\Session',
         'str' => 'System\Libraries\Str',

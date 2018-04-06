@@ -258,10 +258,24 @@ class File
     }
 
 
-
     public function mimeType($path)
     {
         return finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
+    }
+
+    public function getFileName($path)
+    {
+      return pathinfo($path ,PATHINFO_FILENAME);
+    }
+
+    public function getFileExtension($path)
+    {
+      return pathinfo($path ,PATHINFO_EXTENSION);
+    }
+
+    public function basename($path)
+    {
+      return pathinfo($path ,PATHINFO_BASENAME);
     }
 
 

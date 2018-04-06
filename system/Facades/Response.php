@@ -5,12 +5,13 @@
  * @link https://github.com/srustamov/TT
  */
 
+namespace System\Facades;
 
 
-class Auth extends Facade
+class Response extends Facade
 {
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor ()
     {
-        return 'authentication';
+        return 'response';
     }
 }

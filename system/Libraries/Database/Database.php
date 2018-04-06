@@ -57,11 +57,9 @@ class Database extends Connection
     {
 
 
-        $query = $this->getQueryString ();
+        $query = $this->getQueryString ().($first ? ' LIMIT 1' : '');
 
         $queryString = $this->normalizeQueryString ( $query );
-
-        if ($first) $query .= " LIMIT 1";
 
         try 
         {

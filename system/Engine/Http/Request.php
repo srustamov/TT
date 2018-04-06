@@ -12,6 +12,7 @@ use JsonSerializable;
 use System\Facades\Arr;
 use System\Facades\Load;
 use System\Facades\Redirect;
+use System\Facades\Response;
 use System\Facades\Validator;
 
 
@@ -22,6 +23,8 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     private $request;
 
     private $request_method;
+
+
 
     public function __construct()
     {
@@ -105,9 +108,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
-    public function server($key)
+    public function server($key,$default = null)
     {
-        return $_SERVER[ strtoupper($key) ] ?? false;
+        return $_SERVER[strtoupper($key)] ?? $default;
     }
 
 
@@ -167,7 +170,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
-    public function method(): String
+    public function method($default = 'GET'): String
     {
         $method = $this->server('request_method');
 
@@ -182,7 +185,13 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
                 $method = $xhmo;
             }
         }
-        return $method;
+        return $method ? : $default;
+    }
+
+
+    public function isMethod($method)
+    {
+      return $this->method() === $method;
     }
 
 
@@ -192,15 +201,17 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
-    public function controller()
+    public function controller($method = null)
     {
-        return $this->server('called_controller');
-    }
+        if(is_null($method))
+        {
+          return defined('CALLED_CONTROLLER') ? CALLED_CONTROLLER : false;
+        }
+        else
+        {
+          return defined('CALLED_CONTROLLER_METHOD') ? CALLED_CONTROLLER_METHOD : false;
+        }
 
-
-    public function action()
-    {
-        return $this->server('called_method');
     }
 
 
@@ -240,7 +251,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
         if(!$validation->check())
         {
-          return Redirect::back()->withErrors($validation->messages());
+          Redirect::back()->withErrors($validation->messages());
+
+          Response::send();
         }
     }
 

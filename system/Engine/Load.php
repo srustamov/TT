@@ -35,7 +35,7 @@ class Load
         else
         {
 
-            $application_classes = $this->config('config.classes',[]);
+            $application_classes = $this->config('app.classes',[]);
 
             if (array_key_exists( $class,$application_classes))
             {

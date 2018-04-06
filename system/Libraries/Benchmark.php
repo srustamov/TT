@@ -8,7 +8,7 @@
  * @category  Benchmark
  */
 
-
+use System\Engine\Http\Response;
 use System\Facades\Load;
 
 class Benchmark
@@ -45,8 +45,8 @@ class Benchmark
           'Memory usage'     => (int) (memory_get_usage()/1024)." kb",
           'Peak Memory usage'=> (int) (memory_get_peak_usage()/1024)." kb",
           'Load files'       => $this->countRequiredFiles(),
-          'Controller'       => $this->server('called_controller'),
-          'Action'           => $this->server('called_method'),
+          'Controller'       => defined('CALLED_CONTROLLER') ? CALLED_CONTROLLER : null,
+          'Controller Called Method'=> defined('CALLED_CONTROLLER_METHOD') ? CALLED_CONTROLLER_METHOD : null,
           'Request Method'   => $this->server('request_method'),
           'Request Uri'      => Load::class('url')->request(),
           'IP'               => Load::class('http')->ip(),
@@ -67,7 +67,7 @@ class Benchmark
 
         require_once path('system/Engine/view/benchmark.php');
 
-        $content  =  ob_get_clean();
+        $content  = ob_get_clean();
 
         $content  = preg_replace('/([\n]+)|([\s]{2})/','',$content);
 
@@ -82,7 +82,9 @@ class Benchmark
   {
       $data = static::getInstance()->getBenchMarkTableData($finish,$start);
 
-      echo static::getInstance()->view($data);
+      $response = new Response(static::getInstance()->view($data));
+
+      $response->send();
   }
 
 

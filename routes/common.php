@@ -13,20 +13,23 @@
 
 
 
-Route::get('/',function(){
-  return view('welcome');
-});
+Route::get('/','WelcomeController@index')->name('welcome');
 
+Route::get('/home','HomeController@index')->name('home');
 
-Route::get('/home','HomeController@index');
+Route::get(array(
+                  'path'    =>'/language/{lang}',
+                  'pattern' => ['lang' => '[a-z]{2}'],
+                  'name'    => 'lang'
+            ),
+           'HomeController@language'
+);
 
-Route::get('/language/{language}','HomeController@changeLanguage')->pattern(['langauge' => '[a-z]{2}']);
+Route::get(['path' => '/auth/logout' , 'middleware' => 'auth'],'Auth/LoginController@logout');
 
-
-Route::group('/auth',function(){
+Route::group(['prefix' => '/auth','middleware' => 'guest'],function(){
     Route::get('/login','Auth/LoginController@show');
     Route::post('/login','Auth/LoginController@login');
     Route::get('/register','Auth/RegisterController@show');
     Route::post('/register','Auth/RegisterController@register');
-    Route::get('/logout','Auth/LoginController@logout');
 });

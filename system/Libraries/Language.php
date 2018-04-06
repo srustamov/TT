@@ -119,7 +119,7 @@ class Language
         }
         else
         {
-           $locale  = Load::config('config.locale','en');
+           $locale  = Load::config('app.locale','en');
 
            Load::class('session')->set('_LOCALE',$locale);
 

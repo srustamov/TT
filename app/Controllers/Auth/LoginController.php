@@ -23,13 +23,6 @@ class LoginController extends Controller
 {
 
 
-
-    function __construct()
-    {
-        $this->middleware('guest|logout');
-    }
-
-
     /**
     * LoginController show method.Show login form page
     *
@@ -57,20 +50,19 @@ class LoginController extends Controller
                 'password' => 'required|min:6'
             ]);
 
-
         if (!$validation->check())
         {
-            return Redirect::url('auth/login')->withErrors($validation->messages());
+            return Redirect::to('/auth/login')->withErrors($validation->messages());
         }
         else
         {
             if ($auth->attempt($request->only('email', 'password'), $request->remember))
             {
-                return Redirect::url('home');
+                return Redirect::to('/home');
             }
             else
             {
-                return Redirect::url('auth/login')->withErrors('login' , $auth->getMessage());
+                return Redirect::to('/auth/login')->withErrors('login' , $auth->getMessage());
             }
         }
     }
@@ -85,6 +77,6 @@ class LoginController extends Controller
     */
     public function logout(Authentication $auth)
     {
-        return $auth->guard('user')->logout()->redirect('/home');
+        return $auth->guard('user')->logout()->redirect()->route('home');
     }
 }

@@ -35,12 +35,14 @@ class TTException
   private function show($e)
   {
 
-      if (Load::config('config.debug') === true)
+      if (Load::config('app.debug') === true)
       {
-          ob_end_clean();
+
 
           if (!InConsole())
           {
+              ob_end_clean();
+
               $view_file =  __DIR__.'/resource/exception.php';
 
               if(file_exists($view_file))
@@ -54,7 +56,11 @@ class TTException
           }
           else
           {
-              new PrintConsole('error',"\n\n".$e->getMessage()."\n\n");
+              new PrintConsole('red',
+                           "\n File:".$e->getFile()."
+                            \n Line:".$e->getLine()."
+                            \n".$e->getMessage()."\n
+                      ");
           }
       }
       else

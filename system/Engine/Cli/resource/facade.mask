@@ -1,16 +1,14 @@
-<?php namespace System\Facades;
+<?php :namespace;
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
  */
 
-
-
-class Auth extends Facade
+class :name extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'authentication';
+        return ':accessor';
     }
 }

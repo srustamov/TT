@@ -48,7 +48,7 @@ class Kernel
         $exception->register();
 
         $this->loadHelpers ();
-        
+
         $this->setAliases ();
 
         setlocale ( LC_ALL , Load::config ( 'datetime.setLocale' ) );
@@ -119,13 +119,27 @@ class Kernel
 
     public function routing ()
     {
-        if (!InConsole ()) {
+        $routes = null;
 
+        if(file_exists($routes_cache_file = path('storage/system/routes.php'))) {
+            $routes = require_once $routes_cache_file;
+        } else {
             import_dir_files ( path ( 'routes' ) );
-
-            Route::execute ();
         }
+
+        if(!inConsole()) {
+          Route::execute ($routes);
+        }
+
+        unset($routes);
+
         return $this;
+    }
+
+
+    public function response()
+    {
+        return Load::class('response');
     }
 
 
@@ -150,12 +164,9 @@ class Kernel
 
     public function benchmark($finish)
     {
-      if(InConsole() || !Load::config('config.debug') || Load::class('http')->isAjax())
-      {
+      if(InConsole() || !Load::config('app.debug') || Load::class('http')->isAjax()) {
           return null;
-      }
-      else
-      {
+      } else {
         Benchmark::show($finish);
       }
     }
