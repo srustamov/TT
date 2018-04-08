@@ -46,13 +46,23 @@ class Middleware
             $guard      = null;
         }
 
-        $next = function($response) {
-            Load::class('response')->make($response)->send();
+        $next = function($ClientRequest)
+        {
+            if(Load::instance($ClientRequest,'request'))
+            {
+              return Load::class('response');
+            }
         };
+
 
         if (class_exists($middleware))
         {
-            call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
+            $response = call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
+
+            if(!Load::instance($response,'response'))
+            {
+              Load::class('response')->setContent($response)->send();
+            }
         }
         else
         {

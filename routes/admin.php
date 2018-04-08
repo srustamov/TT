@@ -4,7 +4,7 @@
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link 	https://github.com/srustamov/TT
  */
- 
+
 
 /*
 |---------------------------------------------
@@ -13,11 +13,11 @@
 */
 
 
+$groupParameters = ['domain' => 'admin.framework.tt','name' => 'dashboard.','middleware' => 'auth:admin'];
 
-Route::group(['domain' => 'admin.framework.tt','middleware' => 'auth:admin'],function(){
+Route::group($groupParameters,function(){
 
-    Route::get('/','Backend/AdminController@dashboard');
+    Route::get('/','Backend/AdminController@dashboard')->name('home');
+    // merge group parameter name [dashboard.home]
 
 });
-
-

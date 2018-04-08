@@ -7,25 +7,18 @@
  */
 
 
+
 class Load
 {
 
 
     protected static $classes = [];
 
-    protected static $configurations = [];
 
-
-    /**
-     * @param String $class
-     * @param array $args
-     * @return mixed
-     * @throws \Exception
-     */
     public function class( String $class,Array $args = [])
     {
         if(strtoupper($class) == 'LOAD') {
-          return $this;
+            return $this;
         }
 
         if(isset(static::$classes[$class]))
@@ -35,43 +28,35 @@ class Load
         else
         {
 
-            $application_classes = $this->config('app.classes',[]);
-
-            if (array_key_exists( $class,$application_classes))
+            if (($instance = $this->applicationClasses($class)))
             {
+                if (method_exists($instance,'__construct'))
+                {
+                    $args = $this->getReflectionMethodParameters($instance,$args);
+                }
 
-                if (method_exists($class,'__construct'))
-                {
-                    $args = $this->getReflectionMethodParameters(
-                        $application_classes[$class],$application_classes ,$args
-                    );
-                    static::$classes[$class] = new $application_classes[$class](...$args);
-                }
-                else
-                {
-                    static::$classes[$class] = new $application_classes[$class];
-                }
+                static::$classes[$class] = new $instance(...$args);
 
                 return static::$classes[$class];
             }
             else
             {
-                if(strpos('\\',$class))
+                if(strpos($class,'\\'))
                 {
-                    $application_classes = array_flip($application_classes);
 
-                    if(array_key_exists($class,$application_classes))
+                    if(($instance = $this->applicationClasses($class,true)))
                     {
-                        return $this->class($application_classes[$class],$args);
+                        return $this->class($instance,$args);
                     }
                     else
                     {
-                        $instance = new $class(...$this->getReflectionMethodParameters(
-                            $class,array_flip($application_classes) ,$args
-                        ));
+                        $instance = new $class(...$this->getReflectionMethodParameters($class, $args));
+
                         static::$classes[$class] = $instance;
 
-                        return $instance;
+                        unset($instance);
+
+                        return static::$classes[$class];
                     }
 
                 }
@@ -82,70 +67,31 @@ class Load
     }
 
 
-    /**
-     * @param $name
-     * @param bool $default
-     * @return bool|mixed
-     * @throws \Exception
-     */
-    public function config( $name, $default = false)
+    public function set($className,$object)
     {
-
-        if(file_exists(path('storage/system/configs.php')))
-        {
-            if (empty(static::$configurations))
-            {
-              static::$configurations = require_once path('storage/system/configs.php');
-            }
+        if($this->applicationClasses($className)) {
+            throw new \Exception("Class name already exists in application classes");
         }
 
-        if (strpos($name, '.'))
-        {
-            list($file, $item) = explode('.', $name);
-
-            if (isset(static::$configurations[$file]))
-            {
-                return static::$configurations[$file][$item] ?? $default;
-            }
-
-            if (file_exists(($config_file = path("app/Config/{$file}.php"))))
-            {
-                $config = require_once $config_file;
-
-                static::$configurations[$file] = $config;
-
-                return $config[ $item ] ?? $default;
-            }
-            else
-            {
-                throw new \Exception("Config file not found. Path : [".path("app/Config/{$file}.php")."]");
-            }
+        if($object instanceof \Closure) {
+            $this->set($className,call_user_func($object));
+        } elseif (is_string($object)) {
+            static::$classes[$className] = new $object();
+        } elseif (is_object($object)) {
+            static::$classes[$className] = $object;
         }
-        else
-        {
-            if(isset(static::$configurations[$name]))
-            {
-                return static::$configurations[$name];
-            }
 
-            if (file_exists(($config_file = path("app/Config/{$name}.php"))))
-            {
-                static::$configurations[$name] = require_once $config_file;
-
-                return static::$configurations[$name];
-            }
-            else
-            {
-                throw new \Exception("Config file not found. Path : [".path("app/Config/{$name}.php")." ]");
-            }
-        }
     }
 
-    /**
-     * @param String $file
-     * @return mixed
-     * @throws \Exception
-     */
+
+    public function instance($object,$className)
+    {
+        $instance = $this->class($className);
+
+        return ($object instanceOf $instance);
+    }
+
+
     public function file( String $file)
     {
         $file = str_replace(['/','\\'], DS, trim($file));
@@ -160,6 +106,79 @@ class Load
         }
     }
 
+
+    private function getReflectionMethodParameters($class_name,$args)
+    {
+        $reflection = new \ReflectionMethod($class_name, '__construct');
+
+        foreach ($reflection->getParameters() as $num => $param)
+        {
+
+            if ($param->getClass())
+            {
+                $class = $param->getClass()->name;
+
+                if(($instance = $this->applicationClasses($class)))
+                {
+                    $args[$num] = $this->class($instance);
+                }
+                else
+                {
+                    $args[$num] = new $class();
+                }
+
+            }
+        }
+        return $args;
+    }
+
+
+    public function applicationClasses(String $name = null,Bool $isValue = false)
+    {
+
+        $classes = array(
+            'array' => 'System\Libraries\Arr',
+            'authentication' => 'System\Libraries\Auth\Authentication',
+            'cache' => 'System\Libraries\Cache\Cache',
+            'console' => 'System\Engine\Cli\Console',
+            'config' => 'System\Engine\Config',
+            'cookie' => 'System\Libraries\Cookie',
+            'database' => 'System\Libraries\Database\Database',
+            'email' => 'System\Libraries\Mail\Email',
+            'file' => 'System\Libraries\File',
+            'hash' => 'System\Libraries\Hash',
+            'html' => 'System\Libraries\Html',
+            'http' => 'System\Libraries\Http',
+            'input' => 'System\Libraries\Input',
+            'lang' => 'System\Libraries\Language',
+            'language' => 'System\Libraries\Language',
+            'load' => 'System\Core\Load',
+            'middleware' => 'System\Engine\Http\Middleware',
+            'openssl' => 'System\Libraries\Encrypt\OpenSsl',
+            'redirect' => 'System\Libraries\Redirect',
+            'redis' => 'System\Libraries\RedisFactory',
+            'request' => 'System\Engine\Http\Request',
+            'response' => 'System\Engine\Http\Response',
+            'route' => 'System\Engine\Http\Routing\Route',
+            'session' => 'System\Libraries\Session\Session',
+            'str' => 'System\Libraries\Str',
+            'string' => 'System\Libraries\Str',
+            'storage' => 'System\Libraries\Storage',
+            'url' => 'System\Libraries\Url',
+            'validator' => 'System\Libraries\Validator',
+            'view' => 'System\Libraries\View\View',
+        );
+
+        if(is_null($name)) {
+            return $classes;
+        }
+
+        if(!$isValue) {
+            return $classes[strtolower($name)] ?? false;
+        } else {
+            return array_search($name,$classes);
+        }
+    }
 
 
     public function settingVariables()
@@ -221,19 +240,19 @@ class Load
                 if (strpos ( $value , '$' ) !== false)
                 {
                     $value = preg_replace_callback ( '/\${([a-zA-Z0-9_]+)}/' ,
-                                  function ( $m ) use ( $_settings )
-                                  {
-                                      if (isset( $_settings[ $m[ 1 ] ] ))
-                                      {
-                                          return $_settings[ $m[ 1 ] ];
-                                      }
-                                      else
-                                      {
-                                          return ${"$m[1]"} ?? '${' . $m[ 1 ] . '}';
-                                      }
-                                  } ,
-                                  $value
-                              );
+                        function ( $m ) use ( $_settings )
+                        {
+                            if (isset( $_settings[ $m[ 1 ] ] ))
+                            {
+                                return $_settings[ $m[ 1 ] ];
+                            }
+                            else
+                            {
+                                return ${"$m[1]"} ?? '${' . $m[ 1 ] . '}';
+                            }
+                        } ,
+                        $value
+                    );
                 }
 
                 if(function_exists('putenv'))
@@ -267,34 +286,6 @@ class Load
                 $_ENV[ $key ] = $value;
             }
         }
-    }
-
-
-
-    private function getReflectionMethodParameters($class_name,$application_classes,$args)
-    {
-        $reflection = new \ReflectionMethod($class_name, '__construct');
-
-        foreach ($reflection->getParameters() as $num => $param)
-        {
-
-            if ($param->getClass())
-            {
-
-                $class = $param->getClass()->name;
-
-                if(in_array($class,$application_classes))
-                {
-                    $args[$num] = $this->class($application_classes[$class]);
-                }
-                else
-                {
-                    $args[$num] = new $class();
-                }
-
-            }
-        }
-        return $args;
     }
 
 

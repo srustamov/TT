@@ -18,19 +18,19 @@ class DatabaseStore implements CacheStore
 
     function  __construct ()
     {
-        $this->table = Load::config('cache.database',['table' => 'cache'])['table'];
+        $this->table = Load::class('config')->get('cache.database',['table' => 'cache'])['table'];
 
         $this->gc();
     }
 
 
-    public function put ( String $key , $value , $expires = null )
+    public function put ( String $key , $value , $expires = null ,$forever = false)
     {
 
         if(is_null($expires))
         {
 
-          if(is_null($this->expires))
+          if(is_null($this->expires) && !$forever)
           {
             $this->put = true;
 
@@ -42,7 +42,7 @@ class DatabaseStore implements CacheStore
           {
             $expires = time() + $this->expires;
 
-            DB::pdo("REPLACE INTO $this->table SET cache_key='$key',cache_value='$value', expires=$expires");
+            DB::pdo("REPLACE INTO $this->table SET cache_key='$key',cache_value='$value', expires=".($forever ? 0 : $expires));
 
             $this->expires = null;
           }
@@ -60,7 +60,7 @@ class DatabaseStore implements CacheStore
 
     public function forever ( String $key , $value )
     {
-        return $this->put($key , $value ,time());
+        return $this->put($key , $value , null, true);
     }
 
     public function has ( $key ):Bool
@@ -96,7 +96,7 @@ class DatabaseStore implements CacheStore
         return $this;
     }
 
-    
+
     public function minutes ( Int $minutes )
     {
       return $this->expires($minutes * 60);
@@ -117,12 +117,12 @@ class DatabaseStore implements CacheStore
 
     public function flush ()
     {
-        DB::table($this->table)->delete();
+        DB::table($this->table)->truncate();
     }
 
     private function gc()
     {
-        DB::table($this->table)->where('expires','<',time())->delete();
+        DB::pdo("DELETE FROM {$this->table} WHERE expires < ".time()." AND expires != 0");
     }
 
 

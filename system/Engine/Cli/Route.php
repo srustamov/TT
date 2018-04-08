@@ -61,8 +61,16 @@ class Route {
 
             if (is_array ( $value ))
             {
-                file_put_contents ( path ( 'storage/system/routes.php' ) ,
-                    "\t'" . $key . "' => array(\n\n" , FILE_APPEND );
+                if(is_numeric($key))
+                {
+                  file_put_contents ( path ( 'storage/system/routes.php' ) ,
+                      "\t array(\n\n" , FILE_APPEND );
+                }
+                else
+                {
+                  file_put_contents ( path ( 'storage/system/routes.php' ) ,
+                      "\t'" . $key . "' => array(\n\n" , FILE_APPEND );
+                }
 
                 static::create ( $value );
 

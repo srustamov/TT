@@ -35,14 +35,14 @@ class Cookie implements ArrayAccess
     function __construct()
     {
 
-        $config = Load::config('cookie');
+        $config = Load::class('config')->get('cookie');
 
         $this->prefix    = !empty($config['prefix'])    ? $config['prefix']    : $this->prefix;
         $this->http_only = is_bool($config['http_only'])? $config['http_only'] : $this->http_only;
         $this->secure    = is_bool($config['secure'])   ? $config['secure']    : $this->secure;
         $this->path      = !empty($config['path'])      ? $config['path']      : $this->path;
         $this->domain    = !empty($config['domain'])    ? $config['domain']    : $this->domain;
-        $this->encrypt_except_keys = $config['encrypt_except_key'] ?? [];
+        $this->encrypt_except_keys = $config['encrypt_except_keys'] ?? [];
 
         if(func_num_args() > 0)
         {

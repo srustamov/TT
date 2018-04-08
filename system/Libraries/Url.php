@@ -84,7 +84,7 @@ class Url
         }
         else
         {
-            $base_url = Load::config('app.base_url');
+            $base_url = Load::class('config')->get('app.url');
 
             if(!$base_url || empty($base_url))
             {

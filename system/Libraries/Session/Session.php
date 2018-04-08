@@ -13,6 +13,7 @@ use System\Libraries\Session\Drivers\SessionFileHandler;
 use System\Libraries\Session\Drivers\SessionDBHandler;
 use System\Libraries\Session\Drivers\SessionRedisHandler;
 use System\Facades\OpenSsl;
+//use System\Facades\Cookie;
 use System\Facades\Load;
 use ArrayAccess;
 use Countable;
@@ -32,7 +33,7 @@ class Session implements ArrayAccess,Countable
 
         if (session_status() == PHP_SESSION_NONE)
         {
-            $this->config = Load::config('session');
+            $this->config = Load::class('config')->get('session');
 
             ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
             ini_set('session.use_only_cookies', $this->config['only_cookies']);
@@ -51,9 +52,6 @@ class Session implements ArrayAccess,Countable
 
             switch ($this->config['driver'])
             {
-                case 'file':
-                    $this->handler = new SessionFileHandler();
-                    break;
                 case 'database':
                     $this->handler = new SessionDBHandler($this->config['table']);
                     break;
@@ -61,7 +59,7 @@ class Session implements ArrayAccess,Countable
                     $this->handler = new SessionRedisHandler();
                     break;
                 default:
-                    //
+                    $this->handler = new SessionFileHandler();
                     break;
             }
 
@@ -88,7 +86,7 @@ class Session implements ArrayAccess,Countable
 
     public function set($key, $value)
     {
-        if (is_callable($value))
+        if ($value instanceOf \Closure)
         {
             return $this->set($key, call_user_func($value, $this));
         }
@@ -132,7 +130,7 @@ class Session implements ArrayAccess,Countable
 
     public function get($key)
     {
-        if (is_callable($key))
+        if($key instanceOf \Closure)
         {
             return $this->get(call_user_func($key, $this));
         }
@@ -183,6 +181,8 @@ class Session implements ArrayAccess,Countable
         {
             $this->set($key, $value);
         }
+
+        return $this;
     }
 
 
@@ -191,7 +191,7 @@ class Session implements ArrayAccess,Countable
      */
     public function all():array
     {
-        return  $_SESSION;
+        return $_SESSION;
     }
 
 
@@ -212,7 +212,7 @@ class Session implements ArrayAccess,Countable
 
     public function delete($key)
     {
-        if (is_callable($key))
+        if ($key instanceOf \Closure)
         {
             $this->delete(call_user_func($key, $this));
         }
@@ -233,6 +233,8 @@ class Session implements ArrayAccess,Countable
                 }
             }
         }
+
+        return $this;
     }
 
 
@@ -250,6 +252,8 @@ class Session implements ArrayAccess,Countable
         {
             session_regenerate_id(true);
         }
+
+        return $this;
     }
 
 

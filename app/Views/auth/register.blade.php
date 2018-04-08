@@ -12,7 +12,7 @@
       <div class="col-md-6 col-md-offset-3">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">Login User </h3>
+            <h3 class="panel-title">Register User </h3>
           </div>
           <form action="{{url('auth/register')}}" method="post" id="register-form" onsubmit="return false;">
             @csrf

@@ -33,7 +33,7 @@ class CreateTables {
         }
         if (!$table)
         {
-            $table = Load::config ( 'session.table' , 'sessions' );
+            $table = Load::class('config')->get ( 'session.table' , 'sessions' );
         }
 
         try

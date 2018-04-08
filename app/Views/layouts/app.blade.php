@@ -21,17 +21,17 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/">
-            <strong class="text-primary">{{setting('APP_NAME','TT')}}</strong>
+            <strong class="text-primary">{{config('app.name','TT')}}</strong>
           </a>
         </div>
         <div class="collapse navbar-collapse" id="navbar">
           <ul class="nav navbar-nav navbar-menu-link">
             <li>
-              <a href="{{url('/home')}}">@lang('home.home')</a>
+              <a href="{{route('home')}}">@lang('home.home')</a>
             </li>
             @guest
-              <li><a href="{{url('/auth/register')}}">@lang('home.register')</a></li>
-              <li><a href="{{url('/auth/login')}}">@lang('home.login')</a></li>
+              <li><a href="{{route('register')}}">@lang('home.register')</a></li>
+              <li><a href="{{route('login')}}">@lang('home.login')</a></li>
             @endguest
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -49,7 +49,7 @@
               <button style="border-radius:0;min-height:50px" class="btn btn-success">
                {{ Auth::name() }}
              </button>
-              <button onclick="window.location.href='{{url('auth/logout')}}'"
+              <button onclick="window.location.href='{{route('logout')}}'"
                   style="border-radius:0;min-height:50px"
                   role="button" class="btn btn-danger">
                 Logout

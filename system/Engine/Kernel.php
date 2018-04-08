@@ -15,7 +15,6 @@ use System\Libraries\Benchmark;
 use System\Exceptions\TTException;
 use System\Engine\Http\Middleware;
 
-
 class Kernel
 {
 
@@ -43,6 +42,8 @@ class Kernel
 
         Load::settingVariables ();
 
+        Load::class('config')->prepare();
+
         $exception = new TTException;
 
         $exception->register();
@@ -51,9 +52,9 @@ class Kernel
 
         $this->setAliases ();
 
-        setlocale ( LC_ALL , Load::config ( 'datetime.setLocale' ) );
+        setlocale ( LC_ALL , Load::class('config')->get ( 'datetime.setLocale' ) );
 
-        date_default_timezone_set ( Load::config ( 'datetime.time_zone' , 'UTC' ) );
+        date_default_timezone_set ( Load::class('config')->get ( 'datetime.time_zone' , 'UTC' ) );
 
         return $this;
     }
@@ -108,7 +109,7 @@ class Kernel
 
     private function setAliases ()
     {
-        $aliases = Load::config ( 'aliases' , [] );
+        $aliases = Load::class('config')->get ( 'aliases' , [] );
 
         foreach ($aliases as $key => $value) {
             class_alias ( '\\' . $value , $key );
@@ -164,7 +165,7 @@ class Kernel
 
     public function benchmark($finish)
     {
-      if(InConsole() || !Load::config('app.debug') || Load::class('http')->isAjax()) {
+      if(InConsole() || !Load::class('config')->get('app.debug') || Load::class('http')->isAjax()) {
           return null;
       } else {
         Benchmark::show($finish);

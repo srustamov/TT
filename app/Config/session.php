@@ -21,7 +21,7 @@ return array(
     | Session Files Location
     |---------------------------------------------------------
     */
-    'files_location'   => path('sessions','storage'),
+    'files_location'   => path('storage/sessions'),
 
 
 
@@ -73,7 +73,7 @@ return array(
 
         'secure' => false,
 
-        'domain' => null,
+        'domain' => '.framework.tt',
 
         'http_only' => true,
 

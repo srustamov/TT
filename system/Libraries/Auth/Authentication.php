@@ -10,6 +10,7 @@
 use System\Libraries\Auth\Drivers\SessionAttemptDriver;
 use System\Libraries\Auth\Drivers\DatabaseAttemptDriver;
 use System\Libraries\Auth\Drivers\RedisAttemptDriver;
+use System\Facades\Language;
 use System\Facades\Redirect;
 use System\Facades\Session;
 use System\Facades\Cookie;
@@ -49,7 +50,7 @@ class Authentication
 
     function __construct()
     {
-        $this->config = Load::config('authentication.guards');
+        $this->config = Load::class('config')->get('authentication.guards');
 
         foreach ($this->config as $guard => $config)
         {
@@ -222,7 +223,7 @@ class Authentication
         }
         else
         {
-            $_token = hash_hmac('sha256', $user->email . $user->name, Load::config('app.encryption_key'));
+            $_token = hash_hmac('sha256', $user->email . $user->name, Load::class('config')->get('app.key'));
 
             Cookie::set('remember_'.$this->guard, base64_encode($_token), 3600 * 24 * 30);
 
@@ -257,9 +258,8 @@ class Authentication
 
         $set_data[ $this->guard . '_login' ] = true;
 
-        Session::setArray($set_data);
+        Session::setArray($set_data)->regenerate();
 
-        Session::regenerate();
     }
 
 
@@ -279,9 +279,8 @@ class Authentication
                     }
                 }
                 return $data;
-            });
+            })->regenerate();
 
-            Session::regenerate();
 
             if (Cookie::has('remember_'.$this->guard))
             {
@@ -305,13 +304,15 @@ class Authentication
 
     protected function getFailMessage($remaining)
     {
-      return "Login or password incorrect! ".sprintf("%d attempts remaining !", $remaining);
+      return Language::translate('auth.incorrect',array('remaining' => $remaining));
     }
 
 
     protected function getLockMessage($seconds)
     {
-      return "You have been temporarily locked out! Please wait {$this->convertTime($seconds)}";
+      return Language::translate('auth.many_attempts.text',array(
+        'time' => $this->convertTime($seconds))
+      );
     }
 
 
@@ -327,29 +328,32 @@ class Authentication
 
             if ($minute > 1)
             {
-                $minute = $minute." minutes ";
+                $minute = $minute." ".Language::translate('auth.many_attempts.minutes')." ";
             }
             else
             {
-                $minute = $minute." minute ";
+                $minute = $minute." ".Language::translate('auth.many_attempts.minute')." ";
             }
+
             if ($seconds%60 > 0)
             {
                 $second = ($seconds%60);
 
                 if ($second > 1)
                 {
-                    $second = $second." seconds ";
+                    $second = $second." ".Language::translate('auth.many_attempts.seconds')." ";
                 }
                 else
                 {
-                    $second = $second." second ";
+                    $second = $second." ".Language::translate('auth.many_attempts.second')." ";
                 }
             }
         }
         else
         {
-            $second = $seconds > 1 ? $seconds." seconds " : $seconds." second ";
+            $second = $seconds > 1
+            ? $seconds." ".Language::translate('auth.many_attempts.seconds')." "
+            : $seconds." ".Language::translate('auth.many_attempts.second')." ";
         }
 
         return $minute.$second;

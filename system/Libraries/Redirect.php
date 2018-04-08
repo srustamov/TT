@@ -84,6 +84,17 @@ class Redirect
     }
 
 
+
+    public function withErrors($key,$value = null)
+    {
+        $data = is_array($key) ? $key : [$key => $value];
+        
+        Load::class('session')->flash('view-errors',$data);
+
+        return $this;
+    }
+
+
     protected function prepareUrl($url)
     {
         if (empty(trim($url)))
@@ -114,14 +125,8 @@ class Redirect
 
                 $args = is_array($args[0]) ? $args[0] : [$args[0] => $args[1] ?? null];
 
-                if($var == 'errors')
-                {
-                    Load::class('session')->set('view-errors',$args);
-                }
-                else
-                {
-                    Load::class('session')->flash($var,$args[0]);
-                }
+                Load::class('session')->flash($var,$args[0]);
+
             }
             else
             {

@@ -13,12 +13,11 @@
 class Arr
 {
 
-
     /**
      * @param array $array
      * @return bool
      */
-    public function isAssoc(array $array):Bool
+    public static function isAssoc(array $array):Bool
     {
         $keys = array_keys($array);
 
@@ -31,40 +30,97 @@ class Arr
      * @param \Closure $callback
      * @return array
      */
-    public function each( array &$array, \Closure $callback)
+    public static function each( array &$array, \Closure $callback)
     {
       foreach ($array as $key => $value)
       {
-        $callback($key,$value);
+        yield $callback($key,$value);
       }
-
-      return $array;
-
     }
 
     /**
      * @param array $array
      * @param $key
+     * @param null $default
      * @return bool|mixed
      */
-    public function get(array $array, $key)
+    public static function get($array, $key, $default = null)
     {
-        return $array[ $key ] ?? false;
+        if (strpos($key, '.'))
+        {
+            $item_recursive = explode('.', $key);
+
+            foreach ($item_recursive as $item) {
+                if(isset($array[$item])) {
+                    $array = $array[$item];
+                } else {
+                    return $default;
+                }
+            }
+
+            return $array ?: $default;
+        }
+        else
+        {
+            return $array[$key] ?? $default;
+        }
+    }
+
+
+    public static function set(&$array,$key,$value)
+    {
+        if (is_null($key)) {
+            return $array = $value;
+        }
+
+        $keys = explode('.', $key);
+
+        while (count($keys) > 1)
+        {
+            $key = array_shift($keys);
+
+            if (! isset($array[$key]) || ! is_array($array[$key]))
+            {
+                $array[$key] = [];
+            }
+            $array = &$array[$key];
+        }
+        $array[array_shift($keys)] = $value;
+
+        return $array;
     }
 
 
     /**
      * @param array $array
      * @param $key
-     * @return array
+     * @return mixed
      */
-    public function forget(array &$array, $key):array
+    public static function forget(array &$array, $key)
     {
-        if($this->exists($array, $key))
-        {
-            unset($array[ $key ]);
+        if(strpos($key,'.') !== false) {
+
+            $keys = explode('.', $key);
+
+            while (count($keys) > 1)
+            {
+                $key = array_shift($keys);
+
+                if (! isset($array[$key]) || ! is_array($array[$key]))
+                {
+                    return true;
+                }
+
+                $array = &$array[$key];
+            }
+
+            unset($array[array_shift($keys)]);
+
+        } else {
+            if(array_key_exists($key,$array)) {
+                unset($array[$key]);
+            }
         }
-        return $array;
     }
 
     /**
@@ -72,32 +128,40 @@ class Arr
      * @param $key
      * @return bool
      */
-    public function exists(array $array, $key):Bool
+    public static function has(array $array, $key):Bool
     {
-        return array_key_exists($key, $array);
+        if (strpos($key, '.'))
+        {
+            $items_recursive = explode('.', $key);
+
+            foreach ($items_recursive as $item) {
+                if(array_key_exists($item,$array)) {
+                    $array = $array[$item];
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else
+        {
+            return array_key_exists($key,$array);
+        }
     }
 
 
-    public function suffle(Array $array)
-    {
-      shuffle($array);
-
-      return $array;
-    }
 
 
-
-
-    public function only(array $array,array $only)
+    public static function only(array $array,array $only)
     {
       return array_intersect_key($array, array_flip((array) $only));
     }
 
 
 
-    public function except(array $array,array $except)
+    public static function except(array $array,array $except)
     {
-      if($this->isAssoc($array))
+      if(static::isAssoc($array))
       {
         foreach ($except as $value)
         {

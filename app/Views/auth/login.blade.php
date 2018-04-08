@@ -56,11 +56,19 @@
           <div class="panel-heading">
             <h3 class="panel-title">Login User</h3><br>
             @if(($register_message = Session::flash('register')))
-              <div class="alert  alert-success fade in" role="alert">
+              <div class="alert alert-success fade in" role="alert">
                  <button type="button" class="close" onclick="this.parentNode.style.display = 'none';">
                  <span aria-hidden="true">×</span>
                  </button>
                  <strong>{{$register_message}}</strong>
+             </div>
+            @endif
+            @if ($errors->has('auth'))
+              <div class="alert  alert-success fade in" role="alert">
+                 <button type="button" class="close" onclick="this.parentNode.style.display = 'none';">
+                 <span aria-hidden="true">×</span>
+                 </button>
+                 <strong>{{$errors->first('auth')}}</strong>
              </div>
             @endif
           </div>

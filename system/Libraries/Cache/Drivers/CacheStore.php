@@ -3,7 +3,7 @@
 
 interface CacheStore
 {
-  public function put(String $key , $value ,$expires = null);
+  public function put(String $key , $value ,$expires = null,$forever = false);
 
   public function forever(String $key , $value);
 

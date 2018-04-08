@@ -18,7 +18,7 @@ class MemcacheStore implements CacheStore
     function __construct ()
     {
 
-        $config = Load::config('cache.memcache');
+        $config = Load::class('config')->get('cache.memcache');
 
         if(class_exists('\\Memcache'))
         {
@@ -33,14 +33,12 @@ class MemcacheStore implements CacheStore
           throw new \Exception("Class Memcache (Memcached) not found");
         }
 
-
-
         $this->memcache->addServer($config['host'],$config['port']);
     }
 
 
 
-    public function put ( String $key , $value , $expires = null )
+    public function put ( String $key , $value , $expires = null, $forever = false )
     {
       if(is_null($expires))
       {
@@ -74,7 +72,7 @@ class MemcacheStore implements CacheStore
 
     public function forever ( String $key , $value )
     {
-        return $this->put($key , $value ,time());
+        return $this->day(30)->put($key , $value);
     }
 
     public function has ( $key )

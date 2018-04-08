@@ -22,9 +22,10 @@ class Guest
 
       if(Auth::guard($guard)->check())
       {
-        $next(Redirect::back());
+        return Redirect::back();
       }
 
+      return $next($request);
     }
 
 }

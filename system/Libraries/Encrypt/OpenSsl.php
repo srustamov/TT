@@ -34,7 +34,7 @@ class OpenSsl
      */
     function __construct()
     {
-        $key = Load::config ('app.encryption_key',false);
+        $key = Load::class('config')->get ('app.key',false);
 
         if(!$key)
         {

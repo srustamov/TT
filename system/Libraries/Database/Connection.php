@@ -38,7 +38,7 @@ abstract class Connection
         if (!isset( $this->general[ $this->group ] ))
         {
 
-            $this->config[ $this->group ] = Load::config ( "database.$this->group" );
+            $this->config[ $this->group ] = Load::class('config')->get ( "database.$this->group" );
 
             $config = $this->config[ $this->group ];
 

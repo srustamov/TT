@@ -16,19 +16,21 @@ use System\Facades\Redirect;
 class Auth
 {
 
-    protected $redirect = [
-        'admin' => '/',
-        'user' => '/auth/login'
-    ];
-
-
     public function handle($request,\Closure $next,$guard)
     {
         if(Authentication::guard($guard)->guest())
         {
-            return $next(Redirect::to('/')->withErrors('auth', 'Öncə giriş etməlisiz'));
+            if($guard == 'admin')
+            {
+              return Redirect::route('welcome')->withErrors('auth', 'Bu səhifəyə icazəniz yoxdur');
+            }
+            else
+            {
+              return Redirect::route('login')->withErrors('auth', 'Öncə giriş etməlisiz');
+            }
         }
 
+        return $next($request);
     }
 
 }

@@ -12,7 +12,7 @@ return array(
 
     'prefix'    => '',
 
-    'encrypt_except_key' => array(
+    'encrypt_except_keys' => array(
 
     )
 

@@ -16,7 +16,7 @@ class RedisStore implements CacheStore
 
 
 
-    public function put ( String $key , $value , $expires = null )
+    public function put ( String $key , $value , $expires = null, $forever = false )
     {
 
         $this->put = true;
@@ -42,7 +42,7 @@ class RedisStore implements CacheStore
 
     public function forever ( String $key , $value )
     {
-        return $this->put($key , $value ,time());
+        return $this->day(30)->put($key , $value );
     }
 
     public function has ( $key )
@@ -74,7 +74,7 @@ class RedisStore implements CacheStore
         return $this;
     }
 
-    
+
     public function minutes ( Int $minutes )
     {
       return $this->expires($minutes * 60);

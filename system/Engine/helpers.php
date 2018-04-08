@@ -10,15 +10,20 @@
 use System\Facades\Load;
 
 
-function app(String $class,Array $args = [])
+function app(String $class,Array $constructorArgs = [])
 {
-    return Load::class($class,$args);
+    return Load::class($class,$constructorArgs);
 }
 
 
-function config(String $name, $default = null)
+function config(String $name = null, $default = null)
 {
-    return Load::config($name, $default);
+  if(is_null($name))
+  {
+    return Load::class('config');
+  }
+
+  return Load::class('config')->get($name, $default);
 }
 
 
@@ -64,21 +69,21 @@ function import_dir_files($dir,$once = false)
 
 function storage_dir($path = '')
 {
-    return path($path, 'storage');
+    return path('storage'.DS.ltrim($path,DS));
 }
 
 
 
 function app_dir($path = '')
 {
-    return path($path, 'app');
+    return path('app'.DS.ltrim($path,DS));
 }
 
 
 
 function system_dir($path = '')
 {
-    return path($path, 'system');
+    return path('system'.DS.ltrim($path,DS));
 }
 
 
@@ -90,9 +95,9 @@ function public_dir($path = '')
 
 
 
-function path( $path, $path_name = null)
+function path( $path )
 {
-    return BASEPATH.DS.(is_null($path_name) ? '' : ltrim($path_name.DS, '/')).ltrim($path, '/');
+    return BASEPATH.DS.ltrim($path, '/');
 }
 
 

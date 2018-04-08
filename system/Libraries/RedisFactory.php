@@ -18,7 +18,7 @@ class RedisFactory
     {
         if (is_null($this->redis))
         {
-          $config = Load::config('cache.redis');
+          $config = Load::class('config')->get('cache.redis');
 
           $this->redis = new \Redis();
 

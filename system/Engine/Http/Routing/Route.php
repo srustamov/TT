@@ -1,4 +1,4 @@
-<?php namespace System\Engine\Http;
+<?php namespace System\Engine\Http\Routing;
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -9,12 +9,14 @@
 
 
 use System\Facades\Load;
+use System\Engine\Http\Middleware;
 use System\Exceptions\RouteException;
 
 class Route
 {
 
     use RouteMethodsTrait;
+    use RouteGroupTrait;
 
     protected $routes = [
         'GET'     => [] ,
@@ -35,6 +37,8 @@ class Route
     private $namespace = 'App\Controllers';
 
     private $prefix;
+
+    private $name;
 
     private $methods = [];
 
@@ -133,7 +137,7 @@ class Route
         $_path = rtrim($this->domain().'/'.trim($this->prefix.strtolower($url),'/'),'/');
 
         if(isset($path['name'])) {
-          $this->routes['NAMES'][$path['name']] = $_path;
+          $this->routes['NAMES'][$this->name.$path['name']] = $_path;
         }
 
         foreach ($this->methods as $method) {
@@ -150,75 +154,15 @@ class Route
 
 
     /**
-     * @param Callable $handler
+     * @param Closure $handler
      */
-    public function ajax(Callable $handler)
+    public function ajax(\Closure $handler)
     {
         $this->ajax = true;
 
         call_user_func($handler);
 
         $this->ajax = false;
-    }
-
-
-    /**
-     * @param $group_parameters
-     * @param Callable $callback
-     * @return null|mixed
-     */
-    public function group($group_parameters, Callable $callback)
-    {
-        $prefix     = $group_parameters['prefix'] ?? (is_string($group_parameters) ? $group_parameters : '');
-
-        $middleware = $group_parameters['middleware'] ?? false;
-
-        $domain     = $group_parameters[ 'domain' ] ?? false;
-
-        //$requestUri = Load::class('url')->request();
-        //$prefixUri  = strtolower($this->prefix . trim($prefix));
-        // if ($prefixUri == substr($requestUri, 0,
-        // strlen($this->prefix . trim($prefix))) || inConsole())
-        // {
-        //
-        // }
-
-        if ($domain)
-        {
-            $this->domain(trim($domain,'/'));
-        }
-
-        if ($middleware)
-        {
-
-            if(!is_array($middleware))
-            {
-                $middleware = [$middleware];
-            }
-
-            $this->group_middleware = array_merge($this->group_middleware,$middleware);
-
-        }
-
-        $this->prefix .= trim($prefix);
-
-        call_user_func($callback);
-
-        if($middleware && !empty($middleware))
-        {
-            $this->group_middleware = array_slice($this->group_middleware, 0, -count($middleware));
-        }
-
-        if($prefix && !empty(trim($prefix)))
-        {
-            $this->prefix = substr($this->prefix, 0, - strlen(trim($prefix)));
-        }
-
-
-        if ($domain)
-        {
-            $this->domain = null;
-        }
     }
 
 
@@ -334,7 +278,7 @@ class Route
         }
         else
         {
-            return abort(404);
+            abort(404);
         }
     }
 
@@ -378,10 +322,8 @@ class Route
     private function parseRoute($requestUri, $resource, $patterns): array
     {
 
-
         $callback = function ($matches) use ($patterns)
         {
-
             $normalize = str_replace('?','',$matches[1]);
 
             if (in_array($normalize, array_keys($patterns)))
@@ -429,8 +371,6 @@ class Route
     {
         $reflection = new \ReflectionMethod($class_name, $method);
 
-        $app_classes = array_flip(Load::config('app.classes'));
-
         foreach ($reflection->getParameters() as $num => $param)
         {
 
@@ -438,9 +378,9 @@ class Route
 
                 $class = $param->getClass()->name;
 
-                if(in_array($class,$app_classes))
+                if(($instance = Load::applicationClasses($class,true)))
                 {
-                    $args[$num] = Load::class($app_classes[$class]);
+                    $args[$num] = Load::class($instance);
                 }
                 else
                 {
@@ -461,8 +401,6 @@ class Route
     {
         $reflection  = new \ReflectionFunction($function);
 
-        $app_classes = array_flip(Load::config('app.classes'));
-
         foreach ($reflection->getParameters() as $num => $param)
         {
 
@@ -470,19 +408,18 @@ class Route
 
                 $class = $param->getClass()->name;
 
-                if(in_array($class,$app_classes))
+                if(Load::applicationClasses($class,true))
                 {
-                    $args[$num] = Load::class($app_classes[$class]);
+                    $args[$num] = Load::class($class);
                 }
                 else
                 {
                     $args[$num] = new $class();
                 }
-
             }
         }
-
         return $args;
+
     }
 
 
@@ -541,7 +478,7 @@ class Route
 
                 $path = $this->routes[ $method ][ $index ][ 'path' ];
 
-                $this->routes['NAMES'][$name] = $path;
+                $this->routes['NAMES'][$this->name.$name] = $path;
             }
         }
     }

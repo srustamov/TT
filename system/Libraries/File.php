@@ -263,12 +263,12 @@ class File
         return finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
     }
 
-    public function getFileName($path)
+    public function getName($path)
     {
       return pathinfo($path ,PATHINFO_FILENAME);
     }
 
-    public function getFileExtension($path)
+    public function getExtension($path)
     {
       return pathinfo($path ,PATHINFO_EXTENSION);
     }

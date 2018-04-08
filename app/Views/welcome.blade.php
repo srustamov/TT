@@ -51,6 +51,7 @@
     <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
     <span><a href="{{url('/home')}}">HOME</a></span>
 </div>
+
 @if ($errors->has('auth')))
   <script type="text/javascript">
     alert("{{$errors->first('auth')}}");

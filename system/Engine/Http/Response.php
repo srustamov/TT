@@ -163,7 +163,6 @@ class Response
       $this->header('Content-Description','File Transfer');
       $this->header('Content-Lenght',File::size($path));
       $this->setContent(File::get($path));
-      $this->send();
 
       return $this;
     }
@@ -371,6 +370,9 @@ class Response
     }
 
 
+   /**
+    * @author Symfony
+   */
     public static function closeOutputBuffers()
     {
         $status = ob_get_status(true);

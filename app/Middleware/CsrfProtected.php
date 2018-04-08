@@ -27,6 +27,8 @@ class CsrfProtected
         {
           throw new \Exception('VERIFY CSRF TOKEN FAILED');
         }
+
+        return $next($request);
     }
 
 
@@ -76,7 +78,7 @@ class CsrfProtected
     protected function getTokenRequest(Request $request)
     {
         $input    = $request->input('_token');
-        
+
         $response = $request->cookie('XSRF-TOKEN');
 
         if(
@@ -103,7 +105,7 @@ class CsrfProtected
 
     protected function addCookie(Request $request)
     {
-        $lifetime = Load::config('session.lifetime');
+        $lifetime = Load::class('config')->get('session.lifetime');
 
         Cookie::set('XSRF-TOKEN', $request->session('_token'), $lifetime);
 

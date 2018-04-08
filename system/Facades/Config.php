@@ -5,12 +5,10 @@
  * @link https://github.com/srustamov/TT
  */
 
-
-
-class Arr extends Facade
+class Config extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'array';
+        return 'config';
     }
 }

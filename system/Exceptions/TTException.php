@@ -16,26 +16,12 @@ class TTException
 
 
 
-  public function register()
-  {
-    error_reporting(-1);
-
-    set_error_handler([$this, 'handleError']);
-
-    set_exception_handler([$this, 'handler']);
-
-    register_shutdown_function([$this, 'handleShutdown']);
-
-    ini_set('display_errors', 'Off');
-
-  }
-
 
 
   private function show($e)
   {
 
-      if (Load::config('app.debug') === true)
+      if (Load::class('config')->get('app.debug') === true)
       {
 
 
@@ -56,11 +42,7 @@ class TTException
           }
           else
           {
-              new PrintConsole('red',
-                           "\n File:".$e->getFile()."
-                            \n Line:".$e->getLine()."
-                            \n".$e->getMessage()."\n
-                      ");
+              new PrintConsole('red',"\n File:".$e->getFile()."\n Line:".$e->getLine()."\n".$e->getMessage()."\n");
           }
       }
       else
@@ -174,5 +156,22 @@ class TTException
           return $this->show($e);
         }
       }
+  }
+
+
+
+
+  public function register()
+  {
+    error_reporting(-1);
+
+    set_error_handler([$this, 'handleError']);
+
+    set_exception_handler([$this, 'handler']);
+
+    register_shutdown_function([$this, 'handleShutdown']);
+
+    ini_set('display_errors', 'Off');
+
   }
 }

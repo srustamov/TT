@@ -9,8 +9,8 @@
  */
 
 
-use System\Facades\Language;
 use System\Facades\DB;
+use System\Facades\Load;
 
 class Validator
 {
@@ -19,175 +19,181 @@ class Validator
 
 
     protected $fields = [
-        'email','integer','numeric',
-        'ip','file','image'
+        'email' => 'is_mail',
+        'integer' => 'is_integer',
+        'numeric' => 'is_numeric',
+        'ip' => 'is_ip',
+        'file' => 'is_file',
+        'image' => 'is_image'
+    ];
+
+    protected $sub_fields = [
+        'max','min','unique','regex','confirm'
     ];
 
 
     protected $messages  = [];
 
 
+    protected $custom_messages  = [];
+
+
+    protected $valid = true;
+
+
     function __construct ()
     {
-        $this->translator = Language::translate('validator');
+        $this->translator = Load::class('language')->get('validator');
     }
 
 
-    public function make(array $data, array $rules,Array $messages = []):Validator
+    public function make(array $data, array $rules):Validator
     {
+        $this->messages = [];
 
-        $this->messages = array_merge($this->messages,$messages);
+        $this->valid    = true;
 
-        foreach ($data as $key => $value)
+        foreach ($rules as $key => $value)
         {
-            if (isset($rules[$key]))
+            $fields = explode('|',$value);
+
+            if(isset($data[$key]) && $data[$key] && !empty(trim($data[$key])))
             {
-                $fields = explode('|', $rules[$key]);
-
-                if(!$this->required($fields,$data,$key,$value))
-                {
-                    break;
-                }
-
-                foreach ($this->fields as $f)
-                {
-                    if (in_array($f, $fields))
-                    {
-                        if (!$this->is_mail($value))
-                        {
-                            $this->translation($f,$key,['field' => $key]);
-                        }
-                    }
-                }
-
-
                 foreach ($fields as $field)
                 {
-                    if (strpos($field, ':'))
+                    if(($position = array_search($field,array_keys($this->fields))) !== false)
                     {
-                        list($a, $b) = explode(':', $field, 2);
+                        $function = array_values($this->fields)[$position];
 
-                        switch ($a)
+                        if(!call_user_func_array([$this,$function],[$data[$key]]))
                         {
-                            case 'unique':
-                                $control = DB::table($b)->where($key , $value)->first();
-
-                                if ($control)
-                                {
-                                    $this->translation('unique',$key,['field' => $key]);
-                                }
-                                break;
-                            case 'max':
-                                if (mb_strlen($value) > $b)
-                                {
-                                    $this->translation('max_character',$key,['field' => $key,'max' => $b]);
-                                }
-                                break;
-                            case 'min':
-                                if (mb_strlen($value) < (int) $b)
-                                {
-                                    $this->translation('min_character',$key,['field' => $key,'min' => $b]);
-                                }
-                                break;
-                            case 'regex':
-                                if (!preg_match("#^$b$#",$value))
-                                {
-                                    $this->translation('regex',$key,['field' => $b]);
-                                }
-                                break;
-                            case 'confirm':
-                                if ($data[$b] != $value)
-                                {
-                                    $this->translation('confirm',$key, ['field' => $key,'confirm' => $b]);
-                                }
-                                break;
-
-                            default:
-                                //
-                                break;
+                            $this->translation($field,$key,['field' => $key]);
                         }
-
                     }
-                }
-            }
-        }
-        return $this ;
-    }
-
-
-    public function setMessage(Array $messages)
-    {
-        $this->messages = array_merge($this->messages,$messages);
-    }
-
-
-    private function required($fields,$data,$key,$value)
-    {
-        if (in_array('required', $fields))
-        {
-            if (is_array($data[$key]))
-            {
-                if (empty($value) || count($value) != count(array_filter($value)))
-                {
-                    foreach ($value as $k => $v)
+                    else
                     {
-                        if (empty($value[$k]) && $value[$k] !== 0)
+                        $parts = explode(':',$field,2);
+
+                        if(count($parts) > 1)
                         {
-                            $this->translation('required', $key, ['field' => $key]);
-                            return false;
+                            if(($position = array_search($parts[0],$this->sub_fields)) !==false)
+                            {
+                                $function = $this->sub_fields[$position];
+
+                                if($function != 'unique')
+                                {
+                                    if(!call_user_func_array([$this,$function],[$data[$key],$parts[1]]))
+                                    {
+                                        $this->translation($function,$key,['field' => $key,$function => $parts[1]]);
+                                    }
+                                }
+                                else
+                                {
+                                    $control = $control = DB::table($parts[1])->where($key , $data[$key])->first();
+
+                                    if($control)
+                                    {
+                                        $this->translation('unique',$key,['field' => $key]);
+                                    }
+                                }
+
+                            }
                         }
                     }
                 }
             }
             else
             {
-                if (empty(trim($data[$key])))
+
+                if(in_array('required',$fields))
                 {
                     $this->translation('required',$key, ['field' => $key]);
                 }
+
             }
         }
 
-        return true;
+        if(!empty($this->messages))
+        {
+            $this->valid = false;
+        }
+
+        return $this ;
+    }
+
+
+    public function setMessage($key,$value = null)
+    {
+        $keys = is_array($key) ? $key : [$key => $value];
+
+        foreach ($keys as $key => $value)
+        {
+            Arr::set($this->custom_messages,$key,$value);
+        }
+
+        return $this;
+    }
+
+
+    public function setMessages(array $messages)
+    {
+
+        foreach ($messages as $key => $value)
+        {
+            $this->setMessage($key,$value);
+        }
+
+        return $this;
     }
 
 
     private function translation($field,$key,$replace = [])
     {
 
-        if(isset($this->translator[$field]))
+        if(($custom_message = Arr::get($this->custom_messages,$key.'.'.$field)))
         {
-            if(!empty($replace))
+            $this->messages[$key][] = $custom_message;
+        }
+        elseif (isset($this->translator['custom_messages']) && ($custom_message = Arr::get($this->translator['custom_messages'],$key.'.'.$field)))
+        {
+            $this->messages[$key][] = $custom_message;
+        }
+        else
+        {
+
+            if(isset($this->translator[$field]))
             {
-                $this->messages[$key][] = str_replace(array_map(function($item)
+                if(!empty($replace))
                 {
+                    $keys = array_map(function($item) {
                         return ":".$item;
-                },
-                array_keys($replace)),array_values($replace),$this->translator[$field]
-                );
-            }
-            else
-            {
-                $this->messages[$key][] = $this->translator[$field] ?? '';
+                    },
+                        array_keys($replace)
+                    );
+
+                    $this->messages[$key][] = str_replace($keys,array_values($replace),$this->translator[$field]);
+                }
+                else
+                {
+                    $this->messages[$key][] = $this->translator[$field] ?? '';
+                }
             }
         }
+
+
     }
-
-
 
 
     public function check():Bool
     {
-        return !(count($this->messages) > 0) ;
+        return $this->valid;
     }
-
 
 
     public function messages():array
     {
         return $this->messages;
     }
-
 
 
     public function is_mail($email)
@@ -200,19 +206,16 @@ class Validator
     }
 
 
-
     public function is_integer($value)
     {
         return is_integer($value);
     }
 
 
-
     public function is_numeric($value)
     {
         return is_numeric($value);
     }
-
 
 
     public function is_image($value):Bool
@@ -229,7 +232,6 @@ class Validator
     }
 
 
-
     public function is_file($value):Bool
     {
         if (isset($value['tmp_name']))
@@ -238,10 +240,9 @@ class Validator
         }
         else
         {
-          return is_file($value);
+            return is_file($value);
         }
     }
-
 
 
     public function is_url($url)
@@ -253,7 +254,6 @@ class Validator
     }
 
 
-
     public function is_ip($ip)
     {
         if (!is_string($ip))
@@ -261,6 +261,27 @@ class Validator
             return false;
         }
         return filter_var($ip, FILTER_VALIDATE_IP);
+    }
+
+
+    public function max($value,$max)
+    {
+        return (mb_strlen($value) < (int) $max);
+    }
+
+    public function min($value,$min)
+    {
+        return (mb_strlen($value) > (int) $min);
+    }
+
+    public function regex($value, $pattern)
+    {
+        return !preg_match("#^$pattern$#",$value);
+    }
+
+    public function confirm($value1,$value2)
+    {
+        return ($value1 == $value2);
     }
 
 

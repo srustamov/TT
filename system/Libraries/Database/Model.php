@@ -14,28 +14,31 @@
 //------------------------------------------------------
 
 
+use System\Libraries\Arr;
 use System\Facades\DB;
 
 
 abstract class Model
 {
 
-
     private static $data;
 
     protected $table;
 
+    protected $fillable;
+
+    protected $select  = ['*'];
+
     protected $primaryKey = 'id';
 
-    protected $fillable   = ['*'];
 
-
-
-
-
-    public function __set($column,$value)
+    /**
+     * @param $column
+     * @param $value
+     */
+    public function __set( $column, $value)
     {
-      self::$data[$column] = $value;
+        self::$data[$column] = $value;
     }
 
 
@@ -64,6 +67,13 @@ abstract class Model
      */
     public static function create($data = []):Bool
     {
+        $fillable = (new static)->fillable;
+
+        if(!is_null($fillable))
+        {
+            $data = Arr::only($data,$fillable);
+        }
+
         return DB::table((new static)->getTable())->insert($data);
     }
 
@@ -77,28 +87,31 @@ abstract class Model
         $primaryKey = (new static)->primaryKey;
 
         if (is_null($primaryKey)) {
-          throw new Exception('No primary key defined on model.');
+            throw new Exception('No primary key defined on model.');
         }
 
         $find  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
-        return   DB::table((new static)->getTable())
-                      ->whereIn($primaryKey,$find)
-                      ->get((count($find) == 1));
+        $select = !is_null((new static)->select) ? (new static)->select : '*';
+
+        return DB::table((new static)->getTable())
+            ->select($select)
+            ->whereIn($primaryKey,$find)
+            ->get((count($find) == 1));
     }
 
 
     public static function destroy()
     {
-      $primaryKey = (new static)->primaryKey;
+        $primaryKey = (new static)->primaryKey;
 
-      if (is_null($primaryKey)) {
-        throw new Exception('No primary key defined on model.');
-      }
+        if (is_null($primaryKey)) {
+            throw new Exception('No primary key defined on model.');
+        }
 
-      $ids  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+        $ids  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
-      return   DB::table((new static)->getTable())
+        return   DB::table((new static)->getTable())
                     ->whereIn($primaryKey,$ids)
                     ->delete();
     }
@@ -110,7 +123,7 @@ abstract class Model
      */
     public static function all($select = null)
     {
-        $select = !empty(func_get_args()) ? func_get_args() : (new static)->fillable;
+        $select = !is_null((new static)->select) ? (new static)->select : '*';
 
         return    DB::table((new static)->getTable())->select($select)->get();
     }
@@ -120,36 +133,38 @@ abstract class Model
 
     public function setPrimaryKey($key)
     {
-      $this->primaryKey = $key;
+        $this->primaryKey = $key;
 
-      return $this;
+        return $this;
     }
 
 
     public function getTable()
     {
-      if (is_null($this->table))
-      {
-          $called_class = explode('\\', get_called_class());
+        if (is_null($this->table))
+        {
+            $called_class = explode('\\', get_called_class());
 
-          $this->table  = strtolower(array_pop($called_class)).'s';
-      }
+            $this->table  = strtolower(array_pop($called_class)).'s';
+        }
 
-      return $this->table;
+        return $this->table;
     }
 
 
     public function setTable($table)
     {
-      $this->table = $table;
+        $this->table = $table;
 
-      return $this;
+        return $this;
     }
 
 
     public function _call($name, $arguments)
     {
-        return DB::table($this->getTable())->select($this->fillable)->{$name}(...$arguments);
+        $select = !is_null($this->select) ? $this->select : '*';
+
+        return DB::table($this->getTable())->select($select)->{$name}(...$arguments);
     }
 
 

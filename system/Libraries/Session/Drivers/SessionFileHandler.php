@@ -28,7 +28,7 @@ class SessionFileHandler implements SessionHandlerInterface
 
         $this->save_path = $save_path ;
 
-        $this->file_path = $save_path.'/session_'.md5($_SERVER['REMOTE_ADDR'] ?? '::1');
+        $this->file_path = $save_path.'/session_';
 
         return true;
     }

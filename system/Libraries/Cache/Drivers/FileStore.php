@@ -21,13 +21,13 @@ class FileStore implements CacheStore
 
     function __construct ()
     {
-        $this->path = Load::config('cache.file',['path' => path('storage/cache/data')])['path'];
+        $this->path = Load::class('config')->get('cache.file',['path' => path('storage/cache/data')])['path'];
 
         $this->gc();
     }
 
 
-    public function put(String $key , $value ,$expires = null)
+    public function put(String $key , $value ,$expires = null, $forever = false)
     {
 
         $paths   = $this->getpaths($key);
@@ -39,7 +39,7 @@ class FileStore implements CacheStore
             $this->createDir($paths);
         }
 
-        if(is_callable($value))
+        if($value instanceOf \Closure)
         {
             $value = call_user_func($value,$this);
         }
@@ -48,7 +48,7 @@ class FileStore implements CacheStore
         if(is_null($expires))
         {
 
-          if(is_null($this->expires))
+          if(is_null($this->expires) && !$forever)
           {
             $this->put = true;
 
@@ -61,7 +61,7 @@ class FileStore implements CacheStore
 
             file_put_contents($paths->fullpath,serialize($value));
 
-            touch($paths->fullpath ,time() + $this->expires);
+            touch($paths->fullpath ,($forever ? -2 :(time() + $this->expires)));
 
 
             $this->expires = null;
@@ -85,7 +85,7 @@ class FileStore implements CacheStore
 
     public function forever(String $key , $value )
     {
-        $this->put($key , $value , time());
+        $this->put($key , $value , null, true);
 
         return $this;
     }
@@ -95,7 +95,7 @@ class FileStore implements CacheStore
 
     public function has($key)
     {
-        if(is_callable($key))
+        if($key instanceOf \Closure)
         {
             $key = call_user_func($key,$this);
         }
@@ -107,7 +107,7 @@ class FileStore implements CacheStore
 
     public function get($key)
     {
-        if(is_callable($key))
+        if($key instanceOf \Closure)
         {
             $key = call_user_func($key,$this);
         }
@@ -125,7 +125,7 @@ class FileStore implements CacheStore
 
     public function forget($key)
     {
-        if(is_callable($key))
+        if($key instanceOf \Closure)
         {
             $key = call_user_func($key,$this);
         }
@@ -211,7 +211,9 @@ class FileStore implements CacheStore
     {
         if(file_exists($paths->fullpath))
         {
-            if(filemtime($paths->fullpath) <= time())
+            $mtime = filemtime($paths->fullpath);
+
+            if($mtime <= time() && $mtime > 0)
             {
                 unlink($paths->fullpath);
 
@@ -274,7 +276,9 @@ class FileStore implements CacheStore
 
       foreach ($directoryRead as $file)
       {
-        if(is_file($file) && filemtime($file) < time())
+        $mtime = filemtime($file);
+
+        if(is_file($file) && $mtime <= time() && $mtime > 0)
         {
           unlink($file);
         }

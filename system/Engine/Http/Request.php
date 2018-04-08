@@ -9,8 +9,8 @@ use ArrayAccess;
 use Countable;
 use Serializable;
 use JsonSerializable;
-use System\Facades\Arr;
 use System\Facades\Load;
+use System\Libraries\Arr;
 use System\Facades\Redirect;
 use System\Facades\Response;
 use System\Facades\Validator;
@@ -20,15 +20,19 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 {
 
 
-    private $request;
+    private $request = [
+      'GET'     => [],
+      'POST'    => [],
+      'REQUEST' => []
+    ];
 
-    private $request_method;
+    private $method;
 
 
 
-    public function __construct()
+    function __construct()
     {
-        $this->request_method = $this->server('request_method');
+        $this->method = $this->server('request_method','GET');
 
         $this->request = array(
           'GET'    => $this->trim($_GET),
@@ -56,23 +60,33 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
+    public function set($key,$value)
+    {
+      $keys = is_array($key) ? $key : array($key=>$value);
+
+      foreach ($keys as $key => $value) {
+        $this->request[ $this->method ][ $key ] = $value;
+      }
+
+      return $this;
+    }
 
 
     public function __get($key)
     {
-        return $this->request[ $this->request_method ][ $key ] ?? false;
+        return $this->request[ $this->method ][ $key ] ?? false;
     }
 
 
     public function __set($key, $value)
     {
-        $this->request[ $this->request_method ][ $key ] = $value;
+        $this->request[ $this->method ][ $key ] = $value;
     }
 
 
     public function all()
     {
-        $data = $this->request[ $this->request_method ];
+        $data = $this->request[ $this->method ];
 
         if (isset($data[ '_token' ]))
         {
@@ -86,6 +100,12 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     public function params($key)
     {
       return $this->request['REQUEST'][$key] ?? false;
+    }
+
+
+    public function route($key)
+    {
+      return $this->params($key);
     }
 
 
@@ -300,8 +320,8 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      */
     public function offsetUnset ( $offset )
     {
-        if (isset( $this->request[ $this->request_method ][ $offset ] )) {
-            unset($this->request[ $this->request_method ][ $offset ]);
+        if (isset( $this->request[ $this->method ][ $offset ] )) {
+            unset($this->request[ $this->method ][ $offset ]);
         }
     }
 
@@ -319,7 +339,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      */
     public function offsetExists ( $offset )
     {
-        return isset( $this->request[ $this->request_method ][ $offset ] );
+        return isset( $this->request[ $this->method ][ $offset ] );
     }
 
     /**
@@ -333,7 +353,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      */
     public function count ()
     {
-        return count($this->request[ $this->request_method ]);
+        return count($this->request[ $this->method ]);
     }
 
     /**
@@ -344,7 +364,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      */
     public function serialize ()
     {
-        return serialize($this->request[ $this->request_method ]);
+        return serialize($this->request[ $this->method ]);
     }
 
     /**
@@ -370,6 +390,6 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      */
     function jsonSerialize ()
     {
-        return json_encode($this->request[ $this->request_method ]);
+        return json_encode($this->request[ $this->method ]);
     }
 }

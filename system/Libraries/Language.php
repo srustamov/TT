@@ -10,154 +10,193 @@
  * @category    Language
  */
 
-use System\Exceptions\LanguageException;
+
 use System\Facades\Load;
 
-class Language
+class Language implements \ArrayAccess
 {
 
-    protected $lang;
+    protected $languages = [];
 
 
-
-    /**
-     * @param Null $locale
-     * @return bool
-     */
-    public function set ( $locale = null )
+    function __construct()
     {
-        if(!is_null($locale))
-        {
-          if($this->locale() == $locale && !is_null($this->lang))
-          {
-            return $locale;
-          }
-          $locale = $this->locale($locale);
-        }
-        else
-        {
-          $locale = $this->locale();
-        }
+        $this->prepare();
+    }
 
-        $this->lang = $this->_getdata($locale);
-   }
+
+    public function prepare()
+    {
+        $locale = $this->locale();
+
+        foreach (glob(path('app/Language/'.$locale.'/*')) as $file) {
+            $this->languages[pathinfo($file ,PATHINFO_FILENAME)] = require_once($file);
+        }
+    }
+
 
     /**
      * @param String $word
      * @param array $replace
-     * @param Null $locale
-     * @return String|array
+     * @return array|String
+     * @internal param Null $locale
      */
+    public function translate ( String $word  ,array $replace = [])
+    {
 
-   public function translate ( String $word  ,array $replace = [] ,$locale = null)
-   {
-
-      if(is_null($this->lang))
-      {
-        $this->set();
-      }
-
-
-      if(!is_null($locale) && $locale != Load::class("session")->get('_LOCALE'))
-      {
-         $lang = $this->_getdata($locale);
-      }
-
-      if(strpos($word,'.') !== false)
-      {
-          list($file,$key) = explode('.',$word,2);
-
-          if(!empty($replace))
-          {
-            return isset($this->lang[$file][$key])
-                   ? str_replace(
-                        array_map(function($item)
-                        {
-                           return ':'.$item;
-                        },array_keys($replace)),array_values($replace),
-                        $this->lang[$file][$key]
-                     )
-                   : '';
-          }
-          else
-          {
-            return $this->lang[$file][$key] ?? '';
-          }
-      }
-      else
-      {
-        return $this->lang[$word] ?? '';
-      }
-
-   }
-
-
-
-   public function data ($locale = false):array
-   {
-     return $this->_getdata($locale ?:$this->locale());
-   }
-
-
-
-
-
-
-   public function locale($locale = null):String
-   {
-      if(!is_null($locale))
-      {
-         Load::class('session')->set('_LOCALE',$locale);
-
-         return $locale;
-      }
-      else
-      {
-        if($locale = Load::class('session')->get('_LOCALE'))
+        if(strpos($word,'.') !== false)
         {
-           return $locale;
+            $data = $this->get($word);
+
+            if(is_null($data) || empty($replace))
+            {
+                return $data;
+            }
+
+            $keys = array_map(function($key){
+                return ':'.$key;
+            },array_keys($replace));
+
+            $values = array_values($replace);
+
+            return str_replace($keys, $values, $data);
         }
         else
         {
-           $locale  = Load::config('app.locale','en');
-
-           Load::class('session')->set('_LOCALE',$locale);
-
-           return $locale;
+            return $this->languages[$word] ?? '';
         }
-      }
+
+    }
+
+
+    public function get($key,$default = null)
+    {
+        if (strpos($key, '.'))
+        {
+            $item_recursive = explode('.', $key);
+
+            $lang = $this->languages;
+
+            foreach ($item_recursive as $item) {
+                $lang = $lang[$item] ?? false;
+            }
+
+            return $lang ?: $default;
+        }
+        else
+        {
+            return $this->languages[$key] ?? $default;
+        }
+    }
 
 
 
-   }
+    public function data ():array
+    {
+        return $this->languages;
+    }
 
+
+
+
+
+
+    public function locale($locale = null):String
+    {
+        if(!is_null($locale))
+        {
+            Load::class('session')->set('_LOCALE',$locale);
+
+            return $locale;
+        }
+        else
+        {
+            if($locale = Load::class('session')->get('_LOCALE'))
+            {
+                return $locale;
+            }
+            else
+            {
+                $locale  = Load::class('config')->get('app.locale','en');
+
+                Load::class('session')->set('_LOCALE',$locale);
+
+                return $locale;
+            }
+        }
+
+
+
+    }
 
 
 
     /**
-     * @param String $locale
-     * @throws LanguageException
-     * @return array
+     * Offset to retrieve
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
      */
-
-    private function _getdata(String $locale):array
+    public function offsetGet ( $offset )
     {
-        $lang = [];
-
-        if (is_dir (path('app/Language/'.$locale)))
-        {
-           foreach (glob(path("app/Language/{$locale}/*.ini")) as $file)
-           {
-             $lang[basename(substr($file,0,-4))] =  parse_ini_file($file);
-           }
-        }
-        else
-        {
-          throw new LanguageException("Language folder not found. Path :".path('app/Language/'.$locale));
-        }
-
-        return $lang;
+        return $this->get($offset);
     }
+
+    /**
+     * Offset to set
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet ( $offset , $value )
+    {
+        $this->languages[$offset]  = $value;
+    }
+
+    /**
+     * Offset to unset
+     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset ( $offset )
+    {
+        if(isset($this->languages[$offset]))
+        {
+            unset($this->languages[$offset]);
+        }
+    }
+
+    /**
+     * Whether a offset exists
+     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists ( $offset )
+    {
+        return isset($this->languages[$offset]);
+    }
+
+
 
 
 

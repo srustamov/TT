@@ -67,11 +67,11 @@ class View
 
     protected function withFlashData()
     {
-        if (($errors = Load::class('session')->get ( 'view-errors' )))
+
+        if (($errors = Load::class('session')->flash ( 'view-errors' )))
         {
             $errors = new Errors($errors);
 
-            Load::class('session')->delete ( 'view-errors' );
         }
 
         if(!isset($this->data['errors']))
@@ -100,16 +100,16 @@ class View
 
         $this->withFlashData();
 
-        $loader = new EdgeFileLoader( array( path ( 'app/Views' ) ) );
+        $loader = new EdgeFileLoader(Load::class('config')->get('view.files'));
 
-        foreach (Load::config ( 'view.file_extensions',[]) as $file_extension)
+        foreach (Load::class('config')->get ( 'view.file_extensions',[]) as $file_extension)
         {
           $loader->addFileExtension ( $file_extension );
         }
 
-        $edge = new Edge( $loader , null , new EdgeFileCache( Load::config ( 'view.cache_path' ) ) );
+        $edge = new Edge( $loader , null , new EdgeFileCache( Load::class('config')->get ( 'view.cache_path' ) ) );
 
-        if ($extensions = Load::config ( 'view.extensions'))
+        if ($extensions = Load::class('config')->get ( 'view.extensions'))
         {
             foreach ($extensions as $extension)
             {
@@ -124,7 +124,7 @@ class View
 
         if (is_null($this->minify))
         {
-            $this->minify = Load::config('view.minify');
+            $this->minify = Load::class('config')->get('view.minify');
         }
 
         if ($this->minify)

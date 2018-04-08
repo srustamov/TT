@@ -26,7 +26,7 @@ class Cache
 
     function  __construct ()
     {
-        $driver = Load::config('cache.driver','file');
+        $driver = Load::class('config')->get('cache.driver','file');
 
         $this->driver($driver);
     }
@@ -68,7 +68,7 @@ class Cache
     {
       try
       {
-        $table = Load::config('cache.database',[])['table'] ?? 'cache';
+        $table = Load::class('config')->get('cache.database',[])['table'] ?? 'cache';
 
         $create = DB::exec("CREATE TABLE IF NOT EXISTS $table(
                               `id` int(11) NOT NULL AUTO_INCREMENT,

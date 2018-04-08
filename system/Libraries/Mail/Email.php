@@ -24,7 +24,7 @@ class Email extends PHPMailer
 
         $this->setLanguage(Language::locale());
 
-        $this->config = Load::config ('mail');
+        $this->config = Load::class('config')->get ('mail');
 
         $this->isSMTP ();
 
