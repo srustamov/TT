@@ -8,45 +8,23 @@ abstract class Facade
 {
 
 
-  protected static $load;
-
-
-
-  protected static function getFacadeAccessor()
-  {
-      throw new \RuntimeException('Facade does not implement getFacadeAccessor method.');
-  }
-
-
-  protected static function resolveFacadeInstance($name)
-  {
-      return static::getLoadAccessor()->class($name);
-  }
-
-
-  public static function getFacadeRoot()
-  {
-      return static::resolveFacadeInstance(static::getFacadeAccessor());
-  }
-
-
-  public static function __callStatic($method, $args)
-  {
-      $instance = static::getFacadeRoot();
-
-      if (! $instance) {
-          throw new \RuntimeException('A facade root has not been set.');
-      }
-
-      return $instance->$method(...$args);
-  }
-
-
-  protected static function getLoadAccessor()
-  {
-    if(is_null(static::$load)) {
-      static::$load = new Load;
+    protected static function getFacadeAccessor()
+    {
+        throw new \RuntimeException('Facade does not implement getFacadeAccessor method.');
     }
-    return static::$load;
-  }
+
+
+    /**
+     * @param $method
+     * @param $args
+     * @return mixed
+     */
+    public static function __callStatic( $method, $args)
+    {
+        $instance = Load::class(static::getFacadeAccessor());
+
+        return $instance->$method(...$args);
+    }
+
+
 }

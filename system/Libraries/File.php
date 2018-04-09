@@ -8,15 +8,19 @@
  * @category    Files
  */
 
+
+
 class File
 {
 
-
+    public function create($path)
+    {
+      return touch($path);
+    }
 
 
     public function open(String $fileAndMode,Callable $callback = null )
     {
-
 
       if(strpos('|',$fileAndMode))
       {
@@ -45,7 +49,6 @@ class File
     }
 
 
-
     public function dirIsEmpty($dir)
     {
       $iterator = new \FilesystemIterator($dir);
@@ -60,13 +63,10 @@ class File
     }
 
 
-
     public function lastModifiedTime($path)
     {
         return filemtime($path);
     }
-
-
 
 
     public function isImage($file):Bool
@@ -137,7 +137,6 @@ class File
     }
 
 
-
     public function import($file)
     {
         if ($this->exists($file))
@@ -147,7 +146,6 @@ class File
 
         throw new \Exception("File not found.Path: ({$file})");
     }
-
 
 
     public function importOnce($file)
@@ -201,7 +199,7 @@ class File
 
 
 
-    public function isFile($path):Bool
+    public function is($path):Bool
     {
         return is_file($path);
     }
@@ -213,9 +211,15 @@ class File
     }
 
 
+    public function prepend ( String $file , $content )
+    {
+        return file_put_contents ($file , $content . $this->get ( $file ));
+    }
+
+
     public function chmod($path, $mode = null)
     {
-        if ($mode)
+        if (!is_null($mode))
         {
             return chmod($path, $mode);
         }
@@ -263,10 +267,12 @@ class File
         return finfo_file(finfo_open(FILEINFO_MIME_TYPE), $path);
     }
 
+
     public function getName($path)
     {
       return pathinfo($path ,PATHINFO_FILENAME);
     }
+
 
     public function getExtension($path)
     {

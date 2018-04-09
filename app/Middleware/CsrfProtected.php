@@ -3,7 +3,7 @@
 
 use System\Engine\Http\Request;
 use System\Facades\Cookie;
-use System\Facades\Load;
+use System\Engine\Load;
 
 class CsrfProtected
 {
@@ -19,7 +19,7 @@ class CsrfProtected
     public function handle(Request $request,\Closure $next)
     {
 
-        if ($this->isReading($request) || $this->isConsole() || $this->isExcept() || $this->tokensMatch($request))
+        if ($this->isReading($request) || inConsole() || $this->isExcept() || $this->tokensMatch($request))
         {
             $this->addCookie($request);
         }
@@ -35,12 +35,6 @@ class CsrfProtected
     protected function isReading(Request $request)
     {
         return in_array($request->method(), ['HEAD', 'GET', 'OPTIONS']);
-    }
-
-
-    protected function isConsole()
-    {
-        return inConsole();
     }
 
 

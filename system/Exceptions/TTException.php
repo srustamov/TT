@@ -8,14 +8,11 @@
 
 
 use System\Engine\Cli\PrintConsole;
-use System\Facades\Load;
+use System\Engine\Load;
 
 
 class TTException
 {
-
-
-
 
 
   private function show($e)
@@ -23,7 +20,6 @@ class TTException
 
       if (Load::class('config')->get('app.debug') === true)
       {
-
 
           if (!InConsole())
           {
@@ -52,7 +48,6 @@ class TTException
         return abort(500);
       }
   }
-
 
 
   public function handler($e)
@@ -98,7 +93,6 @@ class TTException
           return $this->show($e);
       }
   }
-
 
 
   public function createFakeExceptionObject($data)
@@ -157,8 +151,6 @@ class TTException
         }
       }
   }
-
-
 
 
   public function register()

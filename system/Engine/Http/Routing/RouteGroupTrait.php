@@ -40,7 +40,7 @@ trait RouteGroupTrait
     {
       $name = $group_parameters[ 'name' ];
 
-      $this->name .= $name;
+      $this->group_name .= $name;
     }
 
     if ($domain)
@@ -82,11 +82,11 @@ trait RouteGroupTrait
 
     if($name)
     {
-        $this->name = substr($this->name, 0, - strlen($name));
+        $this->group_name = substr($this->group_name, 0, - strlen($name));
 
-        if(empty($this->name))
+        if(empty($this->group_name))
         {
-          $this->name = null;
+          $this->group_name = null;
         }
     }
 

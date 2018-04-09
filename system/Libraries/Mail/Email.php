@@ -4,7 +4,7 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 use System\Facades\Language;
-use System\Facades\Load;
+use System\Engine\Load;
 
 class Email extends PHPMailer
 {
@@ -20,7 +20,6 @@ class Email extends PHPMailer
     {
 
         parent::__construct ();
-
 
         $this->setLanguage(Language::locale());
 

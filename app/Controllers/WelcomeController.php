@@ -6,8 +6,6 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use App\Controllers\Controller;
-use System\Engine\Http\Request;
 
 
 class WelcomeController extends Controller

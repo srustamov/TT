@@ -13,31 +13,12 @@ class Config implements \ArrayAccess,\Countable
   private $configurations = [];
 
 
-
-  function __construct(Array $configurations = null)
+  function __construct(Array $configurations = [])
   {
-    if(!is_null($configurations))
-    {
       $this->configurations = $configurations;
-    }
   }
 
 
-
-  public function prepare()
-  {
-    if(file_exists(path('storage/system/configs.php')))
-    {
-      $this->configurations = require_once(path('storage/system/configs.php'));
-    }
-    else
-    {
-      foreach (glob(path('app/Config/*')) as $file) {
-        $this->configurations[pathinfo($file ,PATHINFO_FILENAME)] = require_once($file);;
-      }
-    }
-
-  }
 
 
   public function has($key)

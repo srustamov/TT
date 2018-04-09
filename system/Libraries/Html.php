@@ -10,132 +10,132 @@
 
 
 
- class Html
- {
+class Html
+{
 
 
-     public function filter(String $str):String
-     {
-         return htmlspecialchars(
-           trim(html_entity_decode($str, ENT_QUOTES)), ENT_QUOTES, 'UTF-8', false
-         );
-     }
+    public function filter(String $str):String
+    {
+        return htmlspecialchars(
+            trim(html_entity_decode($str, ENT_QUOTES)), ENT_QUOTES, 'UTF-8', false
+        );
+    }
 
 
-     public function clean(String $data):String
-     {
-         return strip_tags(
-           htmlentities(trim(stripslashes($data)), ENT_NOQUOTES, "UTF-8")
-         );
-     }
+    public function clean(String $data):String
+    {
+        return strip_tags(
+            htmlentities(trim(stripslashes($data)), ENT_NOQUOTES, "UTF-8")
+        );
+    }
 
 
-     public function FullSpecial(String $str):String
-     {
-         return filter_var($str, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-     }
+    public function FullSpecial(String $str):String
+    {
+        return filter_var($str, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    }
 
 
-     public function css(String $file ,$modified = false):String
-     {
-         if ($modified)
-         {
-             $file = $file . '?v=' . @filemtime(public_dir($file));
-         }
+    public function css(String $file ,$modified = false):String
+    {
+        if ($modified)
+        {
+            $file = $file . '?v=' . @filemtime(public_dir($file));
+        }
 
-         return '<link rel="stylesheet" type="text/css"  href="' . url($file) . '">';
-     }
-
-
-
-     public function js(String $file,$modified = false):String
-     {
-         if ($modified)
-         {
-             $file = $file . '?v=' . @filemtime(public_dir($file));
-         }
-
-         return  '<script type="text/javascript" src="' . url($file) . '"></script>';
-     }
+        return '<link rel="stylesheet" type="text/css"  href="' . url($file) . '">';
+    }
 
 
 
-     public function img(String $file , $attributes = []):String
-     {
+    public function js(String $file,$modified = false):String
+    {
+        if ($modified)
+        {
+            $file = $file . '?v=' . @filemtime(public_dir($file));
+        }
 
-         $img  = '<img src="'.url($file).'" ';
-
-         foreach ($attributes as $key => $value)
-         {
-           $img .= $key.'='."\"$value\" ";
-         }
-
-         return $img.' />';
-     }
+        return  '<script type="text/javascript" src="' . url($file) . '"></script>';
+    }
 
 
-     public function link($content,$href,$attributes = [])
-     {
-       $link = '<a href="'.$href.'" ';
 
-       foreach ($attributes as $key => $value)
-       {
-         $link .= $key.'="'.$value.'" ';
-       }
+    public function img(String $file , $attributes = []):String
+    {
 
-       return $link.">$content</a>";
-     }
+        $img  = '<img src="'.url($file).'" ';
 
+        foreach ($attributes as $key => $value)
+        {
+            $img .= $key.'='."\"$value\" ";
+        }
 
-     public function __call($method,$arguments)
-     {
-       $once  = array('meta','img','link','br','hr');
-
-       $content = $arguments[0] ?? false;
-
-       $attributes = $arguments[1] ?? [];
-
-       if(in_array($method,$once))
-       {
-           $attributes = $arguments[0] ?? [];
-
-           $tag = "<{$method} ";
-
-           if(is_array($attributes))
-           {
-             foreach ($attributes as $key => $value)
-             {
-               $tag .= $key.'="'.$value.'" ';
-             }
-
-             return $tag."/>";
-           }
-           else
-           {
-             return $tag.$attributes."/>";
-           }
-       }
-       else
-       {
-
-         $tag = "<{$method} ";
-
-         if(is_array($attributes))
-         {
-           foreach ($attributes as $key => $value)
-           {
-             $tag .= $key.'="'.$value.'" ';
-           }
-
-           return $tag.">{$content}</{$method}>";
-         }
-         else
-         {
-           return $tag.$attributes.">{$content}<{$method}>";
-         }
-       }
-
-     }
+        return $img.' />';
+    }
 
 
- }
+    public function link($content,$href,$attributes = [])
+    {
+        $link = '<a href="'.$href.'" ';
+
+        foreach ($attributes as $key => $value)
+        {
+            $link .= $key.'="'.$value.'" ';
+        }
+
+        return $link.">$content</a>";
+    }
+
+
+    public function __call($method,$arguments)
+    {
+        $once  = array('meta','img','link','br','hr');
+
+        $content = $arguments[0] ?? false;
+
+        $attributes = $arguments[1] ?? [];
+
+        if(in_array($method,$once))
+        {
+            $attributes = $arguments[0] ?? [];
+
+            $tag = "<{$method} ";
+
+            if(is_array($attributes))
+            {
+                foreach ($attributes as $key => $value)
+                {
+                    $tag .= $key.'="'.$value.'" ';
+                }
+
+                return $tag."/>";
+            }
+            else
+            {
+                return $tag.$attributes."/>";
+            }
+        }
+        else
+        {
+
+            $tag = "<{$method} ";
+
+            if(is_array($attributes))
+            {
+                foreach ($attributes as $key => $value)
+                {
+                    $tag .= $key.'="'.$value.'" ';
+                }
+
+                return $tag.">{$content}</{$method}>";
+            }
+            else
+            {
+                return $tag.$attributes.">{$content}<{$method}>";
+            }
+        }
+
+    }
+
+
+}

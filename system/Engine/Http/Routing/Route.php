@@ -8,9 +8,12 @@
 
 
 
-use System\Facades\Load;
+use System\Engine\Load;
+use System\Engine\Reflections;
 use System\Engine\Http\Middleware;
 use System\Exceptions\RouteException;
+use System\Exceptions\NotFoundException;
+
 
 class Route
 {
@@ -38,7 +41,13 @@ class Route
 
     private $prefix;
 
+    private $group_name;
+
     private $name;
+
+    private $middleware = [];
+
+    private $pattern = [];
 
     private $methods = [];
 
@@ -97,47 +106,49 @@ class Route
     {
         $this->methods = is_array($methods) ? $methods : [$methods];
 
-        $middleware = [];
+        $middleware = $this->middleware;
 
-        $pattern    = [];
+        $pattern    = $this->pattern;
 
         $url        = $path;
 
         if(is_array($path))
         {
 
-            if(isset($path['path'])) {
+            if(isset($path['path']))
+            {
                 $url  = (string) $path['path'];
-            } else {
+            }
+            else
+            {
                 throw new \InvalidArgumentException("Route argument path (url) required");
             }
 
-            $middleware = isset($path['middleware'])
-                ? is_array($path['middleware'])
-                    ? $path['middleware']
-                    : [$path['middleware']]
-                : $middleware;
+            if(isset($path['middleware']))
+            {
+              $middleware = array_merge($middleware,(array) $path['middleware']);
+            }
 
-            $pattern    = $path['pattern'] ?? $pattern;
+            if(isset($path['pattern']))
+            {
+              $pattern = array_merge($pattern,$path['pattern']);
+            }
 
         }
 
-        if(!empty($this->patterns))
-        {
-            $pattern = array_merge($this->patterns ,$pattern);
-        }
+        $pattern = array_merge($this->patterns ,$pattern);
 
-        $middleware_array = $this->group_middleware;
-
-        if(!empty($middleware))
-        {
-            $middleware_array = array_merge($middleware_array,$middleware);
-        }
+        $middleware_array = array_merge($this->group_middleware,$middleware);
 
         $_path = rtrim($this->domain().'/'.trim($this->prefix.strtolower($url),'/'),'/');
 
-        if(isset($path['name'])) {
-          $this->routes['NAMES'][$this->name.$path['name']] = $_path;
+        if(isset($path['name']))
+        {
+          $this->routes['NAMES'][$this->group_name.$path['name']] = $_path;
+        }
+        elseif(!is_null($this->name))
+        {
+          $this->routes['NAMES'][$this->group_name.$this->name] = $_path;
         }
 
         foreach ($this->methods as $method) {
@@ -149,6 +160,12 @@ class Route
                 'pattern' => $pattern
             ]);
         }
+
+        $this->name = null;
+
+        $this->pattern = [];
+
+        $this->middleware = [];
 
     }
 
@@ -263,22 +280,22 @@ class Route
                 }
             }
 
-            $args = $this->getReflectionMethodParameters($controller_with_namespace, $method, $args);
+            $args = Reflections::classMethodParameters($controller_with_namespace, $method, $args);
 
             if (\method_exists($controller_with_namespace,'__construct')) {
-                $contstructorArgs = $this->getReflectionMethodParameters($controller_with_namespace, '__construct');
+                $constructorArgs = Reflections::classMethodParameters($controller_with_namespace, '__construct');
             } else {
-                $contstructorArgs = [];
+                $constructorArgs = [];
             }
 
-            $content = call_user_func_array([new $controller_with_namespace(...$contstructorArgs),$method],$args);
+            $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method],$args);
 
             $this->response($content);
 
         }
         else
         {
-            abort(404);
+            throw new NotFoundException;
         }
     }
 
@@ -294,7 +311,7 @@ class Route
             }
         }
 
-        $args    = $this->getReflectionFunctionParameters($handler, $args);
+        $args    = Reflections::functionParameters($handler, $args);
 
         $content = call_user_func_array($handler,$args);
 
@@ -362,72 +379,10 @@ class Route
 
 
     /**
-     * @param $class_name
-     * @param $method
-     * @param $args
-     * @return mixed
-     */
-    private function getReflectionMethodParameters($class_name, $method, $args = [])
-    {
-        $reflection = new \ReflectionMethod($class_name, $method);
-
-        foreach ($reflection->getParameters() as $num => $param)
-        {
-
-            if ($param->getClass()) {
-
-                $class = $param->getClass()->name;
-
-                if(($instance = Load::applicationClasses($class,true)))
-                {
-                    $args[$num] = Load::class($instance);
-                }
-                else
-                {
-                    $args[$num] = new $class();
-                }
-            }
-        }
-        return $args;
-    }
-
-
-    /**
-     * @param $function
-     * @param $args
-     * @return mixed
-     */
-    private function getReflectionFunctionParameters($function, $args = [])
-    {
-        $reflection  = new \ReflectionFunction($function);
-
-        foreach ($reflection->getParameters() as $num => $param)
-        {
-
-            if ($param->getClass()) {
-
-                $class = $param->getClass()->name;
-
-                if(Load::applicationClasses($class,true))
-                {
-                    $args[$num] = Load::class($class);
-                }
-                else
-                {
-                    $args[$num] = new $class();
-                }
-            }
-        }
-        return $args;
-
-    }
-
-
-    /**
-     * @param $extension
+     * @param $middleware
      * @return void
      */
-    public function middleware($extension)
+    public function middleware($middleware)
     {
         if(!empty($this->methods))
         {
@@ -435,9 +390,15 @@ class Route
 
                 $index = count($this->routes[ $method ]) - 1;
 
-                $this->routes[ $method ][ $index ][ 'middleware' ][] = $extension;
+                $this->routes[ $method ][ $index ][ 'middleware' ][] = $middleware;
             }
         }
+        else
+        {
+          $this->middleware[] = $middleware;
+        }
+
+        return $this;
     }
 
 
@@ -461,6 +422,12 @@ class Route
                 $this->routes[ $method ][ $index ][ 'pattern' ] = array_merge($old,$pattern);
             }
         }
+        else
+        {
+          $this->pattern = $pattern;
+        }
+
+        return $this;
     }
 
 
@@ -478,9 +445,15 @@ class Route
 
                 $path = $this->routes[ $method ][ $index ][ 'path' ];
 
-                $this->routes['NAMES'][$this->name.$name] = $path;
+                $this->routes['NAMES'][$this->group_name.$name] = $path;
             }
         }
+        else
+        {
+          $this->name = $name;
+        }
+
+        return $this;
     }
 
 
@@ -536,17 +509,23 @@ class Route
 
 
 
-    public function execute(Array $routes = null)
+    public function execute($kernel)
     {
-        if(!is_null($routes)) {
-            $this->routes = $routes;
+        if (file_exists ( $file = $kernel->routes_cache_file() )) {
+            $this->routes = require_once $file;
+        } else {
+            foreach (glob($kernel->path ( 'routes' )."/*") as $file) {
+                require_once $file;
+            }
+        }
+        unset($kernel);
+
+        if (!inConsole()) {
+            $this->run();
         }
 
-        $this->run();
-
-        if ($this->notFound)
-        {
-           abort(404);
+        if ($this->notFound) {
+           throw new NotFoundException;
         }
 
     }

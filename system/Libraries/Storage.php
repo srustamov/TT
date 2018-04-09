@@ -12,6 +12,8 @@ namespace System\Libraries;
 
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use System\Facades\File;
+use System\Engine\Http\UploadedFile;
 use Exception;
 
 class Storage
@@ -20,22 +22,29 @@ class Storage
     protected $path = 'storage/public';
 
 
-    public function put ( String $file , $content )
+    public function put ( String $path , $content )
     {
-        if(is_array($content) && isset($content['tmp_name']) ) {
-          return move_uploaded_file($content['tmp_name'], $this->fixPath ( $file ) );
-        } elseif (is_string($content)) {
-          return file_put_contents ( $this->fixPath ( $file ) , $content );
-        } else {
+        if(is_string($content))
+        {
+            return file_put_contents ( $this->fixPath ( $path ) , $content );
+        }
+        elseif ($content instanceof UploadedFile)
+        {
+          return $content->move($this->fixPath ( $path ));
+        }
+        elseif (is_file($content))
+        {
+            return @move_uploaded_file($this->fixPath ( $path ),$content);
+        }
+        else
+        {
           throw new Exception("File write content type wrong!");
         }
     }
 
     public function prepend ( String $file , $content )
     {
-        return file_put_contents (
-          $this->fixPath ( $file ) , $content . $this->get ( $file )
-        );
+        return File::prepend ($this->fixPath ( $file ) , $content);
     }
 
     public function get ( $file ,Callable $callback = null)
@@ -57,7 +66,7 @@ class Storage
 
     public function append ( String $file , $content )
     {
-        return file_put_contents ( $this->fixPath ( $file ) , $content , FILE_APPEND );
+        return File::append ( $this->fixPath ( $file ) , $content );
     }
 
     public function directories ( $path )
@@ -142,52 +151,44 @@ class Storage
         return $files;
     }
 
-    public function delete ( $files )
+    public function delete ( $file )
     {
-        $files = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-
-        foreach ($files as $file) {
-            unlink ( $this->fixPath ( $file ) );
-        }
+        return File::delete($this->fixPath ( $file ));
     }
 
-    public function rmdir ( $directories )
+    public function rmdir ( $directorie )
     {
-        $directories = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-
-        foreach ($directories as $directory) {
-            rmdir ( $this->fixPath ( $directory ) );
-        }
+        return File::deleteDirectory($this->fixPath ( $directorie ));
     }
 
     public function size ( $file )
     {
-        return filesize ( $this->fixPath ( $file ) );
+        return File::size ( $this->fixPath ( $file ) );
     }
 
     public function copy ( $source , $copy )
     {
-        return copy ( $this->fixPath ( $source ) , $this->fixPath ( $copy ) );
+        return File::copy ( $this->fixPath ( $source ) , $this->fixPath ( $copy ) );
     }
 
     public function move ( $source , $copy )
     {
-        return rename ( $this->fixPath ( $source ) , $this->fixPath ( $copy ) );
+        return File::move ( $this->fixPath ( $source ) , $this->fixPath ( $copy ) );
     }
 
     public function mkdir ( $dir , $mode = 0777 )
     {
-        return mkdir ( $this->fixPath ( $dir ) , 0777 );
+        return File::setDir ( $this->fixPath ( $dir ) , $mode );
     }
 
     public function touch ( $file )
     {
-        return touch ( $this->fixPath ( $file ) );
+        return File::create ( $this->fixPath ( $file ) );
     }
 
     public function modifiedTime ( $file )
     {
-        return @filemtime ( $this->fixPath ( $file ) );
+        return File::lastModifiedTime ( $this->fixPath ( $file ) );
     }
 
     public function path ( $path )
@@ -199,7 +200,14 @@ class Storage
 
     protected function fixPath ( $path = '' )
     {
-        return path ( trim($this->path,'/'). '/' . trim ( $path , '/' ) );
+        $path =  path ( trim($this->path,'/'). '/' . trim ( $path , '/' ) );
+
+        if(is_dir($dir = pathinfo($path,PATHINFO_DIRNAME)))
+        {
+            @mkdir($dir,0755,true);
+        }
+
+        return $path;
     }
 
 }

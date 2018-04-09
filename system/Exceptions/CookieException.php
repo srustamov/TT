@@ -4,5 +4,4 @@
 
 class CookieException extends \Exception
 {
-
 }

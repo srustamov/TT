@@ -20,7 +20,6 @@ namespace System\Engine\Cli;
  */
 
 
-use System\Engine\Cli\PrintConsole;
 use System\Facades\Route as BaseRoute;
 
 class Route {

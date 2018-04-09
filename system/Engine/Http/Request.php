@@ -9,7 +9,7 @@ use ArrayAccess;
 use Countable;
 use Serializable;
 use JsonSerializable;
-use System\Facades\Load;
+use System\Engine\Load;
 use System\Libraries\Arr;
 use System\Facades\Redirect;
 use System\Facades\Response;
@@ -151,14 +151,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         if (isset($_FILES[ $name ]))
         {
-            if ($_FILES[ $name ][ 'error' ] > 0)
-            {
-                return false;
-            }
-            else
-            {
-                return $_FILES[ $name ];
-            }
+            return new UploadedFile($_FILES[ $name ]);
         }
         return false;
     }

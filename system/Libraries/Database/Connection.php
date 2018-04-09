@@ -9,7 +9,7 @@
  */
 
 use System\Exceptions\DatabaseException;
-use System\Facades\Load;
+use System\Engine\Load;
 use PDOException;
 use PDO;
 

@@ -17,7 +17,7 @@ Route::get('/','WelcomeController@index')->name('welcome');
 
 Route::get('/home','HomeController@index')->name('home');
 
-Route::get(array('path'=>'/language/{lang}','pattern' => ['lang'=>'[a-z]{2}'],'name'=>'lang'),'HomeController@language');
+Route::name('lang')->pattern('lang','[a-z]{2}')->get('/language/{lang}','HomeController@language');
 
 Route::get(['path'=>'/auth/logout','middleware'=>'auth','name'=>'logout'],'Auth/LoginController@logout');
 

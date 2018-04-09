@@ -13,7 +13,7 @@ use Windwalker\Edge\Cache\EdgeFileCache;
 use Windwalker\Edge\Loader\EdgeFileLoader;
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
 use Windwalker\Edge\Edge;
-use System\Facades\Load;
+use System\Engine\Load;
 
 
 

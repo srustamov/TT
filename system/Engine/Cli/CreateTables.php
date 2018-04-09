@@ -13,8 +13,7 @@ namespace System\Engine\Cli;
  * @author Samir Rustamov
  */
 
-use System\Engine\Cli\PrintConsole;
-use System\Facades\Load;
+use System\Engine\Load;
 use System\Facades\DB;
 
 class CreateTables {

@@ -10,7 +10,7 @@
 
 
 use System\Facades\DB;
-use System\Facades\Load;
+use System\Engine\Load;
 
 class Validator
 {
@@ -266,12 +266,12 @@ class Validator
 
     public function max($value,$max)
     {
-        return (mb_strlen($value) < (int) $max);
+        return (mb_strlen($value) <= (int) $max);
     }
 
     public function min($value,$min)
     {
-        return (mb_strlen($value) > (int) $min);
+        return (mb_strlen($value) >= (int) $min);
     }
 
     public function regex($value, $pattern)

@@ -6,7 +6,7 @@
  */
 
 
-use System\Facades\Load;
+use System\Engine\Load;
 
 class Middleware
 {
@@ -48,7 +48,7 @@ class Middleware
 
         $next = function($ClientRequest)
         {
-            if(Load::instance($ClientRequest,'request'))
+            if(Load::isInstance($ClientRequest,'request'))
             {
               return Load::class('response');
             }
@@ -59,7 +59,7 @@ class Middleware
         {
             $response = call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
 
-            if(!Load::instance($response,'response'))
+            if(!Load::isInstance($response,'response'))
             {
               Load::class('response')->setContent($response)->send();
             }

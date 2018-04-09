@@ -1,6 +1,6 @@
 <?php namespace System\Libraries;
 
-use System\Facades\Load;
+use System\Engine\Load;
 
 class RedisFactory
 {

@@ -6,13 +6,13 @@
  */
 
 
+use System\Engine\Kernel;
+use System\Engine\Load;
 
-use System\Facades\Load;
 
-
-function app(String $class,Array $constructorArgs = [])
+function app(String $class,...$constructorArgs)
 {
-    return Load::class($class,$constructorArgs);
+    return Load::class($class,...$constructorArgs);
 }
 
 
@@ -35,7 +35,7 @@ function setting($key, $default = null)
 
 function import(String $file)
 {
-    $file = str_replace(['/','\\'], DS, trim($file));
+    $file = str_replace(['/','\\'], DIRECTORY_SEPARATOR, trim($file));
 
     if (file_exists($file))
     {
@@ -52,14 +52,14 @@ function import_dir_files($dir,$once = false)
 {
     if ($once)
     {
-        foreach (glob($dir."/*") as $file)
+        foreach (glob(rtrim($dir,DIRECTORY_SEPARATOR)."/*") as $file)
         {
             require_once $file;
         }
     }
     else
     {
-        foreach (glob($dir."/*") as $file)
+        foreach (glob(rtrim($dir,DIRECTORY_SEPARATOR)."/*") as $file)
         {
             require $file;
         }
@@ -69,47 +69,51 @@ function import_dir_files($dir,$once = false)
 
 function storage_dir($path = '')
 {
-    return path('storage'.DS.ltrim($path,DS));
+    return Kernel::instance()->storage_path($path);
 }
 
 
 
 function app_dir($path = '')
 {
-    return path('app'.DS.ltrim($path,DS));
+    return Kernel::instance()->app_path($path);
 }
 
 
 
 function system_dir($path = '')
 {
-    return path('system'.DS.ltrim($path,DS));
+    return Kernel::instance()->path('system'.DIRECTORY_SEPARATOR.ltrim($path,DIRECTORY_SEPARATOR));
 }
 
 
 
 function public_dir($path = '')
 {
-    return PUBLIC_DIR.'/'.ltrim($path, '/');
+    return Kernel::instance()->public_path($path);
 }
 
 
 
-function path( $path )
+function path( $path = '' )
 {
-    return BASEPATH.DS.ltrim($path, '/');
+    return Kernel::instance()->path($path);
 }
 
 
 
-function abort(Int $http_code)
+function abort(Int $http_code, $message = null,$headers = [])
 {
     if (file_exists(app_dir('Views/errors/'.$http_code.'.blade.php')))
     {
         $content =  view('errors.'.$http_code);
     }
 
-    $response = Load::class('response')->make($content ?? null,$http_code);
+    $response = Load::class('response')->setStatusCode($http_code,$message);
+
+    $response->withHeaders($headers);
+
+    $response->setContent($content ?? null);
 
     $response->send();
 
@@ -175,7 +179,7 @@ if (!function_exists ( 'response' ))
 {
     function response ()
     {
-        return Load::class('response',func_get_args());
+        return Load::class('response',...func_get_args());
     }
 }
 
@@ -260,7 +264,7 @@ if (!function_exists ( 'cookie' ))
         }
         else
         {
-            return Load::class('cookie',func_get_args());
+            return Load::class('cookie',...func_get_args());
         }
 
     }

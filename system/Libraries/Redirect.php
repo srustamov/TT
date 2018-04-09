@@ -10,7 +10,7 @@
 
 
 
-use System\Facades\Load;
+use System\Engine\Load;
 use System\Facades\Route;
 
 class Redirect
