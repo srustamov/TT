@@ -14,7 +14,7 @@ return array(
     // "Html" => System\Facades\Html::class ,
     // "Http" => System\Facades\Http::class ,
     // "Language" => System\Facades\Language::class ,
-    // "Load" => System\Facades\Load::class ,
+    "Load" => System\Engine\Load::class ,
     // "OpenSsl" => System\Facades\OpenSsl::class ,
     // "Redirect" => System\Facades\Redirect::class ,
     // "RedisDB" => System\Facades\Redis::class ,

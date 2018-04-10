@@ -23,7 +23,7 @@ class Config implements \ArrayAccess,\Countable
 
   public function has($key)
   {
-    if (strpos($key, '.'))
+    if (strpos($key, '.') !== false)
     {
         $items_recursive = explode('.', $key);
 
@@ -54,7 +54,7 @@ class Config implements \ArrayAccess,\Countable
   public function get($extension,$default = null)
   {
 
-    if (strpos($extension, '.'))
+    if (strpos($extension, '.') !== false)
     {
         $item_recursive = explode('.', $extension);
 
@@ -87,7 +87,7 @@ class Config implements \ArrayAccess,\Countable
 
   public function forget(String $key)
   {
-    if (strpos($key,'.')) {
+    if (strpos($key,'.') !== false) {
        static::forgetRecursive($this->configurations,$key);
     } else {
       if($this->has($key)) {

@@ -2,8 +2,8 @@
 
 return array(
 
-    'time_zone' => 'UTC',
+    'time_zone' => 'asia/baku',
 
-    'setLocale' => 'az_Az.UTF-8',
+    'locale' => 'az_Az.UTF-8',
 
 );

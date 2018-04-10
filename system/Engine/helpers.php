@@ -6,13 +6,13 @@
  */
 
 
-use System\Engine\Kernel;
+use System\Engine\App;
 use System\Engine\Load;
 
 
-function app(String $class,...$constructorArgs)
+function app()
 {
-    return Load::class($class,...$constructorArgs);
+    return App::instance();
 }
 
 
@@ -69,35 +69,35 @@ function import_dir_files($dir,$once = false)
 
 function storage_dir($path = '')
 {
-    return Kernel::instance()->storage_path($path);
+    return App::instance()->storage_path($path);
 }
 
 
 
 function app_dir($path = '')
 {
-    return Kernel::instance()->app_path($path);
+    return App::instance()->app_path($path);
 }
 
 
 
 function system_dir($path = '')
 {
-    return Kernel::instance()->path('system'.DIRECTORY_SEPARATOR.ltrim($path,DIRECTORY_SEPARATOR));
+    return App::instance()->path('system'.DIRECTORY_SEPARATOR.ltrim($path,DIRECTORY_SEPARATOR));
 }
 
 
 
 function public_dir($path = '')
 {
-    return Kernel::instance()->public_path($path);
+    return App::instance()->public_path($path);
 }
 
 
 
 function path( $path = '' )
 {
-    return Kernel::instance()->path($path);
+    return App::instance()->path($path);
 }
 
 

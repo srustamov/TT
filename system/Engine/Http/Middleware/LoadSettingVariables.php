@@ -1,13 +1,16 @@
 <?php namespace System\Engine\Http\Middleware;
 
-use System\Engine\Kernel;
+use System\Engine\App;
+use System\Engine\Http\Request;
 
 class LoadSettingVariables
 {
 
-    public function handle()
+    public function handle(Request $request,\Closure $next)
     {
         $this->settingVariables();
+
+        return $next($request);
     }
 
     private function setEnv($data)
@@ -20,10 +23,10 @@ class LoadSettingVariables
 
     private function isModified()
     {
-        $cacheFile = Kernel::instance()->settings_cache_file();
+        $cacheFile = App::instance()->settings_cache_file();
 
         $modified =  (!file_exists ( $cacheFile ) ||
-                filemtime ( $cacheFile ) < filemtime ( Kernel::instance()->settingsFile() ));
+                filemtime ( $cacheFile ) < filemtime ( App::instance()->settingsFile() ));
 
         if(!$modified)
         {
@@ -124,7 +127,7 @@ class LoadSettingVariables
 
             $this->setEnv($settings);
 
-            file_put_contents ( Kernel::instance()->settings_cache_file() , serialize ( $settings ) );
+            file_put_contents ( App::instance()->settings_cache_file() , serialize ( $settings ) );
         }
     }
 

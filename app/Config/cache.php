@@ -2,13 +2,13 @@
 
 
 return array(
-  
+
     'driver' => 'file',
 
 
 
     'file' => array(
-        'path' => path('storage/cache/data')
+        'path' => storage_dir('cache/data')
     ),
 
     /*--------------------------------------------------------

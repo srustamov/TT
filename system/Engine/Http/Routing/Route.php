@@ -8,6 +8,7 @@
 
 
 
+use System\Engine\App;
 use System\Engine\Load;
 use System\Engine\Reflections;
 use System\Engine\Http\Middleware;
@@ -171,7 +172,7 @@ class Route
 
 
     /**
-     * @param Closure $handler
+     * @param \Closure $handler
      */
     public function ajax(\Closure $handler)
     {
@@ -380,7 +381,7 @@ class Route
 
     /**
      * @param $middleware
-     * @return void
+     * @return $this
      */
     public function middleware($middleware)
     {
@@ -492,10 +493,11 @@ class Route
           };
 
           $route = preg_replace_callback('/({.+?})/',$callback,$route);
-        }
 
-        if(strpos($route,'}') !== false) {
-          throw new RouteException("Route url parameters required");
+          if(strpos($route,'}') !== false) {
+            throw new RouteException("Route url parameters required");
+          }
+
         }
 
         return $route;
@@ -509,20 +511,20 @@ class Route
 
 
 
-    public function execute($kernel)
+    public function execute(App $app)
     {
-        if (file_exists ( $file = $kernel->routes_cache_file() )) {
+        if (file_exists ( $file = $app->routes_cache_file() ))
+        {
             $this->routes = require_once $file;
-        } else {
-            foreach (glob($kernel->path ( 'routes' )."/*") as $file) {
+        }
+        else
+        {
+            foreach (glob($app->path ( 'routes' )."/*") as $file) {
                 require_once $file;
             }
         }
-        unset($kernel);
 
-        if (!inConsole()) {
-            $this->run();
-        }
+        if (!inConsole()) $this->run();
 
         if ($this->notFound) {
            throw new NotFoundException;

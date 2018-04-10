@@ -30,7 +30,7 @@ class Reflections
         {
             $class = $param->getClass()->name;
 
-            if(($instance = Load::applicationClasses($class)))
+            if(($instance = App::instance()->classes($class)))
             {
                 $args[$num] = Load::class($instance);
             }
@@ -54,7 +54,7 @@ class Reflections
 
               $class = $param->getClass()->name;
 
-              if(Load::applicationClasses($class,true))
+              if(App::instance()->classes($class,true))
               {
                   $args[$num] = Load::class($class);
               }

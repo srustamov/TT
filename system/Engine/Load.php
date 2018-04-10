@@ -8,11 +8,11 @@
 
 
 
-class Load
+class Load implements \ArrayAccess
 {
 
 
-    protected static $classes = [];
+    private static $classes = [];
 
 
     public static function class( String $class,...$args)
@@ -25,7 +25,7 @@ class Load
         else
         {
 
-            if (($instance = static::applicationClasses($class)))
+            if (($instance = App::instance()->classes($class)))
             {
                 if (method_exists($instance,'__construct'))
                 {
@@ -41,7 +41,7 @@ class Load
                 if(strpos($class,'\\'))
                 {
 
-                    if(($instance = static::applicationClasses($class,true)))
+                    if(($instance = App::instance()->classes($class,true)))
                     {
                         return static::class($instance,...$args);
                     }
@@ -66,10 +66,6 @@ class Load
 
     public static function register($className,$object)
     {
-        if(static::applicationClasses($className)) {
-            throw new \Exception("Class name already exists in application classes");
-        }
-
         if($object instanceof \Closure) {
             static::set($className,call_user_func($object));
         } elseif (is_string($object)) {
@@ -89,52 +85,76 @@ class Load
     }
 
 
-    public static function applicationClasses(String $name = null,Bool $isValue = false)
+    public static function instance()
     {
-
-        $classes = array(
-            'array' => 'System\Libraries\Arr',
-            'authentication' => 'System\Libraries\Auth\Authentication',
-            'cache' => 'System\Libraries\Cache\Cache',
-            'console' => 'System\Engine\Cli\Console',
-            'cookie' => 'System\Libraries\Cookie',
-            'database' => 'System\Libraries\Database\Database',
-            'email' => 'System\Libraries\Mail\Email',
-            'file' => 'System\Libraries\File',
-            'hash' => 'System\Libraries\Hash',
-            'html' => 'System\Libraries\Html',
-            'http' => 'System\Libraries\Http',
-            'input' => 'System\Libraries\Input',
-            'lang' => 'System\Libraries\Language',
-            'language' => 'System\Libraries\Language',
-            'middleware' => 'System\Engine\Http\Middleware',
-            'openssl' => 'System\Libraries\Encrypt\OpenSsl',
-            'redirect' => 'System\Libraries\Redirect',
-            'redis' => 'System\Libraries\RedisFactory',
-            'request' => 'System\Engine\Http\Request',
-            'response' => 'System\Engine\Http\Response',
-            'route' => 'System\Engine\Http\Routing\Route',
-            'session' => 'System\Libraries\Session\Session',
-            'str' => 'System\Libraries\Str',
-            'string' => 'System\Libraries\Str',
-            'storage' => 'System\Libraries\Storage',
-            'url' => 'System\Libraries\Url',
-            'validator' => 'System\Libraries\Validator',
-            'view' => 'System\Libraries\View\View',
-        );
-
-        if(is_null($name)) {
-            return $classes;
-        }
-
-        if(!$isValue) {
-            return $classes[strtolower($name)] ?? false;
-        } else {
-            return array_search($name,$classes);
-        }
+      return new static;
     }
 
 
+    /**
+     * Offset to retrieve
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
+     */
+    public function offsetGet ( $offset )
+    {
+        return $this->class($offset);
+    }
+
+    /**
+     * Offset to set
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet ( $offset , $value )
+    {
+        $this->register($offset,$value);
+    }
+
+    /**
+     * Offset to unset
+     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset ( $offset )
+    {
+      if(isset(static::$classes[$offset])) {
+        unset(static::$classes[$offset]);
+      }
+
+    }
+
+    /**
+     * Whether a offset exists
+     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists ( $offset )
+    {
+        return isset(static::$classes[$offset]);
+    }
 
 
 }

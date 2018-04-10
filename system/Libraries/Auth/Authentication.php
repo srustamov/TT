@@ -304,7 +304,9 @@ class Authentication
 
     protected function getFailMessage($remaining)
     {
-      return Language::translate('auth.incorrect',array('remaining' => $remaining));
+      return Language::translate('auth.incorrect',array(
+        'remaining' => $remaining)
+      );
     }
 
 

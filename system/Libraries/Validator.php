@@ -256,8 +256,7 @@ class Validator
 
     public function is_ip($ip)
     {
-        if (!is_string($ip))
-        {
+        if (!is_string($ip)) {
             return false;
         }
         return filter_var($ip, FILTER_VALIDATE_IP);

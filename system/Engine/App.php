@@ -5,44 +5,47 @@
  * @link    https://github.com/srustamov/TT
  */
 
-
-use System\Engine\Load;
+use App\Kernel;
 use System\Facades\Route;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
 
-class Kernel
+class App
 {
 
-    protected $middleware_group = [
+    protected $middleware = [
         \System\Engine\Http\Middleware\LoadSettingVariables::class ,
         \System\Engine\Http\Middleware\PrepareConfigs::class ,
         \System\Engine\Http\Middleware\RegisterExceptionHandler::class ,
     ];
 
+    protected $custom_middleware = [];
+
+    protected $bootstrapping = false;
+
     protected $application_path;
 
     protected $public_path;
 
-    protected $storage_path = 'storage';
+    protected $storage_path   = 'storage';
 
     protected $languages_path = 'app/Language';
 
     protected $configs_path   = 'app/Config';
 
-    protected $settings_file = '.settings';
+    protected $settings_file  = '.settings';
 
     protected $configs_cache_file   = 'storage/system/configs.php';
 
     protected $routes_cache_file    = 'storage/system/routes.php';
 
-    protected $settings_cache_file   = 'storage/system/settings';
+    protected $settings_cache_file  = 'storage/system/settings';
 
     private static $instance;
 
 
     /**
-     * Kernel constructor.
+     * App constructor.
      * Set application base path
      *
      * @param null $basePath
@@ -55,7 +58,7 @@ class Kernel
         }
         else
         {
-            $this->application_path = rtrim($basePath,DIRECTORY_SEPARATOR);
+            $this->application_path = rtrim($basePath, DIRECTORY_SEPARATOR);
         }
 
         chdir($this->application_path);
@@ -72,27 +75,53 @@ class Kernel
      */
     public function bootstrap ()
     {
-        $this->setPublicPath();
+        if(!$this->bootstrapping)
+        {
+          $this->setPublicPath ();
 
-        $this->registerMiddleware ();
+          $this->registerMiddleware ($this->middleware);
 
-        $this->setAliases ();
+          $this->setLocale ();
 
-        $this->setLocale ();
+          $this->registerMiddleware ($this->custom_middleware);
+
+          $this->setAliases ();
+
+          Load::register('app', $this);
+
+          $this->bootstrapping = true;
+        }
 
         return $this;
     }
 
-    protected function registerMiddleware ()
+
+    public function makeMiddleware($middleware)
     {
-        foreach ($this->middleware_group as $middleware) {
-            call_user_func ( [ new $middleware , 'handle' ] );
+      if(!$this->bootstrapping) {
+
+        if(is_object($middleware)) {
+
+          $middleware = get_class($middleware);
+        }
+
+        array_push($this->custom_middleware, $middleware);
+      }
+    }
+
+
+    protected function registerMiddleware ($middleware_array)
+    {
+        foreach ($middleware_array as $middleware) {
+            Middleware::init ($middleware , true );
         }
     }
 
     protected function setAliases ()
     {
         $aliases = Load::class( 'config' )->get ( 'aliases' , [] );
+
+        $aliases['app'] = get_class( $this );
 
         foreach ($aliases as $key => $value) {
             class_alias ( '\\' . $value , $key );
@@ -101,24 +130,28 @@ class Kernel
 
     protected function setLocale ()
     {
-        setlocale ( LC_ALL , Load::class( 'config' )->get ( 'datetime.setLocale' ) );
-        date_default_timezone_set ( Load::class( 'config' )->get ( 'datetime.time_zone' , 'UTC' ) );
+        setlocale ( LC_ALL , Load::class('config')->get ('datetime.setLocale'));
+
+        date_default_timezone_set (
+          Load::class('config')->get ('datetime.time_zone', 'UTC')
+        );
     }
 
     public function callAppKernel ()
     {
-        if (class_exists ( '\App\Kernel' )) {
-            $kernel = new \App\Kernel();
+        $kernel = new Kernel();
 
-            if (property_exists ( $kernel , 'middleware' )) {
-                foreach ($kernel->middleware as $middleware) {
-                    Middleware::init ( $middleware , true );
-                }
+        if (property_exists ( $kernel , 'middleware' ))
+        {
+            foreach ($kernel->middleware as $middleware)
+            {
+                Middleware::init ( $middleware , true );
             }
+        }
 
-            if (method_exists ( $kernel , 'boot' )) {
-                $kernel->boot ();
-            }
+        if (method_exists ( $kernel , 'boot' ))
+        {
+            $kernel->boot ();
         }
 
         return $this;
@@ -138,7 +171,10 @@ class Kernel
 
     public function benchmark ( $finish )
     {
-        if (InConsole () || !Load::class( 'config' )->get ( 'app.debug' ) || Load::class( 'http' )->isAjax ()) {
+        if ( InConsole () ||
+           !Load::class('config')->get ('app.debug') ||
+            Load::class( 'http' )->isAjax ()
+        ) {
             return null;
         } else {
             Benchmark::show ( $finish );
@@ -237,6 +273,51 @@ class Kernel
         } else {
             return $this->path($this->settings_cache_file);
         }
+    }
+
+
+    public function classes(String $name = null,Bool $isValue = false)
+    {
+      $classes = array(
+          'array' => 'System\Libraries\Arr',
+          'authentication' => 'System\Libraries\Auth\Authentication',
+          'cache' => 'System\Libraries\Cache\Cache',
+          'console' => 'System\Engine\Cli\Console',
+          'cookie' => 'System\Libraries\Cookie',
+          'database' => 'System\Libraries\Database\Database',
+          'email' => 'System\Libraries\Mail\Email',
+          'file' => 'System\Libraries\File',
+          'hash' => 'System\Libraries\Hash',
+          'html' => 'System\Libraries\Html',
+          'http' => 'System\Libraries\Http',
+          'input' => 'System\Libraries\Input',
+          'lang' => 'System\Libraries\Language',
+          'language' => 'System\Libraries\Language',
+          'middleware' => 'System\Engine\Http\Middleware',
+          'openssl' => 'System\Libraries\Encrypt\OpenSsl',
+          'redirect' => 'System\Libraries\Redirect',
+          'redis' => 'System\Libraries\RedisFactory',
+          'request' => 'System\Engine\Http\Request',
+          'response' => 'System\Engine\Http\Response',
+          'route' => 'System\Engine\Http\Routing\Route',
+          'session' => 'System\Libraries\Session\Session',
+          'str' => 'System\Libraries\Str',
+          'string' => 'System\Libraries\Str',
+          'storage' => 'System\Libraries\Storage',
+          'url' => 'System\Libraries\Url',
+          'validator' => 'System\Libraries\Validator',
+          'view' => 'System\Libraries\View\View',
+      );
+
+      if(is_null($name)) {
+          return $classes;
+      }
+
+      if(!$isValue) {
+          return $classes[strtolower($name)] ?? false;
+      } else {
+          return array_search($name,$classes);
+      }
     }
 
     public static function instance()
