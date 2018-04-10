@@ -283,7 +283,7 @@ class Route
 
             $args = Reflections::classMethodParameters($controller_with_namespace, $method, $args);
 
-            if (\method_exists($controller_with_namespace,'__construct')) {
+            if (method_exists($controller_with_namespace,'__construct')) {
                 $constructorArgs = Reflections::classMethodParameters($controller_with_namespace, '__construct');
             } else {
                 $constructorArgs = [];

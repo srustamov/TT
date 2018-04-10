@@ -10,9 +10,31 @@ use System\Engine\App;
 use System\Engine\Load;
 
 
-function app()
+function app(String $class = null)
 {
-    return App::instance();
+  $app = App::instance();
+
+  if(is_null($class))
+  {
+    return $app;
+  }
+  else
+  {
+    return $app[$class];
+  }
+
+}
+
+function load(String $class = null,...$args)
+{
+  if(!is_null($class))
+  {
+    return Load::instance();
+  }
+  else
+  {
+    return Load::class($class,...$args);
+  }
 }
 
 
@@ -33,38 +55,20 @@ function setting($key, $default = null)
 }
 
 
-function import(String $file)
+function import(String $file,$once = true)
 {
-    $file = str_replace(['/','\\'], DIRECTORY_SEPARATOR, trim($file));
-
-    if (file_exists($file))
-    {
-        return require_once $file;
-    }
-    else
-    {
-        throw new Exception("File not found. Path: [ {$file} ]");
-    }
+  return load('file')->import($file, $once);
 }
 
 
-function import_dir_files($dir,$once = false)
+function importFiles($directory,$once = true)
 {
-    if ($once)
-    {
-        foreach (glob(rtrim($dir,DIRECTORY_SEPARATOR)."/*") as $file)
-        {
-            require_once $file;
-        }
-    }
-    else
-    {
-        foreach (glob(rtrim($dir,DIRECTORY_SEPARATOR)."/*") as $file)
-        {
-            require $file;
-        }
-    }
+  foreach (glob(rtrim($dir,DIRECTORY_SEPARATOR)."/*") as $file)
+  {
+      import($file,$once);
+  }
 }
+
 
 
 function storage_dir($path = '')

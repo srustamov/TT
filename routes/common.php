@@ -13,17 +13,18 @@
 
 
 
-Route::get('/','WelcomeController@index')->name('welcome');
+$this->get('/','WelcomeController@index')->name('welcome');
 
-Route::get('/home','HomeController@index')->name('home');
+$this->get('/home','HomeController@index')->name('home');
 
-Route::name('lang')->pattern('lang','[a-z]{2}')->get('/language/{lang}','HomeController@language');
+$this->name('lang')->pattern('lang','[a-z]{2}')->get('/language/{lang}','HomeController@language');
 
-Route::get(['path'=>'/auth/logout','middleware'=>'auth','name'=>'logout'],'Auth/LoginController@logout');
+$this->get(['path'=>'/auth/logout','middleware'=>'auth','name'=>'logout'],'Auth/LoginController@logout');
 
-Route::group(['prefix' => '/auth','middleware' => 'guest'],function(){
-    Route::get('/login','Auth/LoginController@show')->name('login');
-    Route::post('/login','Auth/LoginController@login');
-    Route::get('/register','Auth/RegisterController@show')->name('register');
-    Route::post('/register','Auth/RegisterController@register');
+$this->group(['prefix' => '/auth','middleware' => 'guest'],function()
+{
+    $this->get('/login','Auth/LoginController@show')->name('login');
+    $this->post('/login','Auth/LoginController@login');
+    $this->get('/register','Auth/RegisterController@show')->name('register');
+    $this->post('/register','Auth/RegisterController@register');
 });

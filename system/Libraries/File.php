@@ -137,11 +137,11 @@ class File
     }
 
 
-    public function import($file)
+    public function import($file,$once = true)
     {
         if ($this->exists($file))
         {
-            return require $file;
+            return $once ? require_once $file : require $file;
         }
 
         throw new \Exception("File not found.Path: ({$file})");

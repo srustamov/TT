@@ -5,12 +5,13 @@
  * @link    https://github.com/srustamov/TT
  */
 
+use ArrayAccess;
 use App\Kernel;
 use System\Facades\Route;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
 
-class App
+class App implements ArrayAccess
 {
 
     protected $middleware = [
@@ -21,7 +22,7 @@ class App
 
     protected $custom_middleware = [];
 
-    protected $bootstrapping = false;
+    protected $bootstrap = false;
 
     protected $application_path;
 
@@ -75,7 +76,7 @@ class App
      */
     public function bootstrap ()
     {
-        if(!$this->bootstrapping)
+        if(!$this->bootstrap)
         {
           $this->setPublicPath ();
 
@@ -89,7 +90,7 @@ class App
 
           Load::register('app', $this);
 
-          $this->bootstrapping = true;
+          $this->bootstrap = true;
         }
 
         return $this;
@@ -98,7 +99,7 @@ class App
 
     public function makeMiddleware($middleware)
     {
-      if(!$this->bootstrapping) {
+      if(!$this->bootstrap) {
 
         if(is_object($middleware)) {
 
@@ -324,5 +325,73 @@ class App
     {
         return static::$instance;
     }
+
+
+
+    /**
+     * Offset to retrieve
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
+     */
+    public function offsetGet ( $offset )
+    {
+        return Load::class($offset);
+    }
+
+    /**
+     * Offset to set
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet ( $offset , $value )
+    {
+        Load::register($offset,$value);
+    }
+
+    /**
+     * Offset to unset
+     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset ( $offset )
+    {
+      $load = Load::instance();
+
+      unset($load[$offset]);
+    }
+
+    /**
+     * Whether a offset exists
+     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists ( $offset )
+    {
+      return array_key_exists($offset, Load::instance());
+    }
+
+
 
 }
