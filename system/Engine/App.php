@@ -18,6 +18,7 @@ class App implements ArrayAccess
         \System\Engine\Http\Middleware\LoadSettingVariables::class ,
         \System\Engine\Http\Middleware\PrepareConfigs::class ,
         \System\Engine\Http\Middleware\RegisterExceptionHandler::class ,
+        \System\Engine\Http\Middleware\StartSession::class ,
     ];
 
     protected $custom_middleware = [];

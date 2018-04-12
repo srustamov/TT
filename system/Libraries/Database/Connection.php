@@ -90,11 +90,13 @@ abstract class Connection
     /**
      * Database connection close;
      */
-    public function close ()
+    public function disconnect (String $group = null)
     {
-        if (isset( $this->general[ $this->group ] ))
+        $connect = !is_null($group) ? $group :  $this->group;
+
+        if (isset( $this->general[ $connect ] ))
         {
-            unset( $this->general[ $this->group ] );
+            unset( $this->general[ $connect ] );
         }
 
         $this->pdo = null;

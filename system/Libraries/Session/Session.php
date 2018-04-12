@@ -27,54 +27,53 @@ class Session implements ArrayAccess,Countable
     protected $handler;
 
 
-    function __construct()
+    public function start()
     {
 
+      if (session_status() == PHP_SESSION_NONE)
+      {
+          $this->config = Load::class('config')->get('session');
 
-        if (session_status() == PHP_SESSION_NONE)
-        {
-            $this->config = Load::class('config')->get('session');
+          ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
+          ini_set('session.use_only_cookies', $this->config['only_cookies']);
+          ini_set('session.gc_maxlifetime', $this->config['lifetime']);
+          ini_set('session.save_path', $this->config['files_location']);
 
-            ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
-            ini_set('session.use_only_cookies', $this->config['only_cookies']);
-            ini_set('session.gc_maxlifetime', $this->config['lifetime']);
-            ini_set('session.save_path', $this->config['files_location']);
+          session_set_cookie_params(
+              $this->config['lifetime'],
+              $this->config['cookie']['path'],
+              $this->config['cookie']['domain'],
+              $this->config['cookie']['secure'],
+              $this->config['cookie']['http_only']
+          );
 
-            session_set_cookie_params(
-                $this->config['lifetime'],
-                $this->config['cookie']['path'],
-                $this->config['cookie']['domain'],
-                $this->config['cookie']['secure'],
-                $this->config['cookie']['http_only']
-            );
+          session_name($this->config['cookie']['name']);
 
-            session_name($this->config['cookie']['name']);
+          switch ($this->config['driver'])
+          {
+              case 'database':
+                  $this->handler = new SessionDBHandler($this->config['table']);
+                  break;
+              case 'redis':
+                  $this->handler = new SessionRedisHandler();
+                  break;
+              default:
+                  $this->handler = new SessionFileHandler();
+                  break;
+          }
 
-            switch ($this->config['driver'])
-            {
-                case 'database':
-                    $this->handler = new SessionDBHandler($this->config['table']);
-                    break;
-                case 'redis':
-                    $this->handler = new SessionRedisHandler();
-                    break;
-                default:
-                    $this->handler = new SessionFileHandler();
-                    break;
-            }
+          if (!is_null($this->handler))
+          {
+              session_set_save_handler($this->handler, true);
 
-            if (!is_null($this->handler))
-            {
-                session_set_save_handler($this->handler, true);
+              register_shutdown_function('session_write_close');
+          }
 
-                register_shutdown_function('session_write_close');
-            }
+          session_start();
 
-            session_start();
+          $this->token();
 
-            $this->token();
-
-        }
+      }
     }
 
 
@@ -123,26 +122,35 @@ class Session implements ArrayAccess,Countable
     }
 
 
+    public function prevUrl()
+    {
+      return $this->get('_prev_url');
+    }
+
+
     /**
      * @param $key
      * @return bool
      */
 
-    public function get($key)
+    public function get($key, $default = false)
     {
-        if($key instanceOf \Closure)
+
+      if(isset($_SESSION[ $key ]))
+      {
+        return $_SESSION[ $key ];
+      }
+      else
+      {
+        if($default instanceOf \Closure)
         {
-            return $this->get(call_user_func($key, $this));
-        }
-        else
-        {
-            if (isset($_SESSION[ $key ]))
-            {
-                return $_SESSION[ $key ];
-            }
+          $default = call_user_func($default, $this);
         }
 
-        return false;
+        return $_SESSION[ $key ] ?? $default;
+      }
+
+
     }
 
 

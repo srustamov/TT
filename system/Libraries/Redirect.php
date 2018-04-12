@@ -45,9 +45,13 @@ class Redirect
         {
             $url = $back;
         }
+        elseif (($back = Load::class('session')->prevUrl()))
+        {
+            $url = $back;
+        }
         else
         {
-            $url = 'javascript://history.go(-1)';
+            $url = '';
         }
 
         return call_user_func_array([$this,'to'], array($url,$refresh,$http_response_code));
@@ -88,7 +92,7 @@ class Redirect
     public function withErrors($key,$value = null)
     {
         $data = is_array($key) ? $key : [$key => $value];
-        
+
         Load::class('session')->flash('view-errors',$data);
 
         return $this;

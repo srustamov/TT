@@ -21,7 +21,7 @@ use System\Facades\DB;
 abstract class Model
 {
 
-    private static $data;
+    private static $attributes = [];
 
     protected $table;
 
@@ -38,7 +38,7 @@ abstract class Model
      */
     public function __set( $column, $value)
     {
-        self::$data[$column] = $value;
+        self::$attributes[$column] = $value;
     }
 
 
@@ -49,11 +49,11 @@ abstract class Model
      */
     public function save():Bool
     {
-        if (!is_null(self::$data))
+        if (!empty(self::$attributes))
         {
-            $return = static::create(self::$data);
+            $return = static::create(self::$attributes);
 
-            self::$data = null;
+            self::$attributes = [];
 
             return $return;
         }
@@ -125,7 +125,7 @@ abstract class Model
     {
         $select = !is_null((new static)->select) ? (new static)->select : '*';
 
-        return    DB::table((new static)->getTable())->select($select)->get();
+        return DB::table((new static)->getTable())->select($select)->get();
     }
 
 

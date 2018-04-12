@@ -55,13 +55,11 @@ class Database extends Connection
      */
     public function get ( $first = false ,$fetch = PDO::FETCH_OBJ)
     {
-
-
         $query = $this->getQueryString ().($first ? ' LIMIT 1' : '');
 
         $queryString = $this->normalizeQueryString ( $query );
 
-        try 
+        try
         {
             $statement = $this->pdo->prepare ( $query );
 
@@ -71,17 +69,17 @@ class Database extends Connection
 
             $this->reset();
 
-            if ($statement->rowCount () > 0) 
+            if ($statement->rowCount () > 0)
             {
                 return $first ? $statement->fetch ($fetch) : $statement->fetchAll ($fetch);
-            } 
-            else 
+            }
+            else
             {
                 return null;
             }
 
-        } 
-        catch (\PDOException $e) 
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -96,7 +94,7 @@ class Database extends Connection
      */
     private function getQueryString ()
     {
-        if (empty( $this->select )) 
+        if (empty( $this->select ))
         {
             $this->select[] = "*";
         }
@@ -114,11 +112,11 @@ class Database extends Connection
 
     private function normalizeQueryString ( $query )
     {
-        foreach ($this->execute_data as $value) 
+        foreach ($this->execute_data as $value)
         {
             $position = strpos ( $query , '?' );
 
-            if ($position !== false) 
+            if ($position !== false)
             {
                 $query = substr_replace ( $query , $value , $position , 1 );
             }
@@ -134,6 +132,16 @@ class Database extends Connection
             );
         }
     }
+
+
+    public function transaction(\Closure $callback)
+    {
+      $this->pdo->beginTransaction();
+
+      call_user_func($callback,$this);
+    }
+
+
 
     public function table ( String $table )
     {
@@ -154,11 +162,11 @@ class Database extends Connection
 
     public function toJson ( $first = false )
     {
-        if (($result = $this->get ( $first ))) 
+        if (($result = $this->get ( $first )))
         {
             return json_encode ( $result );
-        } 
-        else 
+        }
+        else
         {
             return null;
         }
@@ -166,7 +174,7 @@ class Database extends Connection
 
     public function select ( $select )
     {
-        if (is_array ( $select )) 
+        if (is_array ( $select ))
         {
             $select = implode ( ',' , $select );
         }
@@ -183,27 +191,27 @@ class Database extends Connection
 
     public function where ( $column , $value = false , $mark = null , $logic = [ "WHERE" , "AND" ] )
     {
-        if (!is_null ( $mark )) 
+        if (!is_null ( $mark ))
         {
             $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " {$column} {$value} ? ";
 
             $this->execute_data[] = $mark;
-        } 
-        elseif ($value == false) 
+        }
+        elseif ($value == false)
         {
-            if (is_array ( $column ) && $this->array_is_assoc ( $column )) 
+            if (is_array ( $column ) && $this->array_is_assoc ( $column ))
             {
-                foreach ($column as $key => $value) 
+                foreach ($column as $key => $value)
                 {
                     $this->where ( $key , $value );
                 }
-            } 
-            else 
+            }
+            else
             {
                 $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " " . $column . " ";
             }
-        } 
-        else 
+        }
+        else
         {
             $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " " . $column . " = ? ";
             $this->execute_data[] = $value;
@@ -215,13 +223,13 @@ class Database extends Connection
 
     private function array_is_assoc ( $array )
     {
-        if (is_array ( $array )) 
+        if (is_array ( $array ))
         {
             $keys = array_keys ( $array );
 
             return ( array_keys ( $keys ) !== $keys );
-        } 
-        else 
+        }
+        else
         {
             return false;
         }
@@ -284,9 +292,9 @@ class Database extends Connection
     public function like ( $column , $like , $logic = "" )
     {
         $this->where[] = ( empty( $this->where ) ? "WHERE " : "AND " ) . "{$column} {$logic} LIKE ? ";
-        
+
         $this->execute_data[] = $like;
-        
+
         return $this;
     }
 
@@ -350,11 +358,11 @@ class Database extends Connection
 
         $this->select = array( "COUNT({$column}) as count" );
 
-        if ($result = $this->get ( true )) 
+        if ($result = $this->get ( true ))
         {
             return (int) $result->count;
-        } 
-        else 
+        }
+        else
         {
             return null;
         }
@@ -366,11 +374,11 @@ class Database extends Connection
 
         $this->select = array( "AVG({$column}) as avg" );
 
-        if ($result = $this->get ( true )) 
+        if ($result = $this->get ( true ))
         {
             return $result->avg;
-        } 
-        else 
+        }
+        else
         {
             return null;
         }
@@ -382,34 +390,39 @@ class Database extends Connection
 
         $this->select = array( "SUM({$column}) as sum" );
 
-        if ($result = $this->get ( true )) 
+        if ($result = $this->get ( true ))
         {
             return $result->sum;
-        } 
-        else 
+        }
+        else
         {
             return null;
         }
     }
 
-    public function insert ( $insert, Array $data = [] )
+
+    private function normalizeCrud($data)
     {
-        if(is_string($insert)) 
+      return implode(',',array_map(function ($item){
+              return $item."=?";
+          },array_keys($data)));
+    }
+
+    public function insert ( $insert, Array $data = [] ,Bool $getId = false)
+    {
+        if(is_string($insert))
         {
             $query = $insert;
 
             $this->execute_data = $data;
-        } 
-        else 
+        }
+        else
         {
-            if(is_array($insert)) 
+            if(is_array($insert))
             {
-                if($this->array_is_assoc($insert)) 
+                if($this->array_is_assoc($insert))
                 {
-                    $query = "INSERT INTO {$this->table} SET ".
-                        implode(',',array_map(function ($item){
-                            return $item."=?";
-                        },array_keys($insert)));
+                    $query = "INSERT INTO {$this->table} SET ".$this->normalizeCrud($insert);
 
                     $this->execute_data = array_values($insert);
                 }
@@ -418,7 +431,7 @@ class Database extends Connection
 
         $queryString = $this->normalizeQueryString($query);
 
-        try 
+        try
         {
           $statement = $this->pdo->prepare ( $query );
 
@@ -428,36 +441,39 @@ class Database extends Connection
 
           $this->reset();
 
-          return $statement->rowCount () > 0;
-        } 
-        catch (\PDOException $e) 
+          return $getId ? $this->pdo->lastInsertId() : ($statement->rowCount () > 0);
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
     }
 
 
+    public function insertGetId($insert, Array $data = [])
+    {
+      return $this->insert($insert,$data, true);
+    }
+
+
     public function update ( $update ,Array $data = [] )
     {
 
-        if(is_string($update)) 
+        if(is_string($update))
         {
             $query = $update;
 
             $this->execute_data = $data;
-        } 
-        else 
+        }
+        else
         {
-            if(is_array($update)) 
+            if(is_array($update))
             {
-                if($this->array_is_assoc($update)) 
+                if($this->array_is_assoc($update))
                 {
-                    $query = "UPDATE {$this->table} SET ".
-                        implode(',',array_map(function ($item){
-                            return $item."=?";
-                        },array_keys($update))).
-                        preg_replace ( "/SELECT.*FROM {$this->table}/" , '' , $this->getQueryString () , 1 );
-                    
+                    $query  = "UPDATE {$this->table} SET ".$this->normalizeCrud($update);
+                    $query .=  " ".preg_replace ( "/^SELECT.*FROM {$this->table}/" , '' , $this->getQueryString () , 1 );
+
                     $this->execute_data = array_merge(array_values($update),$this->execute_data);
                 }
             }
@@ -465,7 +481,7 @@ class Database extends Connection
 
         $queryString = $this->normalizeQueryString($query);
 
-        try 
+        try
         {
           $statement = $this->pdo->prepare ( $query );
 
@@ -476,8 +492,8 @@ class Database extends Connection
           $this->reset();
 
           return $statement->rowCount () > 0;
-        } 
-        catch (\PDOException $e) 
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -486,23 +502,23 @@ class Database extends Connection
     public function delete ($delete = null,Array $data = [])
     {
 
-        if(is_string($delete)) 
+        if(is_string($delete))
         {
             $query = $delete;
 
             $this->execute_data = $data;
 
-        } 
-        else 
+        }
+        else
         {
-            if(is_array($delete)) 
+            if(is_array($delete))
             {
-                if($this->array_is_assoc($delete)) 
+                if($this->array_is_assoc($delete))
                 {
                     $this->where($delete);
                 }
-            } 
-            else 
+            }
+            else
             {
               $query = "DELETE FROM {$this->table} ".
                   preg_replace (
@@ -514,7 +530,7 @@ class Database extends Connection
 
         $queryString = $this->normalizeQueryString($query);
 
-        try 
+        try
         {
           $statement = $this->pdo->prepare ( $query );
 
@@ -525,8 +541,8 @@ class Database extends Connection
           $this->reset();
 
           return $statement->rowCount () > 0;
-        } 
-        catch (\PDOException $e) 
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -539,24 +555,24 @@ class Database extends Connection
      */
     public function optimizeTables ( $tables = '*' )
     {
-        if (trim ( $tables ) == '*') 
+        if (trim ( $tables ) == '*')
         {
             $tables = $this->showTables ();
-        } 
-        else 
+        }
+        else
         {
-            if (is_array ( $tables )) 
+            if (is_array ( $tables ))
             {
-                $tables = array_map ( function ( $item ) 
+                $tables = array_map ( function ( $item )
                 {
                     return $this->config[ $this->group ][ 'prefix' ] . $item;
                 } , $tables );
-            } 
-            else 
+            }
+            else
             {
                 $tables = explode ( ',' , $tables );
 
-                $tables = array_map ( function ( $item ) 
+                $tables = array_map ( function ( $item )
                 {
                     return $this->config[ $this->group ][ 'prefix' ] . $item;
                 } , $tables );
@@ -565,7 +581,7 @@ class Database extends Connection
 
         $success = true;
 
-        foreach ($tables as $table) 
+        foreach ($tables as $table)
         {
             $success = ($this->pdo->exec ( "OPTIMIZE TABLE {$table}" ) === false);
         }
@@ -580,7 +596,7 @@ class Database extends Connection
     {
         $result = $this->pdo->query ( "SHOW TABLES" )->fetchAll ( PDO::FETCH_ASSOC );
 
-        return array_map ( function ( $item ) 
+        return array_map ( function ( $item )
         {
             return array_values ( $item )[ 0 ];
         } , $result );
@@ -592,39 +608,39 @@ class Database extends Connection
      */
     public function repairTables ( $tables = '*' )
     {
-        if ($this->table == '') 
+        if ($this->table == '')
         {
-            if (trim ( $tables ) == '*') 
+            if (trim ( $tables ) == '*')
             {
                 $tables = $this->showTables ();
-            } 
-            else 
+            }
+            else
             {
-                if (is_array ( $tables )) 
+                if (is_array ( $tables ))
                 {
                     $tables = array_map ( function ( $item ) {
                         return $this->config[ $this->group ][ 'prefix' ] . $item;
                     } , $tables );
-                } 
-                else 
+                }
+                else
                 {
                     $tables = explode ( ',' , $tables );
 
-                    $tables = array_map ( function ( $item ) 
+                    $tables = array_map ( function ( $item )
                     {
                         return $this->config[ $this->group ][ 'prefix' ] . $item;
                     } , $tables );
                 }
             }
-        } 
-        else 
+        }
+        else
         {
             $tables = array( $this->table );
         }
 
         $success = true;
 
-        foreach ($tables as $table) 
+        foreach ($tables as $table)
         {
             $success = $this->pdo->exec ( "REPAIR TABLE {$table}" ) === false ? false : true;
         }
@@ -645,11 +661,11 @@ class Database extends Connection
 
         $queryString = "DROP {$drop} IF EXISTS {$item}";
 
-        try 
+        try
         {
             return ($this->pdo->exec ( $queryString ) === false);
-        } 
-        catch (\PDOException $e) 
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -666,11 +682,11 @@ class Database extends Connection
     {
         $queryString = "TRUNCATE TABLE IF EXISTS {$this->table} ";
 
-        try 
+        try
         {
             return ($this->pdo->exec ( $queryString ) === false);
-        } 
-        catch (\PDOException $e) 
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -687,17 +703,17 @@ class Database extends Connection
 
         $queryString = "SHOW TABLES FROM {$database}";
 
-        try 
+        try
         {
             $result = $this->pdo->query ( $queryString );
 
-            if ($result->rowCount () > 0) 
+            if ($result->rowCount () > 0)
             {
                 return $result->fetchAll ();
             }
             return null;
         }
-        catch (\PDOException $e) 
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -712,17 +728,17 @@ class Database extends Connection
     {
         $queryString = "SHOW COLUMNS FROM {$this->table}";
 
-        try 
+        try
         {
             $result = $this->pdo->query ( $queryString );
 
-            if ($result->rowCount () > 0) 
+            if ($result->rowCount () > 0)
             {
                 return $result->fetchAll ();
             }
             return null;
-        } 
-        catch (\PDOException $e) 
+        }
+        catch (\PDOException $e)
         {
             throw new DatabaseException($e->getMessage(),$queryString);
         }
@@ -735,7 +751,7 @@ class Database extends Connection
      */
     public function lastId ()
     {
-      if(!is_null($this->pdo)) 
+      if(!is_null($this->pdo))
       {
         return $this->pdo->lastInsertId ();
       }
@@ -748,14 +764,14 @@ class Database extends Connection
      */
     public function escape ( $data )
     {
-        if (is_array ( $data )) 
+        if (is_array ( $data ))
         {
-            foreach ($data as $key => $value) 
+            foreach ($data as $key => $value)
             {
                 $data[ $key ] = $this->pdo->quote ( trim ( $value ) );
             }
-        } 
-        else 
+        }
+        else
         {
             $data = $this->pdo->quote ( trim ( $data ) );
         }
@@ -790,11 +806,11 @@ class Database extends Connection
 
     public function __toString ()
     {
-        if(!is_null($this->queryString)) 
+        if(!is_null($this->queryString))
         {
             return $this->queryString;
-        } 
-        else 
+        }
+        else
         {
             return 'Database Library';
         }
