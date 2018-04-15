@@ -15,9 +15,9 @@ class PrepareConfigs
     {
         $configurations = [];
 
-        $configs_path       = rtrim(App::instance()->configs_path(),DIRECTORY_SEPARATOR);
+        $app = App::instance();
 
-        $configs_cache_file = App::instance()->configs_cache_file();
+        $configs_cache_file = $app->configs_cache_file();
 
         if(file_exists($configs_cache_file))
         {
@@ -25,7 +25,7 @@ class PrepareConfigs
         }
         else
         {
-            foreach (glob($configs_path.DIRECTORY_SEPARATOR.'*') as $file) {
+            foreach (glob($app->configs_path('*')) as $file) {
                 $configurations[pathinfo($file ,PATHINFO_FILENAME)] = require_once $file;
             }
         }

@@ -11,6 +11,7 @@
  */
 
 
+use System\Engine\App;
 use System\Engine\Load;
 
 class Language implements \ArrayAccess
@@ -29,7 +30,9 @@ class Language implements \ArrayAccess
     {
         $locale = $this->locale();
 
-        foreach (glob(path('app/Language/'.$locale.'/*')) as $file) {
+        $app = App::instance();
+
+        foreach (glob($app->lang_path($locale.'/*')) as $file) {
             $this->languages[pathinfo($file ,PATHINFO_FILENAME)] = require_once($file);
         }
     }
@@ -91,7 +94,7 @@ class Language implements \ArrayAccess
 
 
 
-    public function data ():array
+    public function all ():array
     {
         return $this->languages;
     }

@@ -14,7 +14,7 @@ use System\Facades\Language;
 use System\Facades\Redirect;
 use System\Facades\Session;
 use System\Facades\Cookie;
-use System\Engine\Load;
+use System\Facades\Config;
 use System\Facades\DB;
 
 
@@ -50,7 +50,7 @@ class Authentication
 
     function __construct()
     {
-        $this->config = Load::class('config')->get('authentication.guards');
+        $this->config = Config::get('authentication.guards');
 
         foreach ($this->config as $guard => $config)
         {
@@ -223,11 +223,13 @@ class Authentication
         }
         else
         {
-            $_token = hash_hmac('sha256', $user->email . $user->name, Load::class('config')->get('app.key'));
+            $_token = hash_hmac('sha256', $user->email . $user->name, Config::get('app.key'));
 
             Cookie::set('remember_'.$this->guard, base64_encode($_token), 3600 * 24 * 30);
 
-            DB::table($this->config[$this->guard]['table'])->where('id', $user->id)->update(['remember_token' => $_token]);
+            DB::table($this->config[$this->guard]['table'])
+                ->where('id', $user->id)
+                ->update(['remember_token' => $_token]);
         }
 
         return $this;

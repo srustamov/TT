@@ -72,7 +72,13 @@ abstract class Model
         if(!is_null($fillable))
         {
             $data = Arr::only($data,$fillable);
+
+            if(!Arr::isAssoc($data))
+            {
+              $data = array_combine($fillable, $data);
+            }
         }
+
 
         return DB::table((new static)->getTable())->insert($data);
     }

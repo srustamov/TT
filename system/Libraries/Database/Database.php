@@ -162,7 +162,7 @@ class Database extends Connection
 
     public function toJson ( $first = false )
     {
-        if (($result = $this->get ( $first )))
+        if (($result = $this->toArray ( $first )))
         {
             return json_encode ( $result );
         }

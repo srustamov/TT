@@ -67,7 +67,7 @@ class Load implements \ArrayAccess
     public static function register($className,$object)
     {
         if($object instanceof \Closure) {
-            static::set($className,call_user_func($object));
+            static::register($className,call_user_func($object));
         } elseif (is_string($object)) {
             static::$classes[$className] = new $object();
         } elseif (is_object($object)) {
@@ -136,7 +136,6 @@ class Load implements \ArrayAccess
       if(isset(static::$classes[$offset])) {
         unset(static::$classes[$offset]);
       }
-
     }
 
     /**

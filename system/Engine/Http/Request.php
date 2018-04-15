@@ -157,6 +157,12 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
+    public function has($key)
+    {
+      return isset($this->request[ $this->method ][ $key ]);
+    }
+
+
     public function post($name)
     {
         if (isset($this->request['POST'][$name]))
@@ -210,7 +216,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function ajax(): String
     {
-        return Load::class('http')->isAjax();
+      return ($this->server('HTTP_X_REQUESTED_WITH')  === 'XMLHttpRequest');
     }
 
 

@@ -524,7 +524,7 @@ class Route
             }
         }
 
-        if (!inConsole()) $this->run();
+        if (!CONSOLE) $this->run();
 
         if ($this->notFound) {
            throw new NotFoundException;

@@ -126,9 +126,9 @@ function abort(Int $http_code, $message = null,$headers = [])
 
 
 
-function InConsole()
+function inConsole()
 {
-    return (php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg');
+    return CONSOLE;
 }
 
 

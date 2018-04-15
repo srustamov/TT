@@ -21,9 +21,9 @@ class TTException
       if (Load::class('config')->get('app.debug') === true)
       {
 
-          if (!InConsole())
+          if (!CONSOLE)
           {
-              ob_end_clean();
+              @ob_end_clean();
 
               $view_file =  __DIR__.'/resource/exception.php';
 

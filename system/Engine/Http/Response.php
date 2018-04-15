@@ -364,7 +364,7 @@ class Response
         }
         else
         {
-          if(PHP_SAPI != 'cli')
+          if(!CONSOLE)
           {
             static::closeOutputBuffers();
           }

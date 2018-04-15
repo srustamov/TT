@@ -39,7 +39,7 @@ class PrintConsole {
      */
     private static function _printData( $style , $text )
     {
-        if (!InConsole())
+        if (!CONSOLE)
         {
             return null;
         }

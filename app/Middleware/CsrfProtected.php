@@ -3,7 +3,8 @@
 
 use System\Engine\Http\Request;
 use System\Facades\Cookie;
-use System\Engine\Load;
+use System\Facades\Config;
+use System\Facades\Url;
 
 class CsrfProtected
 {
@@ -19,7 +20,7 @@ class CsrfProtected
     public function handle(Request $request,\Closure $next)
     {
 
-        if ($this->isReading($request) || inConsole() || $this->isExcept() || $this->tokensMatch($request))
+        if ($this->isReading($request) || CONSOLE || $this->isExcept() || $this->tokensMatch($request))
         {
             $this->addCookie($request);
         }
@@ -34,7 +35,7 @@ class CsrfProtected
 
     protected function isReading(Request $request)
     {
-        return in_array($request->method(), ['HEAD', 'GET', 'OPTIONS']);
+        return in_array($request->method('GET'), ['HEAD', 'GET', 'OPTIONS']);
     }
 
 
@@ -42,7 +43,7 @@ class CsrfProtected
     {
       if(!empty($this->except)) {
 
-        $url = trim(Load::class('url')->request(),'/');
+        $url = trim(Url::request(),'/');
 
         foreach ($this->except as $key => $value)
         {
@@ -92,17 +93,12 @@ class CsrfProtected
         {
           return $input;
         }
-
-
     }
 
 
     protected function addCookie(Request $request)
     {
-        $lifetime = Load::class('config')->get('session.lifetime');
-
-        Cookie::set('XSRF-TOKEN', $request->session('_token'), $lifetime);
-
+        Cookie::set('XSRF-TOKEN', $request->session('_token'), Config::get('session.lifetime'));
     }
 
 }

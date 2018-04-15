@@ -124,7 +124,7 @@ class Console
         {
             if (is_file ( $file ))
             {
-                if (\unlink ( $file ))
+                if (unlink ( $file ))
                 {
                     echo "Delete: [{$file}]\n";
                 }

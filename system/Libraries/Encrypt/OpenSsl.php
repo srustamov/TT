@@ -36,7 +36,7 @@ class OpenSsl
     {
         $key = Load::class('config')->get ('app.key',false);
 
-        if(!$key)
+        if(!$key && !CONSOLE)
         {
             throw new EncryptException("<b>Application Down</b> ! Application Encryption key not found!");
         }

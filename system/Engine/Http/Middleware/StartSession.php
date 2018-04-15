@@ -8,14 +8,17 @@ class StartSession
 
     public function handle(Request $request,\Closure $next)
     {
-      if(!Load::class('http')->isAjax())
+      if(!CONSOLE)
       {
-        register_shutdown_function(function(){
-          Load::class('session')->set('_prev_url',Load::class('url')->current());
-        });
-      }
+        if(!Load::class('http')->isAjax())
+        {
+          register_shutdown_function(function(){
+            Load::class('session')->set('_prev_url',Load::class('url')->current());
+          });
+        }
 
-      Load::class('session')->start();
+        Load::class('session')->start();
+      }
 
       return $next($request);
     }

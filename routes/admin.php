@@ -12,6 +12,7 @@
 |---------------------------------------------
 */
 
+/*
 
 $groupParameters = ['domain' => 'admin.framework.tt','name' => 'dashboard.','middleware' => 'auth:admin'];
 
@@ -21,3 +22,5 @@ Route::group($groupParameters,function(){
     // merge group parameter name [dashboard.home]
 
 });
+
+*/

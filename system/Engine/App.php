@@ -8,6 +8,8 @@
 use ArrayAccess;
 use App\Kernel;
 use System\Facades\Route;
+use System\Facades\Config;
+use System\Facades\Http;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
 
@@ -31,7 +33,7 @@ class App implements ArrayAccess
 
     protected $storage_path   = 'storage';
 
-    protected $languages_path = 'app/Language';
+    protected $lang_path = 'app/Language';
 
     protected $configs_path   = 'app/Config';
 
@@ -54,6 +56,10 @@ class App implements ArrayAccess
      */
     function __construct ( $basePath = null )
     {
+        if(!defined('CONSOLE')) {
+          define('CONSOLE',(php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg'));
+        }
+
         if (is_null ( $basePath ))
         {
             $this->application_path = dirname ( dirname ( __DIR__ ) );
@@ -121,7 +127,7 @@ class App implements ArrayAccess
 
     protected function setAliases ()
     {
-        $aliases = Load::class( 'config' )->get ( 'aliases' , [] );
+        $aliases = Config::get ( 'aliases' , [] );
 
         $aliases['app'] = get_class( $this );
 
@@ -132,11 +138,9 @@ class App implements ArrayAccess
 
     protected function setLocale ()
     {
-        setlocale ( LC_ALL , Load::class('config')->get ('datetime.setLocale'));
+        setlocale ( LC_ALL , Config::get ('datetime.setLocale'));
 
-        date_default_timezone_set (
-          Load::class('config')->get ('datetime.time_zone', 'UTC')
-        );
+        date_default_timezone_set (Config::get ('datetime.time_zone', 'UTC'));
     }
 
     public function callAppKernel ()
@@ -173,10 +177,7 @@ class App implements ArrayAccess
 
     public function benchmark ( $finish )
     {
-        if ( InConsole () ||
-           !Load::class('config')->get ('app.debug') ||
-            Load::class( 'http' )->isAjax ()
-        ) {
+        if (CONSOLE ||!Config::get ('app.debug') || Http::isAjax()) {
             return null;
         } else {
             Benchmark::show ( $finish );
@@ -185,14 +186,22 @@ class App implements ArrayAccess
 
     public function setPublicPath (String $path = null)
     {
-        if(!is_null($path)) {
+        if(!is_null($path))
+        {
             $this->public_path = $path;
-        } else {
-            if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] )) {
+        }
+        else
+        {
+            if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] ))
+            {
                 $parts = explode ( '/' , $_SERVER[ 'SCRIPT_FILENAME' ] );
+
                 array_pop($parts);
+
                 $this->public_path = implode ( '/' , $parts );
-            } else {
+            }
+            else
+            {
                 $this->public_path = $this->application_path . DIRECTORY_SEPARATOR . 'public';
             }
         }
@@ -208,9 +217,9 @@ class App implements ArrayAccess
         $this->configs_path = trim($path,DIRECTORY_SEPARATOR);
     }
 
-    public function setLanguagesPath(String $path)
+    public function setLangPath(String $path)
     {
-        $this->languages_path = trim($path,DIRECTORY_SEPARATOR);
+        $this->lang_path = trim($path,DIRECTORY_SEPARATOR);
     }
 
     public function setSettingsFile(String $file)
@@ -248,6 +257,12 @@ class App implements ArrayAccess
         return $this->application_path
             .DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR
             .ltrim($path,DIRECTORY_SEPARATOR);
+    }
+
+
+    public function lang_path($path = '')
+    {
+      return $this->path($this->lang_path.DIRECTORY_SEPARATOR.(ltrim($path,DIRECTORY_SEPARATOR)));
     }
 
     public function configs_cache_file(String $file = null)

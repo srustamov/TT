@@ -73,18 +73,18 @@ class File
     {
       if (isset($file['tmp_name']))
       {
-          return \getimagesize($file['tmp_name']);
+          return @getimagesize($file['tmp_name']) ? true : false;
       }
       else
       {
-          return \getimagesize($file);
+          return @getimagesize($file) ? true : false;
       }
     }
 
 
     public function setDir($pathname, $mode = 0755, $recursive = false):Bool
     {
-        return \mkdir($pathname, $mode, $recursive);
+        return mkdir($pathname, $mode, $recursive);
     }
 
 
@@ -102,7 +102,7 @@ class File
         {
             return false;
         }
-        return \rmdir($pathname);
+        return rmdir($pathname);
     }
 
     /**
@@ -131,7 +131,7 @@ class File
             }
             else
             {
-                \unlink($file);
+                unlink($file);
             }
         }
     }

@@ -15,13 +15,24 @@
 
 $this->get('/','WelcomeController@index')->name('welcome');
 
+/*
+  // Bad
+
+  $this->middleware('auth')->get('/home','HomeController@index')->name('home');
+
+  //The Correct
+
+  $this->get('/home','HomeController@index')->name('home')->middleware('auth');
+
+*/
+
 $this->get('/home','HomeController@index')->name('home');
 
 $this->name('lang')->pattern('lang','[a-z]{2}')->get('/language/{lang}','HomeController@language');
 
-$this->get(['path'=>'/auth/logout','middleware'=>'auth','name'=>'logout'],'Auth/LoginController@logout');
+$this->get(['path'=>'/auth/logout','middleware'=>['auth'],'name'=>'logout'],'Auth/LoginController@logout');
 
-$this->group(['prefix' => '/auth','middleware' => 'guest'],function()
+$this->group(['prefix' => '/auth','middleware' => ['guest']],function()
 {
     $this->get('/login','Auth/LoginController@show')->name('login');
     $this->post('/login','Auth/LoginController@login');
