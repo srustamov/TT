@@ -64,12 +64,20 @@ class Session implements ArrayAccess,Countable
 
           if (!is_null($this->handler))
           {
-              session_set_save_handler($this->handler, true);
+              session_set_save_handler($this->handler, true); 
 
               register_shutdown_function('session_write_close');
           }
 
-          session_start();
+            if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
+                session_start([
+                    'cache_limiter' => 'private',
+                    'read_and_close' => true,
+                    ]);
+            } else {
+                session_start();
+            }
+          
 
           $this->token();
 
@@ -297,6 +305,16 @@ class Session implements ArrayAccess,Countable
     public function destroy()
     {
         $_SESSION = [];
+
+        if (ini_get("session.use_cookies")) {
+
+            $params = session_get_cookie_params();
+
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
 
         session_destroy();
     }
