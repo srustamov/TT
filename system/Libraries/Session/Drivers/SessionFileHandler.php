@@ -15,6 +15,19 @@ class SessionFileHandler implements SessionHandlerInterface
     private $file_path;
 
 
+    public function __construct()
+    {
+        session_set_save_handler(
+            array($this, "open"),
+            array($this, "close"),
+            array($this, "read"),
+            array($this, "write"),
+            array($this, "destroy"),
+            array($this, "gc")
+        );
+    }
+
+
 
     public function open($save_path,$name):Bool
     {

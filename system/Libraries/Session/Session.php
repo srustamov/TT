@@ -29,7 +29,7 @@ class Session implements ArrayAccess,Countable
 
     public function start()
     {
-
+    
       if (session_status() == PHP_SESSION_NONE)
       {
           $this->config = Load::class('config')->get('session');
@@ -61,19 +61,17 @@ class Session implements ArrayAccess,Countable
                   $this->handler = new SessionFileHandler();
                   break;
           }
-
+          
           if (!is_null($this->handler))
           {
-              session_set_save_handler($this->handler, true); 
-
               register_shutdown_function('session_write_close');
           }
-
+          
             if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
                 session_start([
-                    'cache_limiter' => 'private',
-                    'read_and_close' => true,
-                    ]);
+                    //'cache_limiter' => 'private',
+                    //read_and_close' => true,
+                ]);
             } else {
                 session_start();
             }

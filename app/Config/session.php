@@ -73,7 +73,7 @@ return array(
 
         'secure' => false,
 
-        'domain' => '.framework.tt',
+        'domain' => '',
 
         'http_only' => true,
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{lang()->locale()}}">
+<html lang="<?php echo $this->escape(lang()->locale()); ?>">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,12 +8,12 @@
     <title>Home</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300,400,600">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    @yield('style')
+    <?php echo $this->yieldContent('style'); ?>
   </head>
   <body>
       <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
           <a class="navbar-brand" href="#">
-              <strong class="text-primary">{{config('app.name','TT')}}</strong>
+              <strong class="text-primary"><?php echo $this->escape(config('app.name','TT')); ?></strong>
           </a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -22,41 +22,42 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
-                  <a class="nav-link" href="{{route('home')}}">@lang('home.home')</a>
+                  <a class="nav-link" href="<?php echo $this->escape(route('home')); ?>"><?php echo lang('home.home'); ?></a>
               </li>
-              @guest
-              <li class="nav-item"><a class="nav-link" href="{{route('register')}}">@lang('home.register')</a></li>
-              <li class="nav-item"><a class="nav-link" href="{{route('login')}}">@lang('home.login')</a></li>
-              @endguest
+              <?php if(Auth::guest()): ?>
+              <li class="nav-item"><a class="nav-link" href="<?php echo $this->escape(route('register')); ?>"><?php echo lang('home.register'); ?></a></li>
+              <li class="nav-item"><a class="nav-link" href="<?php echo $this->escape(route('login')); ?>"><?php echo lang('home.login'); ?></a></li>
+              <?php endif; ?>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="na">
-                  <a class="nav-link lang" href="{{route('lang',['lang' => 'az'])}}">az</a>
+                  <a class="nav-link lang" href="<?php echo $this->escape(route('lang',['lang' => 'az'])); ?>">az</a>
                 </li>
                 <li class="na">
-                  <a class="nav-link lang" href="{{route('lang',['lang' => 'en'])}}">en</a>
+                  <a class="nav-link lang" href="<?php echo $this->escape(route('lang',['lang' => 'en'])); ?>">en</a>
                 </li>
                 <li class="na">
-                  <a class="nav-link lang" href="{{route('lang',['lang' => 'tr'])}}">tr</a>
+                  <a class="nav-link lang" href="<?php echo $this->escape(route('lang',['lang' => 'tr'])); ?>">tr</a>
                 </li>
-                @auth
+                <?php if(Auth::check()): ?>
                 <li class="btn-group">
                   <button style="border-radius:0;min-height:50px" class="btn btn-success">
-                   {{ Auth::name() }}
+                   <?php echo $this->escape(Auth::name()); ?>
+
                  </button>
-                  <button onclick="window.location.href='{{route('logout')}}'"
+                  <button onclick="window.location.href='<?php echo $this->escape(route('logout')); ?>'"
                       style="border-radius:0;min-height:50px"
                       role="button" class="btn btn-danger">
                     Logout
                   </button>
                 </li>
-                @endauth
+                <?php endif; ?>
               </ul>
           </div>
         </nav>
-    @yield('content')
+    <?php echo $this->yieldContent('content'); ?>
     <script type="text/javascript">
-      var locale   = '{{lang()->locale()}}';
+      var locale   = '<?php echo $this->escape(lang()->locale()); ?>';
 
       var elements = document.querySelectorAll('a.lang');
 
@@ -76,6 +77,6 @@
         }
       });
     </script>
-    @yield('js')
+    <?php echo $this->yieldContent('js'); ?>
   </body>
 </html>

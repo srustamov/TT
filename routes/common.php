@@ -28,7 +28,7 @@ $this->get('/','WelcomeController@index')->name('welcome');
 
 $this->get('/home','HomeController@index')->name('home');
 
-$this->name('lang')->pattern('lang','[a-z]{2}')->get('/language/{lang}','HomeController@language');
+$this->get('/language/{lang}','HomeController@language')->name('lang')->pattern('lang','[a-z]{2}');
 
 $this->get(['path'=>'/auth/logout','middleware'=>['auth'],'name'=>'logout'],'Auth/LoginController@logout');
 

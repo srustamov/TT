@@ -10,6 +10,20 @@ class SessionRedisHandler implements SessionHandlerInterface
 {
 
 
+
+    public function __construct()
+    {
+        session_set_save_handler(
+            array($this, "open"),
+            array($this, "close"),
+            array($this, "read"),
+            array($this, "write"),
+            array($this, "destroy"),
+            array($this, "gc")
+        );
+    }
+
+
     public function open($save_path, $session_name):Bool
     {
         return true;

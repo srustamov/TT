@@ -1,4 +1,7 @@
-/public/documentation/
+/stotage/cache/views/*
+/stotage/sessions/*
+/stotage/system/*
 /vendor/
 /.idea/
-/nbproject/private/
+/.gitignore
+/composer.lock

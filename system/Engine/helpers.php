@@ -264,7 +264,7 @@ if (!function_exists ( 'cookie' ))
         }
         else if(func_num_args() == 1)
         {
-            return Load::class('cookie')->get(func_get_args()[0]);
+            return Load::class('cookie')->get(func_get_args(0));
         }
         else
         {

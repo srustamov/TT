@@ -2,9 +2,9 @@ APP_DEBUG = TRUE
 
 APP_NAME  = TT
 
-APP_KEY =
+APP_KEY = akHKrmBlBczefyAAsQkPSQq61+VGw6KMWBih7lvlodrEIlvt1oLKcA
 
-LOCALE = en
+LOCALE = az
 
 URL  = http://framework.tt
 
