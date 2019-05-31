@@ -151,7 +151,7 @@ class Authentication
     }
 
 
-    public function login($user, $remember = false)
+    public function loginUser($user, $remember = false)
     {
         if (is_array($user) || is_object($user))
         {
@@ -265,7 +265,7 @@ class Authentication
     }
 
 
-    public function logout()
+    public function logoutUser()
     {
         try
         {
@@ -300,7 +300,10 @@ class Authentication
 
     public function redirect()
     {
-        return Redirect::to(...func_get_args());
+      if (empty(func_get_args())) {
+        return Redirect::instance();
+      }
+      return Redirect::to(...func_get_args());
     }
 
 

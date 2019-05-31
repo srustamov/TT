@@ -166,7 +166,7 @@ abstract class Model
     }
 
 
-    public function _call($name, $arguments)
+    public function __call($name, $arguments)
     {
         $select = !is_null($this->select) ? $this->select : '*';
 

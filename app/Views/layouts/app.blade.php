@@ -18,7 +18,7 @@
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-        
+
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item">
@@ -56,9 +56,9 @@
         </nav>
     @yield('content')
     <script type="text/javascript">
-      var locale   = '{{lang()->locale()}}';
+      let locale   = '{{lang()->locale()}}';
 
-      var elements = document.querySelectorAll('a.lang');
+      let elements = document.querySelectorAll('a.lang');
 
       elements.forEach(function (a) {
           if(a.attributes.href.nodeValue.substr(-2) === locale) {
@@ -66,9 +66,9 @@
           }
       });
 
-      var menus = document.querySelectorAll('ul.navbar-nav.mr-auto li a');
+      let menus = document.querySelectorAll('ul.navbar-nav.mr-auto li a');
 
-      var currentUrl = window.location.href;
+      let currentUrl = window.location.href;
 
       menus.forEach(function(menu){
         if(menu.attributes.href.nodeValue === currentUrl) {

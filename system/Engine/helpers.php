@@ -628,17 +628,17 @@ if (!function_exists ( 'debug' ))
     function debug ( $data )
     {
         ob_get_clean ();
+        echo '<pre style="background-color:#fff; color:#222; line-height:1.2em; font-weight:normal; font:12px Monaco, Consolas, monospace; word-wrap: break-word; white-space: pre-wrap; position:relative; z-index:100000">';
 
         if (is_array ( $data ))
         {
-            echo '<pre style="background-color:#fff; color:#222; line-height:1.2em; font-weight:normal; font:12px Monaco, Consolas, monospace; word-wrap: break-word; white-space: pre-wrap; position:relative; z-index:100000">';
             print_r($data);
-            echo "</pre>";
         }
         else
         {
             var_dump ( $data );
         }
+        echo "</pre>";
         die(1);
     }
 }

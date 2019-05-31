@@ -20,7 +20,7 @@ class Auth
     {
         if(Authentication::guard($guard)->guest())
         {
-            if($guard == 'admin')
+            if($guard === 'admin')
             {
               return Redirect::route('welcome')->withErrors('auth', 'Bu səhifəyə icazəniz yoxdur');
             }

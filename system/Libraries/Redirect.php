@@ -149,4 +149,10 @@ class Redirect
     }
 
 
+    public function instance()
+    {
+      return $this;
+    }
+
+
 }

@@ -61,7 +61,7 @@
                  <span aria-hidden="true">×</span>
                  </button>
                  <strong>{{$register_message}}</strong>
-             </div>
+              </div>
             @endif
             @if ($errors->has('auth'))
               <div class="alert  alert-success fade in" role="alert">
@@ -77,9 +77,9 @@
             <div class="card-body">
               <div class="form-group">
                 <label for="">Email</label>
-                <input type="text" class="form-control" name="email"  placeholder="Email" required>
+                <input type="text" class="form-control" name="email"  placeholder="Email" autocomplete=off required/>
                 @if ($errors->has('email'))
-                <strong class="text-danger custom">
+                <strong class="text-white custom">
                   <span onclick="this.parentNode.style.display = 'none';">&times;</span>
                   {{$errors->first('email')}}
                 </strong>
@@ -87,9 +87,9 @@
               </div>
               <div class="form-group">
                 <label for="">Password</label>
-                <input type="password" class="form-control" name="password" placeholder="Password">
+                <input type="password" class="form-control" name="password" placeholder="Password" autocomplete=off required/>
                 @if ($errors->has('password'))
-                <strong class="text-danger custom">
+                <strong class="text-white custom">
                   <span onclick="this.parentNode.style.display = 'none';">&times;</span>
                   {{$errors->first('password')}}
                 </strong>
@@ -115,4 +115,15 @@
       </div>
     </div>
   </div>
+@endsection
+@section('js')
+<script type="text/javascript">
+  document.querySelectorAll('input').forEach(function(input){
+      input.addEventListener('click',function(e){
+          if(this.nextSibling.nextSibling) {
+            this.nextSibling.nextSibling.style.display = 'none';
+          }
+        });
+  });
+</script>
 @endsection

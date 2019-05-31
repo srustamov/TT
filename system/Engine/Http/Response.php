@@ -435,4 +435,10 @@ class Response
         return $this;
     }
 
+
+    public function  __toString ()
+    {
+      $this->send();
+    }
+
 }

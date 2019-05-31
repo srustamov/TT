@@ -19,7 +19,7 @@ use System\Facades\Validator;
 use System\Facades\Redirect;
 use System\Libraries\Auth\Authentication;
 
-class LoginController extends Controller
+class LoginController extends Authentication
 {
 
 
@@ -39,11 +39,9 @@ class LoginController extends Controller
     * Validate post data and Authentication attempt
     *
     * @param \System\Engine\Http\Request
-    * @param Authentication
-    *
     * @return \System\Libraries\Redirect
     */
-    public function login(Request $request,Authentication $auth)
+    public function login(Request $request)
     {
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email',
@@ -56,13 +54,13 @@ class LoginController extends Controller
         }
         else
         {
-            if ($auth->attempt($request->only('email', 'password'), $request->remember))
+            if ($this->attempt($request->only('email', 'password'), $request->remember))
             {
                 return Redirect::to('/home');
             }
             else
             {
-                return Redirect::to('/auth/login')->withErrors('login' , $auth->getMessage());
+                return Redirect::to('/auth/login')->withErrors('login' , $this->getMessage());
             }
         }
     }
@@ -71,12 +69,10 @@ class LoginController extends Controller
     /**
     * LoginController logout method.Logout Authenticate User and redirect Home page
     *
-    * @param Authentication
-    *
     * @return \System\Libraries\Redirect
     */
-    public function logout(Authentication $auth)
+    public function logout()
     {
-        return $auth->guard('user')->logout()->redirect()->route('home');
+        return $this->logoutUser()->redirect()->route('home');
     }
 }

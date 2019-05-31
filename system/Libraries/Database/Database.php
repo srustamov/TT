@@ -33,7 +33,7 @@ class Database extends Connection
 
     private $database;
 
-    private $execute_data = [];
+    private $bindValues = [];
 
 
 
@@ -55,7 +55,11 @@ class Database extends Connection
      */
     public function get ( $first = false ,$fetch = PDO::FETCH_OBJ)
     {
-        $query = $this->getQueryString ().($first ? ' LIMIT 1' : '');
+        if (empty($this->limit)) {
+          $query = $this->getQueryString ().($first ? ' LIMIT 1' : '');
+        } else {
+          $query = $this->getQueryString ();
+        }
 
         $queryString = $this->normalizeQueryString ( $query );
 
@@ -100,11 +104,8 @@ class Database extends Connection
         }
 
         $query = "SELECT " . implode ( ',' , $this->select ) . " FROM " . $this->table . " ";
-        $query .= implode ( ' ' , $this->join );
-        $query .= implode ( ' ' , $this->where );
-        $query .= implode ( ' ' , $this->orderBy );
-        $query .= implode ( ' ' , $this->groupBy );
-        $query .= implode ( ' ' , $this->limit );
+
+        $query .= implode ( ' ' , array_merge($this->join,$this->where,$this->orderBy,$this->groupBy,$this->limit) );
 
         return $query;
 
@@ -112,7 +113,7 @@ class Database extends Connection
 
     private function normalizeQueryString ( $query )
     {
-        foreach ($this->execute_data as $value)
+        foreach ($this->bindValues as $value)
         {
             $position = strpos ( $query , '?' );
 
@@ -126,7 +127,7 @@ class Database extends Connection
 
     public function bindValues ( PDOStatement $statement )
     {
-        foreach ($this->execute_data as $key => $value) {
+        foreach ($this->bindValues as $key => $value) {
             $statement->bindValue ( $key + 1 , $value ,
                 is_int ( $value ) ? PDO::PARAM_INT : PDO::PARAM_STR
             );
@@ -195,7 +196,7 @@ class Database extends Connection
         {
             $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " {$column} {$value} ? ";
 
-            $this->execute_data[] = $mark;
+            $this->bindValues[] = $mark;
         }
         elseif ($value == false)
         {
@@ -214,7 +215,7 @@ class Database extends Connection
         else
         {
             $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " " . $column . " = ? ";
-            $this->execute_data[] = $value;
+            $this->bindValues[] = $value;
         }
 
         return $this;
@@ -256,7 +257,7 @@ class Database extends Connection
 
         $this->where[] = ( empty( $this->where ) ? "WHERE " : " AND " ) . $column . " {$logic} IN(" . rtrim ( str_repeat ( '?,' , count ( $in ) ) , ',' ) . ")";
 
-        $this->execute_data = array_merge ( $this->execute_data , $in );
+        $this->bindValues = array_merge ( $this->bindValues , $in );
 
         return $this;
     }
@@ -293,7 +294,7 @@ class Database extends Connection
     {
         $this->where[] = ( empty( $this->where ) ? "WHERE " : "AND " ) . "{$column} {$logic} LIKE ? ";
 
-        $this->execute_data[] = $like;
+        $this->bindValues[] = $like;
 
         return $this;
     }
@@ -347,7 +348,7 @@ class Database extends Connection
     {
         $this->where[] = empty( $this->where ) ? "WHERE " : "AND " . $where . " BETWEEN ? {$mark} ? ";
 
-        $this->execute_data = array_merge ( $this->execute_data , [ $start , $stop ] );
+        $this->bindValues = array_merge ( $this->bindValues , [ $start , $stop ] );
 
         return $this;
     }
@@ -414,7 +415,7 @@ class Database extends Connection
         {
             $query = $insert;
 
-            $this->execute_data = $data;
+            $this->bindValues = $data;
         }
         else
         {
@@ -424,7 +425,7 @@ class Database extends Connection
                 {
                     $query = "INSERT INTO {$this->table} SET ".$this->normalizeCrud($insert);
 
-                    $this->execute_data = array_values($insert);
+                    $this->bindValues = array_values($insert);
                 }
             }
         }
@@ -463,7 +464,7 @@ class Database extends Connection
         {
             $query = $update;
 
-            $this->execute_data = $data;
+            $this->bindValues = $data;
         }
         else
         {
@@ -474,7 +475,7 @@ class Database extends Connection
                     $query  = "UPDATE {$this->table} SET ".$this->normalizeCrud($update);
                     $query .=  " ".preg_replace ( "/^SELECT.*FROM {$this->table}/" , '' , $this->getQueryString () , 1 );
 
-                    $this->execute_data = array_merge(array_values($update),$this->execute_data);
+                    $this->bindValues = array_merge(array_values($update),$this->bindValues);
                 }
             }
         }
@@ -506,7 +507,7 @@ class Database extends Connection
         {
             $query = $delete;
 
-            $this->execute_data = $data;
+            $this->bindValues = $data;
 
         }
         else
@@ -782,7 +783,7 @@ class Database extends Connection
 
     public function reset ()
     {
-        $this->execute_data = [];
+        $this->bindValues = [];
         $this->select   = [];
         $this->where    = [];
         $this->limit    = [];

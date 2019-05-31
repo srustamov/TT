@@ -1,6 +1,6 @@
-/stotage/cache/views/*
-/stotage/sessions/*
-/stotage/system/*
+/storage/cache/views/*
+/storage/sessions/*
+/storage/system/*
 /vendor/
 /.idea/
 /.gitignore

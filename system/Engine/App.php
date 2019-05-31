@@ -33,7 +33,7 @@ class App implements ArrayAccess
 
     protected $storage_path   = 'storage';
 
-    protected $lang_path = 'app/Language';
+    protected $lang_path = 'lang';
 
     protected $configs_path   = 'app/Config';
 

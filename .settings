@@ -6,15 +6,15 @@ APP_KEY = akHKrmBlBczefyAAsQkPSQq61+VGw6KMWBih7lvlodrEIlvt1oLKcA
 
 LOCALE = az
 
-URL  = http://framework.tt
+URL  = http://localhost:8000
 
 
 #DATABASE CONFIGURATION
 
 DB_HOST = localhost
-DB_NAME =
+DB_NAME = tt
 DB_USER = root
-DB_PASS =
+DB_PASS = samir96
 DB_CHARSET = utf8
 DB_PREFIX =
 
