@@ -5,3 +5,6 @@
 /.idea/
 /.gitignore
 /composer.lock
+/node_modules/
+/public/js/app.js
+/public/css/app.css

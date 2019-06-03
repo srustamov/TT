@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    @css('css/bootstrap.css')
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <title>{{ config('app.name') }}</title>
     <style>
@@ -24,15 +23,14 @@
         }
 
         #welcome {
-            color: #000;
+            color: #3d8651 !important;
             margin-bottom: 3vw;
             font-size: 5em;
             display: block;
-            opacity: 0.4;
         }
 
         #container span {
-            display: block;
+            display: inline-block;
             margin: 3vw auto;
             color: rgb(70, 9, 148);
             text-transform: uppercase;
@@ -47,9 +45,10 @@
 </head>
 <body>
 <div id="container">
-    <span id="welcome">{{ setting('APP_NAME') }}</span>
-    <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
-    <span><a href="{{url('/home')}}">HOME</a></span>
+    <span id="welcome">{{ setting('APP_NAME') }}</span><br>
+    <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span><br>
+    <span><a href="{{url('/home')}}">HOME</a></span> |
+    <span><a href="{{url('/vue-example-page')}}" style="color:#0f6674">EXAMPLE VUE PAGE</a></span>
 </div>
 
 @if ($errors->has('auth')))

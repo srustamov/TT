@@ -13,10 +13,23 @@
 
 
 
-$this->get('/',function()
-{
+$this->get('/',function() {
    return view('welcome');
 });
+
+
+
+/*
+ * ~/$ npm install
+ * ~/$ npm run watch
+ *
+$this->get('/vue-example-page', function(){
+    return view('vue');
+});
+*/
+
+
+
 
 /*
   // Bad
