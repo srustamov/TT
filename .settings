@@ -14,7 +14,7 @@ URL  = http://localhost:8000
 DB_HOST = localhost
 DB_NAME = tt
 DB_USER = root
-DB_PASS = samir96
+DB_PASS = 
 DB_CHARSET = utf8
 DB_PREFIX =
 
