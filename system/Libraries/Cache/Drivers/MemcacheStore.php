@@ -28,12 +28,18 @@ class MemcacheStore implements CacheStore
         {
           $this->memcache = new \Memcached;
         }
+        elseif(function_exists('memcache_connect'))
+        {
+          $this->memcache = memcache_connect($config['host'],$config['port']);
+        }
         else
         {
           throw new \Exception("Class Memcache (Memcached) not found");
         }
 
-        $this->memcache->addServer($config['host'],$config['port']);
+        if ($this->memcache === null) {
+            $this->memcache->addServer($config['host'],$config['port']);
+        }
     }
 
 

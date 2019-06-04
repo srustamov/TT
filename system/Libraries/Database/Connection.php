@@ -27,7 +27,7 @@ abstract class Connection
     protected $group = 'default';
 
 
-    function __construct ()
+    public function __construct ()
     {
         $this->reconnect ();
     }
@@ -64,20 +64,26 @@ abstract class Connection
     }
 
 
+    /**
+     * @param String|null $query
+     * @return mixed
+     */
     public function pdo (String $query = null)
     {
-        if(!is_null($query))
+        if($query !== null)
         {
           return $this->pdo->query($query);
         }
-        else
-        {
-          return $this->pdo;
-        }
+        return $this->pdo;
     }
 
 
-    public function connect ( $group = 'default' )
+    /**
+     * @param string $group
+     * @return $this
+     * @throws DatabaseException
+     */
+    public function connect ($group = 'default' )
     {
         $this->group = $group;
 
@@ -89,10 +95,11 @@ abstract class Connection
 
     /**
      * Database connection close;
+     * @param String|null $group
      */
     public function disconnect (String $group = null)
     {
-        $connect = !is_null($group) ? $group :  $this->group;
+        $connect = $group? :$this->group;
 
         if (isset( $this->general[ $connect ] ))
         {

@@ -19,32 +19,31 @@ class Database extends Connection
 
     private $table;
 
-    private $select  = [];
+    private $select = [];
 
-    private $where   = [];
+    private $where = [];
 
-    private $limit   = [];
+    private $limit = [];
 
     private $orderBy = [];
 
     private $groupBy = [];
 
-    private $join    = [];
+    private $join = [];
 
     private $database;
 
     private $bindValues = [];
 
 
-
-
     /**
      * @return object|null
+     * @throws DatabaseException
      */
 
-    public function first ()
+    public function first()
     {
-        return $this->get ( true );
+        return $this->get(true);
     }
 
     /**
@@ -53,83 +52,73 @@ class Database extends Connection
      * @return null|object
      * @throws DatabaseException
      */
-    public function get ( $first = false ,$fetch = PDO::FETCH_OBJ)
+    public function get($first = false, $fetch = PDO::FETCH_OBJ)
     {
         if (empty($this->limit)) {
-          $query = $this->getQueryString ().($first ? ' LIMIT 1' : '');
+            $query = $this->getQueryString() . ($first ? ' LIMIT 1' : '');
         } else {
-          $query = $this->getQueryString ();
+            $query = $this->getQueryString();
         }
 
-        $queryString = $this->normalizeQueryString ( $query );
+        $queryString = $this->normalizeQueryString($query);
 
-        try
-        {
-            $statement = $this->pdo->prepare ( $query );
+        try {
+            $statement = $this->pdo->prepare($query);
 
-            $this->bindValues ( $statement );
+            $this->bindValues($statement);
 
-            $statement->execute ();
+            $statement->execute();
 
             $this->reset();
 
-            if ($statement->rowCount () > 0)
-            {
-                return $first ? $statement->fetch ($fetch) : $statement->fetchAll ($fetch);
-            }
-            else
-            {
+            if ($statement->rowCount() > 0) {
+                return $first ? $statement->fetch($fetch) : $statement->fetchAll($fetch);
+            } else {
                 return null;
             }
 
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
 
 
     }
-
 
 
     /**
      * @return string
      */
-    private function getQueryString ()
+    private function getQueryString()
     {
-        if (empty( $this->select ))
-        {
+        if (empty($this->select)) {
             $this->select[] = "*";
         }
 
-        $query = "SELECT " . implode ( ',' , $this->select ) . " FROM " . $this->table . " ";
+        $query = "SELECT " . implode(',', $this->select) . " FROM " . $this->table . " ";
 
-        $query .= implode ( ' ' , array_merge($this->join,$this->where,$this->orderBy,$this->groupBy,$this->limit) );
+        $query .= implode(' ', array_merge($this->join, $this->where, $this->orderBy, $this->groupBy, $this->limit));
 
         return $query;
 
     }
 
-    private function normalizeQueryString ( $query )
+    private function normalizeQueryString($query)
     {
-        foreach ($this->bindValues as $value)
-        {
-            $position = strpos ( $query , '?' );
+        foreach ($this->bindValues as $value) {
+            $position = strpos($query, '?');
 
-            if ($position !== false)
-            {
-                $query = substr_replace ( $query , $value , $position , 1 );
+            if ($position !== false) {
+                $query = substr_replace($query, $value, $position, 1);
             }
         }
         return $query;
     }
 
-    public function bindValues ( PDOStatement $statement )
+    public function bindValues(PDOStatement $statement)
     {
         foreach ($this->bindValues as $key => $value) {
-            $statement->bindValue ( $key + 1 , $value ,
-                is_int ( $value ) ? PDO::PARAM_INT : PDO::PARAM_STR
+            $statement->bindValue($key + 1, $value,
+                is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR
             );
         }
     }
@@ -137,84 +126,70 @@ class Database extends Connection
 
     public function transaction(\Closure $callback)
     {
-      $this->pdo->beginTransaction();
+        $this->pdo->beginTransaction();
 
-      call_user_func($callback,$this);
+        call_user_func($callback, $this);
     }
 
 
-
-    public function table ( String $table )
+    public function table(String $table)
     {
-        $this->table = $this->config[ $this->group ][ 'prefix' ] . $table;
+        $this->table = $this->config[$this->group]['prefix'] . $table;
         return $this;
     }
 
-    public function database ( String $database )
+    public function database(String $database)
     {
         $this->database = $database;
         return $this;
     }
 
-    public function toArray ( $first = false )
+    public function toArray($first = false)
     {
-        return $this->get ( $first ,PDO::FETCH_ASSOC);
+        return $this->get($first, PDO::FETCH_ASSOC);
     }
 
-    public function toJson ( $first = false )
+    public function toJson($first = false)
     {
-        if (($result = $this->toArray ( $first )))
-        {
-            return json_encode ( $result );
-        }
-        else
-        {
+        if (($result = $this->toArray($first))) {
+            return json_encode($result);
+        } else {
             return null;
         }
     }
 
-    public function select ( $select )
+    public function select($select)
     {
-        if (is_array ( $select ))
-        {
-            $select = implode ( ',' , $select );
+        if (is_array($select)) {
+            $select = implode(',', $select);
         }
 
-        $this->select = [ $select ];
+        $this->select = [$select];
 
         return $this;
     }
 
-    public function orWhere ( $column , $value = false , $mark = null )
+    public function orWhere($column, $value = false, $mark = null)
     {
-        return $this->where ( $column , $value , $mark , [ "WHERE" , "OR" ] );
+        return $this->where($column, $value, $mark, ["WHERE", "OR"]);
     }
 
-    public function where ( $column , $value = false , $mark = null , $logic = [ "WHERE" , "AND" ] )
+    public function where($column, $value = false, $mark = null, $logic = ["WHERE", "AND"])
     {
-        if (!is_null ( $mark ))
-        {
-            $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " {$column} {$value} ? ";
+        if ($mark !== null) {
+            $this->where[] = (empty($this->where) ? $logic[0] : $logic[1]) . " {$column} {$value} ? ";
 
             $this->bindValues[] = $mark;
-        }
-        elseif ($value == false)
-        {
-            if (is_array ( $column ) && $this->array_is_assoc ( $column ))
-            {
-                foreach ($column as $key => $value)
-                {
-                    $this->where ( $key , $value );
+        } elseif ($value === false) {
+            if (is_array($column) && $this->array_is_assoc($column)) {
+                foreach ($column as $key => $value) {
+                    $this->where($key, $value);
                 }
+            } else {
+                $this->where[] = (empty($this->where) ? $logic[0] : $logic[1]) . " " . $column . " ";
             }
-            else
-            {
-                $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " " . $column . " ";
-            }
-        }
-        else
-        {
-            $this->where[] = ( empty( $this->where ) ? $logic[ 0 ] : $logic[ 1 ] ) . " " . $column . " = ? ";
+        } else {
+            $this->where[] = (empty($this->where) ? $logic[0] : $logic[1]) . " " . $column . " = ? ";
             $this->bindValues[] = $value;
         }
 
@@ -222,181 +197,169 @@ class Database extends Connection
 
     }
 
-    private function array_is_assoc ( $array )
+    private function array_is_assoc($array)
     {
-        if (is_array ( $array ))
-        {
-            $keys = array_keys ( $array );
+        if (is_array($array)) {
+            $keys = array_keys($array);
 
-            return ( array_keys ( $keys ) !== $keys );
-        }
-        else
-        {
+            return (array_keys($keys) !== $keys);
+        } else {
             return false;
         }
     }
 
-    public function notWhere ( $column , $value = false , $mark = null )
+    public function notWhere($column, $value = false, $mark = null)
     {
-        return $this->where ( $column , $value , $mark , [ "WHERE NOT" , "AND NOT" ] );
+        return $this->where($column, $value, $mark, ["WHERE NOT", "AND NOT"]);
     }
 
-    public function orNotWhere ( $column , $value = false , $mark = null )
+    public function orNotWhere($column, $value = false, $mark = null)
     {
-        return $this->where ( $column , $value , $mark , [ "WHERE NOT" , "OR NOT" ] );
+        return $this->where($column, $value, $mark, ["WHERE NOT", "OR NOT"]);
     }
 
-    public function whereNotIn ( $column , $in )
+    public function whereNotIn($column, $in)
     {
-        return $this->whereIn ( $column , $in , "NOT" );
+        return $this->whereIn($column, $in, "NOT");
     }
 
-    public function whereIn ( $column , $in , $logic = "" )
+    public function whereIn($column, $in, $logic = "")
     {
-        $in = is_array ( $in ) ? $in : explode ( ',' , $in );
+        $in = is_array($in) ? $in : explode(',', $in);
 
-        $this->where[] = ( empty( $this->where ) ? "WHERE " : " AND " ) . $column . " {$logic} IN(" . rtrim ( str_repeat ( '?,' , count ( $in ) ) , ',' ) . ")";
+        $this->where[] = (empty($this->where) ? "WHERE " : " AND ") . $column . " {$logic} IN(" . rtrim(str_repeat('?,', count($in)), ',') . ")";
 
-        $this->bindValues = array_merge ( $this->bindValues , $in );
+        $this->bindValues = array_merge($this->bindValues, $in);
 
         return $this;
     }
 
-    public function orWhereNull ( $column )
+    public function orWhereNull($column)
     {
-        return $this->whereNull ( $column , "OR" );
+        return $this->whereNull($column, "OR");
     }
 
-    public function whereNull ( $column , $logic = "AND" )
+    public function whereNull($column, $logic = "AND")
     {
-        $this->where[] = ( !empty( $this->where ) ? $logic : "WHERE" ) . " {$column} IS NULL ";
+        $this->where[] = (!empty($this->where) ? $logic : "WHERE") . " {$column} IS NULL ";
         return $this;
 
     }
 
-    public function orWhereNotNull ( $column )
+    public function orWhereNotNull($column)
     {
-        return $this->WhereNotNull ( $column , "OR" );
+        return $this->WhereNotNull($column, "OR");
     }
 
-    public function whereNotNull ( $column , $logic = "AND" )
+    public function whereNotNull($column, $logic = "AND")
     {
-        $this->where[] = ( !empty( $this->where ) ? $logic : "WHERE" ) . " {$column} IS NOT NULL ";
+        $this->where[] = (!empty($this->where) ? $logic : "WHERE") . " {$column} IS NOT NULL ";
         return $this;
     }
 
-    public function notLike ( $column , $like )
+    public function notLike($column, $like)
     {
-        return $this->like ( $column , $like , "NOT" );
+        return $this->like($column, $like, "NOT");
     }
 
-    public function like ( $column , $like , $logic = "" )
+    public function like($column, $like, $logic = "")
     {
-        $this->where[] = ( empty( $this->where ) ? "WHERE " : "AND " ) . "{$column} {$logic} LIKE ? ";
+        $this->where[] = (empty($this->where) ? "WHERE " : "AND ") . "{$column} {$logic} LIKE ? ";
 
         $this->bindValues[] = $like;
 
         return $this;
     }
 
-    public function leftJoin ( String $table , $opt )
+    public function leftJoin(String $table, $opt)
     {
-        return $this->join ( $table , $opt , 'LEFT' );
+        return $this->join($table, $opt, 'LEFT');
     }
 
-    public function join ( String $table , $opt , $join = 'INNER' )
+    public function join(String $table, $opt, $join = 'INNER')
     {
-        $this->join[] = strtoupper ( $join ) . ' JOIN ' . $this->config[ $this->group ][ 'prefix' ] . $table . ' ON ' . $opt . ' ';
+        $this->join[] = strtoupper($join) . ' JOIN ' . $this->config[$this->group]['prefix'] . $table . ' ON ' . $opt . ' ';
         return $this;
     }
 
-    public function rightJoin ( String $table , $opt )
+    public function rightJoin(String $table, $opt)
     {
-        return $this->join ( $table , $opt , 'RIGHT' );
+        return $this->join($table, $opt, 'RIGHT');
     }
 
-    public function fullJoin ( String $table , $opt )
+    public function fullJoin(String $table, $opt)
     {
-        return $this->join ( $table , $opt , 'FULL' );
+        return $this->join($table, $opt, 'FULL');
     }
 
-    public function limit ( $limit , $offset = 0 )
+    public function limit($limit, $offset = 0)
     {
         $this->limit[] = ' LIMIT ' . $offset . ',' . $limit;
         return $this;
     }
 
-    public function orderBy ( $column , $sort = 'ASC' )
+    public function orderBy($column, $sort = 'ASC')
     {
-        $this->orderBy[] = " ORDER BY " . $column . " " . strtoupper ( $sort );
+        $this->orderBy[] = " ORDER BY " . $column . " " . strtoupper($sort);
         return $this;
     }
 
-    public function orderByRand ()
+    public function orderByRand()
     {
         $this->orderBy[] = " ORDER BY RAND() ";
         return $this;
     }
 
-    public function groupBy ( $column )
+    public function groupBy($column)
     {
         $this->groupBy[] = ' GROUP BY ' . $column;
         return $this;
     }
 
-    public function between ( $where , $start , $stop , $mark = 'AND' )
+    public function between($where, $start, $stop, $mark = 'AND')
     {
-        $this->where[] = empty( $this->where ) ? "WHERE " : "AND " . $where . " BETWEEN ? {$mark} ? ";
+        $this->where[] = empty($this->where) ? "WHERE " : "AND " . $where . " BETWEEN ? {$mark} ? ";
 
-        $this->bindValues = array_merge ( $this->bindValues , [ $start , $stop ] );
+        $this->bindValues = array_merge($this->bindValues, [$start, $stop]);
 
         return $this;
     }
 
-    public function count ( $column = false )
+    public function count($column = false)
     {
-        $column = $column ? $column : implode ( '' , $this->select );
+        $column = $column ? $column : implode('', $this->select);
 
-        $this->select = array( "COUNT({$column}) as count" );
+        $this->select = array("COUNT({$column}) as count");
 
-        if ($result = $this->get ( true ))
-        {
-            return (int) $result->count;
-        }
-        else
-        {
+        if ($result = $this->get(true)) {
+            return (int)$result->count;
+        } else {
             return null;
         }
     }
 
-    public function avg ( $column = false )
+    public function avg($column = false)
     {
-        $column = $column ? $column : implode ( '' , $this->select );
+        $column = $column ? $column : implode('', $this->select);
 
-        $this->select = array( "AVG({$column}) as avg" );
+        $this->select = array("AVG({$column}) as avg");
 
-        if ($result = $this->get ( true ))
-        {
+        if ($result = $this->get(true)) {
             return $result->avg;
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    public function sum ( $column = false )
+    public function sum($column = false)
     {
-        $column = $column ? $column : implode ( '' , $this->select );
+        $column = $column ? $column : implode('', $this->select);
 
-        $this->select = array( "SUM({$column}) as sum" );
+        $this->select = array("SUM({$column}) as sum");
 
-        if ($result = $this->get ( true ))
-        {
+        if ($result = $this->get(true)) {
             return $result->sum;
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
@@ -404,26 +367,21 @@ class Database extends Connection
 
     private function normalizeCrud($data)
     {
-      return implode(',',array_map(function ($item){
-              return $item."=?";
-          },array_keys($data)));
+        return implode(',', array_map(function ($item) {
+            return $item . "=?";
+        }, array_keys($data)));
     }
 
-    public function insert ( $insert, Array $data = [] ,Bool $getId = false)
+    public function insert($insert, Array $data = [], Bool $getId = false)
     {
-        if(is_string($insert))
-        {
+        if (is_string($insert)) {
             $query = $insert;
 
             $this->bindValues = $data;
-        }
-        else
-        {
-            if(is_array($insert))
-            {
-                if($this->array_is_assoc($insert))
-                {
-                    $query = "INSERT INTO {$this->table} SET ".$this->normalizeCrud($insert);
+        } else {
+            if (is_array($insert)) {
+                if ($this->array_is_assoc($insert)) {
+                    $query = "INSERT INTO {$this->table} SET " . $this->normalizeCrud($insert);
 
                     $this->bindValues = array_values($insert);
                 }
@@ -432,120 +390,99 @@ class Database extends Connection
 
         $queryString = $this->normalizeQueryString($query);
 
-        try
-        {
-          $statement = $this->pdo->prepare ( $query );
+        try {
+            $statement = $this->pdo->prepare($query);
 
-          $this->bindValues ( $statement );
+            $this->bindValues($statement);
 
-          $statement->execute ();
+            $statement->execute();
 
-          $this->reset();
+            $this->reset();
 
-          return $getId ? $this->pdo->lastInsertId() : ($statement->rowCount () > 0);
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+            return $getId ? $this->pdo->lastInsertId() : ($statement->rowCount() > 0);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
     }
 
 
     public function insertGetId($insert, Array $data = [])
     {
-      return $this->insert($insert,$data, true);
+        return $this->insert($insert, $data, true);
     }
 
 
-    public function update ( $update ,Array $data = [] )
+    public function update($update, Array $data = [])
     {
 
-        if(is_string($update))
-        {
+        if (is_string($update)) {
             $query = $update;
 
             $this->bindValues = $data;
-        }
-        else
-        {
-            if(is_array($update))
-            {
-                if($this->array_is_assoc($update))
-                {
-                    $query  = "UPDATE {$this->table} SET ".$this->normalizeCrud($update);
-                    $query .=  " ".preg_replace ( "/^SELECT.*FROM {$this->table}/" , '' , $this->getQueryString () , 1 );
+        } else {
+            if (is_array($update)) {
+                if ($this->array_is_assoc($update)) {
+                    $query = "UPDATE {$this->table} SET " . $this->normalizeCrud($update);
+                    $query .= " " . preg_replace("/^SELECT.*FROM {$this->table}/", '', $this->getQueryString(), 1);
 
-                    $this->bindValues = array_merge(array_values($update),$this->bindValues);
+                    $this->bindValues = array_merge(array_values($update), $this->bindValues);
                 }
             }
         }
 
         $queryString = $this->normalizeQueryString($query);
 
-        try
-        {
-          $statement = $this->pdo->prepare ( $query );
+        try {
+            $statement = $this->pdo->prepare($query);
 
-          $this->bindValues ( $statement );
+            $this->bindValues($statement);
 
-          $statement->execute ();
+            $statement->execute();
 
-          $this->reset();
+            $this->reset();
 
-          return $statement->rowCount () > 0;
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+            return $statement->rowCount() > 0;
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
     }
 
-    public function delete ($delete = null,Array $data = [])
+    public function delete($delete = null, Array $data = [])
     {
 
-        if(is_string($delete))
-        {
+        if (is_string($delete)) {
             $query = $delete;
 
             $this->bindValues = $data;
 
-        }
-        else
-        {
-            if(is_array($delete))
-            {
-                if($this->array_is_assoc($delete))
-                {
+        } else {
+            if (is_array($delete)) {
+                if ($this->array_is_assoc($delete)) {
                     $this->where($delete);
                 }
-            }
-            else
-            {
-              $query = "DELETE FROM {$this->table} ".
-                  preg_replace (
-                      "/SELECT.*FROM {$this->table}/" , '' ,
-                          $this->getQueryString () , 1
-                  );
+            } else {
+                $query = "DELETE FROM {$this->table} " .
+                    preg_replace(
+                        "/SELECT.*FROM {$this->table}/", '',
+                        $this->getQueryString(), 1
+                    );
             }
         }
 
         $queryString = $this->normalizeQueryString($query);
 
-        try
-        {
-          $statement = $this->pdo->prepare ( $query );
+        try {
+            $statement = $this->pdo->prepare($query);
 
-          $this->bindValues ( $statement );
+            $this->bindValues($statement);
 
-          $statement->execute ();
+            $statement->execute();
 
-          $this->reset();
+            $this->reset();
 
-          return $statement->rowCount () > 0;
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+            return $statement->rowCount() > 0;
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
     }
 
@@ -554,37 +491,28 @@ class Database extends Connection
      * @return bool
      * @internal param $table
      */
-    public function optimizeTables ( $tables = '*' )
+    public function optimizeTables($tables = '*')
     {
-        if (trim ( $tables ) == '*')
-        {
-            $tables = $this->showTables ();
-        }
-        else
-        {
-            if (is_array ( $tables ))
-            {
-                $tables = array_map ( function ( $item )
-                {
-                    return $this->config[ $this->group ][ 'prefix' ] . $item;
-                } , $tables );
-            }
-            else
-            {
-                $tables = explode ( ',' , $tables );
+        if (trim($tables) == '*') {
+            $tables = $this->showTables();
+        } else {
+            if (is_array($tables)) {
+                $tables = array_map(function ($item) {
+                    return $this->config[$this->group]['prefix'] . $item;
+                }, $tables);
+            } else {
+                $tables = explode(',', $tables);
 
-                $tables = array_map ( function ( $item )
-                {
-                    return $this->config[ $this->group ][ 'prefix' ] . $item;
-                } , $tables );
+                $tables = array_map(function ($item) {
+                    return $this->config[$this->group]['prefix'] . $item;
+                }, $tables);
             }
         }
 
         $success = true;
 
-        foreach ($tables as $table)
-        {
-            $success = ($this->pdo->exec ( "OPTIMIZE TABLE {$table}" ) === false);
+        foreach ($tables as $table) {
+            $success = ($this->pdo->exec("OPTIMIZE TABLE {$table}") === false);
         }
 
         return $success;
@@ -593,57 +521,45 @@ class Database extends Connection
     /**
      * @return array|bool
      */
-    public function showTables ()
+    public function showTables()
     {
-        $result = $this->pdo->query ( "SHOW TABLES" )->fetchAll ( PDO::FETCH_ASSOC );
+        $result = $this->pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_ASSOC);
 
-        return array_map ( function ( $item )
-        {
-            return array_values ( $item )[ 0 ];
-        } , $result );
+        return array_map(function ($item) {
+            return array_values($item)[0];
+        }, $result);
     }
 
     /**
      * @param $tables
      * @return Bool
      */
-    public function repairTables ( $tables = '*' )
+    public function repairTables($tables = '*')
     {
-        if ($this->table == '')
-        {
-            if (trim ( $tables ) == '*')
-            {
-                $tables = $this->showTables ();
-            }
-            else
-            {
-                if (is_array ( $tables ))
-                {
-                    $tables = array_map ( function ( $item ) {
-                        return $this->config[ $this->group ][ 'prefix' ] . $item;
-                    } , $tables );
-                }
-                else
-                {
-                    $tables = explode ( ',' , $tables );
+        if ($this->table == '') {
+            if (trim($tables) == '*') {
+                $tables = $this->showTables();
+            } else {
+                if (is_array($tables)) {
+                    $tables = array_map(function ($item) {
+                        return $this->config[$this->group]['prefix'] . $item;
+                    }, $tables);
+                } else {
+                    $tables = explode(',', $tables);
 
-                    $tables = array_map ( function ( $item )
-                    {
-                        return $this->config[ $this->group ][ 'prefix' ] . $item;
-                    } , $tables );
+                    $tables = array_map(function ($item) {
+                        return $this->config[$this->group]['prefix'] . $item;
+                    }, $tables);
                 }
             }
-        }
-        else
-        {
-            $tables = array( $this->table );
+        } else {
+            $tables = array($this->table);
         }
 
         $success = true;
 
-        foreach ($tables as $table)
-        {
-            $success = $this->pdo->exec ( "REPAIR TABLE {$table}" ) === false ? false : true;
+        foreach ($tables as $table) {
+            $success = $this->pdo->exec("REPAIR TABLE {$table}") === false ? false : true;
         }
 
         return $success;
@@ -654,21 +570,18 @@ class Database extends Connection
      * @return bool
      * @throws DatabaseException
      */
-    public function drop ()
+    public function drop()
     {
-        $drop = !is_null ( $this->table ) ? " TABLE " : $this->database ? " DATABASE " : "";
+        $drop = !is_null($this->table) ? " TABLE " : $this->database ? " DATABASE " : "";
 
-        $item = !is_null ( $this->table ) ? $this->table : $this->database ? " DATABASE " : "";
+        $item = !is_null($this->table) ? $this->table : $this->database ? " DATABASE " : "";
 
         $queryString = "DROP {$drop} IF EXISTS {$item}";
 
-        try
-        {
-            return ($this->pdo->exec ( $queryString ) === false);
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+        try {
+            return ($this->pdo->exec($queryString) === false);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
 
 
@@ -679,17 +592,14 @@ class Database extends Connection
      * @return bool
      * @throws DatabaseException
      */
-    public function truncate ()
+    public function truncate()
     {
         $queryString = "TRUNCATE TABLE IF EXISTS {$this->table} ";
 
-        try
-        {
-            return ($this->pdo->exec ( $queryString ) === false);
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+        try {
+            return ($this->pdo->exec($queryString) === false);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
 
     }
@@ -698,25 +608,21 @@ class Database extends Connection
      * @return null|object
      * @throws DatabaseException
      */
-    public function list_tables ()
+    public function list_tables()
     {
-        $database = $this->database ?: $this->config[ $this->group ][ 'dbname' ];
+        $database = $this->database ?: $this->config[$this->group]['dbname'];
 
         $queryString = "SHOW TABLES FROM {$database}";
 
-        try
-        {
-            $result = $this->pdo->query ( $queryString );
+        try {
+            $result = $this->pdo->query($queryString);
 
-            if ($result->rowCount () > 0)
-            {
-                return $result->fetchAll ();
+            if ($result->rowCount() > 0) {
+                return $result->fetchAll();
             }
             return null;
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
 
     }
@@ -725,23 +631,19 @@ class Database extends Connection
      * @return array|bool
      * @throws DatabaseException
      */
-    public function listColumns ()
+    public function listColumns()
     {
         $queryString = "SHOW COLUMNS FROM {$this->table}";
 
-        try
-        {
-            $result = $this->pdo->query ( $queryString );
+        try {
+            $result = $this->pdo->query($queryString);
 
-            if ($result->rowCount () > 0)
-            {
-                return $result->fetchAll ();
+            if ($result->rowCount() > 0) {
+                return $result->fetchAll();
             }
             return null;
-        }
-        catch (\PDOException $e)
-        {
-            throw new DatabaseException($e->getMessage(),$queryString);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage(), $queryString);
         }
 
     }
@@ -750,12 +652,11 @@ class Database extends Connection
     /**
      * @return mixed
      */
-    public function lastId ()
+    public function lastId()
     {
-      if(!is_null($this->pdo))
-      {
-        return $this->pdo->lastInsertId ();
-      }
+        if (!is_null($this->pdo)) {
+            return $this->pdo->lastInsertId();
+        }
 
     }
 
@@ -763,62 +664,55 @@ class Database extends Connection
      * @param $data
      * @return string
      */
-    public function escape ( $data )
+    public function escape($data)
     {
-        if (is_array ( $data ))
-        {
-            foreach ($data as $key => $value)
-            {
-                $data[ $key ] = $this->pdo->quote ( trim ( $value ) );
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->pdo->quote(trim($value));
             }
-        }
-        else
-        {
-            $data = $this->pdo->quote ( trim ( $data ) );
+        } else {
+            $data = $this->pdo->quote(trim($data));
         }
 
         return $data;
     }
 
 
-    public function reset ()
+    public function reset()
     {
         $this->bindValues = [];
-        $this->select   = [];
-        $this->where    = [];
-        $this->limit    = [];
-        $this->orderBy  = [];
-        $this->groupBy  = [];
-        $this->set      = [];
-        $this->join     = [];
-        $this->table    = null;
+        $this->select = [];
+        $this->where = [];
+        $this->limit = [];
+        $this->orderBy = [];
+        $this->groupBy = [];
+        $this->set = [];
+        $this->join = [];
+        $this->table = null;
         $this->database = null;
-        $this->lastId   = null;
+        $this->lastId = null;
         $this->exception = null;
 
         return $this;
     }
 
-    public function __call ( $method , $args )
+    public function __call($method, $args)
     {
-        return $this->pdo->$method( ...$args );
+        return $this->pdo->$method(...$args);
     }
 
 
-    public function __toString ()
+    public function __toString()
     {
-        if(!is_null($this->queryString))
-        {
+        if (!is_null($this->queryString)) {
             return $this->queryString;
-        }
-        else
-        {
+        } else {
             return 'Database Library';
         }
     }
 
 
-    public function __clone ()
+    public function __clone()
     {
         $this->reset();
 

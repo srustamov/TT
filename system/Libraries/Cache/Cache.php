@@ -8,6 +8,7 @@
  * @category    Cache
  */
 
+use System\Libraries\Cache\Drivers\CacheStore;
 use System\Libraries\Cache\Drivers\FileStore;
 use System\Libraries\Cache\Drivers\DatabaseStore;
 use System\Libraries\Cache\Drivers\MemcacheStore;
@@ -24,7 +25,7 @@ class Cache
     private $driver;
 
 
-    function  __construct ()
+    public function  __construct ()
     {
         $driver = Load::class('config')->get('cache.driver','file');
 

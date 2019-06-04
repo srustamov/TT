@@ -57,7 +57,7 @@ class RedisStore implements CacheStore
 
     public function forget ( $key )
     {
-        DRedis::delete($key);
+        DRedis::del($key);
     }
 
     public function expires ( Int $expires )

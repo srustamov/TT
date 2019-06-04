@@ -61,7 +61,8 @@ class Http
 
 
     /**
-     * @return String
+     * @param null $key
+     * @return array | bool
      */
     public function cookie ($key = null)
     {
@@ -78,14 +79,11 @@ class Http
             $cookies[$cookie_key] = $cookie_value;
           }
 
-          if(!is_null($key))
+          if($key !== null)
           {
             return $cookies[$key] ?? false;
           }
-          else
-          {
-            return !empty($cookies) ? $cookies : false;
-          }
+          return !empty($cookies) ? $cookies : false;
 
         }
 
@@ -111,11 +109,7 @@ class Http
         {
           return false;
         }
-        else
-        {
-          return trim ( $_SERVER[ 'HTTP_REFERER' ] );
-        }
-
+        return trim ( $_SERVER[ 'HTTP_REFERER' ] );
     }
 
 

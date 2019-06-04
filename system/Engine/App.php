@@ -313,7 +313,7 @@ class App implements ArrayAccess
           'middleware' => 'System\Engine\Http\Middleware',
           'openssl' => 'System\Libraries\Encrypt\OpenSsl',
           'redirect' => 'System\Libraries\Redirect',
-          'redis' => 'System\Libraries\RedisFactory',
+          'redis' => 'System\Libraries\Redis',
           'request' => 'System\Engine\Http\Request',
           'response' => 'System\Engine\Http\Response',
           'route' => 'System\Engine\Http\Routing\Route',

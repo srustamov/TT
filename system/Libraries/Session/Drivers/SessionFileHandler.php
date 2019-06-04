@@ -17,6 +17,11 @@ class SessionFileHandler implements SessionHandlerInterface
 
     public function __construct()
     {
+        $this->register();
+    }
+
+    public function register()
+    {
         session_set_save_handler(
             array($this, "open"),
             array($this, "close"),
@@ -99,7 +104,6 @@ class SessionFileHandler implements SessionHandlerInterface
             {
                 unlink($file);
             }
-
         }
         return true;
     }

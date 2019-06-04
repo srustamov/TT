@@ -9,64 +9,65 @@
  */
 
 
+use Closure;
+use Countable;
+use Exception;
+use ArrayAccess;
+use System\Engine\Load;
+use Predis\Session\Handler;
+use System\Libraries\Redis;
+use System\Facades\OpenSsl;
 use System\Libraries\Session\Drivers\SessionFileHandler;
 use System\Libraries\Session\Drivers\SessionDBHandler;
-use System\Libraries\Session\Drivers\SessionRedisHandler;
-use System\Facades\OpenSsl;
-//use System\Facades\Cookie;
-use System\Engine\Load;
-use ArrayAccess;
-use Countable;
 
-class Session implements ArrayAccess,Countable
+
+
+class Session implements ArrayAccess, Countable
 {
 
 
     protected $config;
 
-    protected $handler;
 
-
+    /**
+     * @throws Exception
+     */
     public function start()
     {
-    
-      if (session_status() == PHP_SESSION_NONE)
-      {
-          $this->config = Load::class('config')->get('session');
 
-          ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
-          ini_set('session.use_only_cookies', $this->config['only_cookies']);
-          ini_set('session.gc_maxlifetime', $this->config['lifetime']);
-          ini_set('session.save_path', $this->config['files_location']);
+        if (session_status() === PHP_SESSION_NONE) {
+            $this->config = Load::class('config')->get('session');
 
-          session_set_cookie_params(
-              $this->config['lifetime'],
-              $this->config['cookie']['path'],
-              $this->config['cookie']['domain'],
-              $this->config['cookie']['secure'],
-              $this->config['cookie']['http_only']
-          );
+            ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
+            ini_set('session.use_only_cookies', $this->config['only_cookies']);
+            ini_set('session.gc_maxlifetime', $this->config['lifetime']);
+            ini_set('session.save_path', $this->config['files_location']);
 
-          session_name($this->config['cookie']['name']);
+            session_set_cookie_params(
+                $this->config['lifetime'],
+                $this->config['cookie']['path'],
+                $this->config['cookie']['domain'],
+                $this->config['cookie']['secure'],
+                $this->config['cookie']['http_only']
+            );
 
-          switch ($this->config['driver'])
-          {
-              case 'database':
-                  $this->handler = new SessionDBHandler($this->config['table']);
-                  break;
-              case 'redis':
-                  $this->handler = new SessionRedisHandler();
-                  break;
-              default:
-                  $this->handler = new SessionFileHandler();
-                  break;
-          }
-          
-          if (!is_null($this->handler))
-          {
-              register_shutdown_function('session_write_close');
-          }
-          
+            session_name($this->config['cookie']['name']);
+
+            switch ($this->config['driver']) {
+                case 'database':
+                    (new SessionDBHandler($this->config['table']))->register();
+                    break;
+                case 'redis':
+                    (new Handler(new Redis()))->register();
+                    break;
+                default:
+                    (new SessionFileHandler())->register();
+                    break;
+            }
+
+            register_shutdown_function('session_write_close');
+
+
             if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
                 session_start([
                     //'cache_limiter' => 'private',
@@ -75,11 +76,11 @@ class Session implements ArrayAccess,Countable
             } else {
                 session_start();
             }
-          
 
-          $this->token();
 
-      }
+            $this->token();
+
+        }
     }
 
 
@@ -91,18 +92,14 @@ class Session implements ArrayAccess,Countable
 
     public function set($key, $value)
     {
-        if ($value instanceOf \Closure)
-        {
-            return $this->set($key, call_user_func($value, $this));
+        if ($value instanceOf Closure) {
+            return $this->set($key, $value($this));
         }
-        else
-        {
-            $_SESSION[ $key ] = $value;
 
-            if ($this->config['regenerate'] === true)
-            {
-                $this->regenerate();
-            }
+        $_SESSION[$key] = $value;
+
+        if ($this->config['regenerate'] === true) {
+            $this->regenerate();
         }
     }
 
@@ -111,16 +108,13 @@ class Session implements ArrayAccess,Countable
      * @return string
      */
 
-    private function token():String
+    private function token(): String
     {
-        if (!$this->has('_token'))
-        {
+        if (!$this->has('_token')) {
             $token = base64_encode(OpenSsl::random(40));
 
             $this->set('_token', $token);
-        }
-        else
-        {
+        } else {
             $token = $this->get('_token');
         }
 
@@ -130,7 +124,7 @@ class Session implements ArrayAccess,Countable
 
     public function prevUrl()
     {
-      return $this->get('_prev_url');
+        return $this->get('_prev_url');
     }
 
 
@@ -142,57 +136,47 @@ class Session implements ArrayAccess,Countable
     public function get($key, $default = false)
     {
 
-      if(isset($_SESSION[ $key ]))
-      {
-        return $_SESSION[ $key ];
-      }
-      else
-      {
-        if($default instanceOf \Closure)
-        {
-          $default = call_user_func($default, $this);
+        if (isset($_SESSION[$key])) {
+            return $_SESSION[$key];
         }
 
-        return $_SESSION[ $key ] ?? $default;
-      }
+        if ($default instanceOf Closure) {
+            $default = call_user_func($default, $this);
+        }
+
+        return $_SESSION[$key] ?? $default;
 
 
     }
 
 
-    public function flash($key,$value = null)
+    public function flash($key, $value = null)
     {
-        if($value)
-        {
+        if ($value) {
             $_SESSION['_flash-data'][$key] = $value;
-        }
-        else
-        {
-            if (isset($_SESSION['_flash-data'][$key]))
-            {
+        } else {
+            if (isset($_SESSION['_flash-data'][$key])) {
                 $return = $_SESSION['_flash-data'][$key];
 
                 unset($_SESSION['_flash-data'][$key]);
 
-                if(empty($_SESSION['_flash-data']))
-                {
+                if (empty($_SESSION['_flash-data'])) {
                     unset($_SESSION['_flash-data']);
                 }
                 return $return;
             }
             return false;
-
         }
     }
 
 
     /**
      * @param array $data
+     * @return Session
      */
-    public function setArray(array $data)
+    public function setArray(array $data):Session
     {
-        foreach ($data as $key => $value)
-        {
+        foreach ($data as $key => $value) {
             $this->set($key, $value);
         }
 
@@ -203,73 +187,48 @@ class Session implements ArrayAccess,Countable
     /**
      * @return array
      */
-    public function all():array
+    public function all(): array
     {
         return $_SESSION;
     }
-
 
 
     /**
      * @param $key
      * @return Bool
      */
-    public function has($key):Bool
+    public function has($key): Bool
     {
-        return isset($_SESSION[ $key ]);
+        return isset($_SESSION[$key]);
     }
 
 
     /**
      * @param $key
+     * @return Session
      */
 
-    public function delete($key)
+    public function delete($key): Session
     {
-        if ($key instanceOf \Closure)
-        {
+        if ($key instanceOf Closure) {
             $this->delete(call_user_func($key, $this));
-        }
-        else
-        {
-            if (is_array($key))
-            {
-                foreach ($key as  $value)
-                {
-                    $this->delete($value);
-                }
+        } else if (is_array($key)) {
+            foreach ($key as $value) {
+                $this->delete($value);
             }
-            else
-            {
-                if (isset($_SESSION[ $key ]))
-                {
-                    unset($_SESSION[ $key ]);
-                }
-            }
+        } else if (isset($_SESSION[$key])) {
+            unset($_SESSION[$key]);
         }
 
         return $this;
     }
 
 
-
-    public function regenerate()
+    public function regenerate():Session
     {
-
-        if($this->config['driver'] != 'file')
-        {
-            //$id = $this->handler->regenerate(session_id());
-
-            //$this->destroy();
-        }
-        else
-        {
-            session_regenerate_id(true);
-        }
-
+        session_regenerate_id(true);
         return $this;
     }
-
 
 
     public function __get($key)
@@ -294,7 +253,7 @@ class Session implements ArrayAccess,Countable
     {
         $value = $args[0] ?? null;
 
-        return is_null($value)
+        return $value === null
             ? $this->get($method)
             : $this->set($method, $value);
     }
@@ -318,7 +277,6 @@ class Session implements ArrayAccess,Countable
     }
 
 
-
     /**
      * Offset to retrieve
      * @link http://php.net/manual/en/arrayaccess.offsetget.php
@@ -328,7 +286,7 @@ class Session implements ArrayAccess,Countable
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return $this->get($offset);
     }
@@ -345,9 +303,9 @@ class Session implements ArrayAccess,Countable
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
-        $this->set($offset,$value);
+        $this->set($offset, $value);
     }
 
     /**
@@ -359,7 +317,7 @@ class Session implements ArrayAccess,Countable
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
         $this->delete($offset);
     }
@@ -376,7 +334,7 @@ class Session implements ArrayAccess,Countable
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
         return $this->has($offset);
     }
@@ -390,7 +348,7 @@ class Session implements ArrayAccess,Countable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count ()
+    public function count()
     {
         return count($this->all());
     }
