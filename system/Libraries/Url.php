@@ -99,6 +99,7 @@ class Url
             }
         }
 
+
         return rtrim($base_url,'/') . '/' . ltrim($url,'/').(
             !empty($parameters) ? '/?'.http_build_query($parameters) : ''
             );

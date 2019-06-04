@@ -13,6 +13,7 @@
 namespace App\Controllers;
 
 
+
 use System\Facades\Language;
 use System\Facades\Redirect;
 
@@ -23,13 +24,24 @@ class HomeController extends Controller
 
 
     /**
-     * HomeController index method.Show Home page
+     * HomeController welcome method.Show Home page
      *
      * @return \System\Libraries\View\View
      */
-    public function index()
+    public function welcome()
+    {
+        return view('welcome');
+    }
+
+    public function home()
     {
         return view('home');
+    }
+
+
+    public function vue()
+    {
+        return view('vue');
     }
 
 

@@ -87,6 +87,7 @@ class Route
         }
         else
         {
+
             $domain =  !is_null($this->domain)
                 ? $this->domain
                 : Load::class('url')->base();
@@ -153,13 +154,13 @@ class Route
         }
 
         foreach ($this->methods as $method) {
-            array_push($this->routes[ strtoupper($method) ], [
+            $this->routes[ strtoupper($method) ][] =  [
                 'path' => $_path ,
                 'handler' => $handler ,
                 'ajax' => $this->ajax ,
                 'middleware' => $middleware_array,
                 'pattern' => $pattern
-            ]);
+            ];
         }
 
         $this->name = null;

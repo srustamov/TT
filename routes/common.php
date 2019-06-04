@@ -13,9 +13,7 @@
 
 
 
-$this->get('/',function() {
-   return view('welcome');
-});
+$this->get('/','HomeController@welcome');
 
 
 
@@ -29,8 +27,6 @@ $this->get('/vue-example-page', function(){
 */
 
 
-
-
 /*
   // Bad
 
@@ -42,7 +38,7 @@ $this->get('/vue-example-page', function(){
 
 */
 
-$this->get('/home','HomeController@index')->name('home');
+$this->get('/home','HomeController@home')->name('home');
 
 $this->get('/language/{lang}','HomeController@language')->name('lang')->pattern('lang','[a-z]{2}');
 

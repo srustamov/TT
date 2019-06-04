@@ -3,7 +3,7 @@ window._ = require('lodash');
 
 
 try {
-    window.Popper = require('popper.js').default;
+    //window.Popper = require('popper.js').default;
     //import jquery
     //window.$ = window.jQuery = require('jquery');
 
@@ -11,6 +11,10 @@ try {
 } catch (e) {}
 
 window.Vue = require('vue');
+
+
+
+//Vue.config.devtools = false;
 
 Vue.component('example-card', require('./components/Card.vue').default);
 
