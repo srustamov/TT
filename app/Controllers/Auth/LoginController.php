@@ -42,7 +42,8 @@ class LoginController extends Authentication
     * @return \System\Libraries\Redirect
     */
     public function login(Request $request)
-    {
+    { 
+
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email',
                 'password' => 'required|min:6'

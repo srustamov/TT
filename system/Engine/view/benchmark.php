@@ -1,4 +1,18 @@
 <style>
+        div#bench-container::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
+            background-color: #F5F5F5;
+        }
+
+        div#bench-container::-webkit-scrollbar {
+            width: 3px;
+            background-color: #F5F5F5;
+        }
+
+        div#bench-container::-webkit-scrollbar-thumb {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+            background-color: #333;
+        }
     div#bench-container * {
         margin: 0;
         padding: 0;
@@ -24,8 +38,8 @@
         box-sizing: border-box;
         font-size: 14px;
         max-width: 900px;
-        border-radius: 0;
-        border:1px solid dodgerblue;
+         border-radius: 8px 0 0 0;
+         border: 1px solid #c7cbd0;
         /*min-width: calc(100% - 40px);*/
     }
 
@@ -52,9 +66,10 @@
         font-weight: bold;
         text-align: center;
         cursor: pointer;
-        border-radius: 0;
-        border:1px solid dodgerblue;
+        border-radius: 8px 0 0;
+        border:1px solid #fff;
         z-index: 2;
+        outline:none;
     }
 
     p.http_status {
@@ -81,7 +96,7 @@
         display: inline-flex;
         justify-content: center;
         align-items: center;
-        border-radius: 0;
+        border-radius: 8px 0 0;
         border:none;
         box-sizing: border-box;
         max-width: 80px;
@@ -101,6 +116,7 @@
         -moz-animation: loadtime 10s 1;
         -webkit-animation:loadtime 10s 1;
         transition: 0.7s;
+        outline:none;
 
     }
 

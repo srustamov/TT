@@ -1,23 +1,8 @@
-window._ = require('lodash');
-
-
-
-try {
-    //window.Popper = require('popper.js').default;
-    //import jquery
-    //window.$ = window.jQuery = require('jquery');
-
-    require('bootstrap');
-} catch (e) {}
-
-window.Vue = require('vue');
-
-
-
-//Vue.config.devtools = false;
-
-Vue.component('example-card', require('./components/Card.vue').default);
+import Vue from 'vue'
+import App from './App.vue'
 
 const app = new Vue({
-    el: '#app',
+    render:h => h(App),
 });
+
+app.$mount('#app');

@@ -15,15 +15,24 @@
 
 $this->get('/','HomeController@welcome');
 
+/**
+ * 
+ * php socket message route
+ * run "php bin/socket/server.php" before activating
+ * 
+  $this->get('/chat', function () {
+      return view('socket-message');
+  });
+ */
 
 
 /*
  * ~/$ npm install
  * ~/$ npm run watch
  *
-$this->get('/vue-example-page', function(){
-    return view('vue');
-});
+  $this->get('/vue-example-page', function(){
+      return view('vue');
+  });
 */
 
 
