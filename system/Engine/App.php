@@ -177,11 +177,13 @@ class App implements ArrayAccess
 
     public function benchmark ( $finish )
     {
-        if (CONSOLE ||!Config::get ('app.debug') || Http::isAjax()) {
+        if (CONSOLE || !Config::get ('app.debug') || Http::isAjax()) 
+        {
             return null;
-        } else {
-            Benchmark::show ( $finish );
         }
+
+        $this->response()->appendContent(Benchmark::table ( $finish ));
+      
     }
 
     public function setPublicPath (String $path = null)
@@ -340,6 +342,17 @@ class App implements ArrayAccess
     public static function instance()
     {
         return static::$instance;
+    }
+
+
+    public static function end()
+    {
+        if(function_exists('fastcgi_finish_request'))
+        {
+            fastcgi_finish_request();
+        }
+
+        exit();
     }
 
 

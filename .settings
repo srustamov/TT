@@ -6,7 +6,7 @@ APP_KEY = akHKrmBlBczefyAAsQkPSQq61+VGw6KMWBih7lvlodrEIlvt1oLKcA
 
 LOCALE = az
 
-URL  = https://tt.test
+URL  = http://tt.com
 
 
 #DATABASE CONFIGURATION

@@ -35,13 +35,21 @@ $TT = new System\Engine\App(realpath('../'));
 $TT->bootstrap()->callAppKernel()->routing();
 
 
+
+
+//------------------------------------------
+// Application Benchmark panel view
+//------------------------------------------
+
+//$TT->benchmark(microtime(true));
+
+
+
 //------------------------------------------
 // Response content and headers send
 //------------------------------------------
 $TT->response()->send();
 
 
-//------------------------------------------
-// Application Benchmark panel view
-//------------------------------------------
-$TT->benchmark(microtime(true));
+
+

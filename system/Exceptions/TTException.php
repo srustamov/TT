@@ -18,6 +18,8 @@ class TTException
   private function show($e)
   {
 
+      $this->writeErrorLog($e);
+
       if (Load::class('config')->get('app.debug') === true)
       {
 
@@ -25,11 +27,11 @@ class TTException
           {
               @ob_end_clean();
 
-              $view_file =  __DIR__.'/resource/exception.php';
+              $viewFile =  __DIR__.'/resource/exception.php';
 
-              if(file_exists($view_file))
+              if(file_exists($viewFile))
               {
-                  require_once $view_file;
+                  require_once $viewFile;
               }
               else
               {
@@ -43,8 +45,6 @@ class TTException
       }
       else
       {
-        $this->writeErrorLog($e);
-
         return abort(500);
       }
   }
@@ -66,7 +66,7 @@ class TTException
 
       $date     = date('Y-m-d H:m:s');
 
-      $log_file = path('/storage/logs/error.log');
+      $log_file = path('/storage/logs/'.date('Y-m-d').'.log');
 
       if (!file_exists($log_file))
       {

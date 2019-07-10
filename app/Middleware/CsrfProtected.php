@@ -12,7 +12,7 @@ class CsrfProtected
 
 
     private $except = [
-      //'/api/.*'
+      '/api/.*'
     ];
 
 

@@ -12,7 +12,6 @@
 */
 
 
-
 $this->get('/','HomeController@welcome');
 
 /**
@@ -26,7 +25,7 @@ $this->get('/','HomeController@welcome');
  */
 
 
-/*
+/**
  * ~/$ npm install
  * ~/$ npm run watch
  *

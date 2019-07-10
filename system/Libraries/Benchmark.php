@@ -78,13 +78,11 @@ class Benchmark
 
 
 
-  public static function show($finish,$start = APP_START)
+  public static function table($finish,$start = APP_START)
   {
       $data = static::getInstance()->getBenchMarkTableData($finish,$start);
 
-      $response = new Response(static::getInstance()->view($data));
-
-      $response->send();
+      return static::getInstance()->view($data);
   }
 
 
