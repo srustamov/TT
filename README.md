@@ -26,10 +26,6 @@ PHP simple and fastest mini mvc framework
   root@samir  ~/yourpath# php manage create:controller MainController
 ```
 
-* Create resource:
-```
-  root@samir  ~/yourpath/TT# php manage create:resource MainController
-```
 
 * Create model:
 ````
