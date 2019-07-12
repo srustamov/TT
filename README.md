@@ -4,30 +4,26 @@ PHP simple and fastest mini mvc framework
 
 * Goto Command Line
 ```
-   root@samir  ~/yourpath/TT# composer install
+   root@samir  ~/yourpath# composer create-project  --stability dev --prefer-dist srustamov/tt
 ```
 
-* Create app secret key
-```
-   root@samir  ~/yourpath/TT# php manage key:generate
-```
 
 * Create local server
 
 ```
-   root@samir  ~/yourpath/TT# php manage runserver 8000
+   root@samir  ~/yourpath# php manage runserver 8000
 ```
    [http://localhost:8000](http://localhost:8000) - Open browser
 
 
 * Getting Application in Production:
 ```
-  root@samir  ~/yourpath/TT# php manage build
+  root@samir  ~/yourpath# php manage build
 ```
 
 * Create controller:
 ```
-  root@samir  ~/yourpath/TT# php manage create:controller MainController
+  root@samir  ~/yourpath# php manage create:controller MainController
 ```
 
 * Create resource:
@@ -37,7 +33,7 @@ PHP simple and fastest mini mvc framework
 
 * Create model:
 ````
-  root@samir  ~/yourpath/TT# php manage create:model ExampleModel
+  root@samir  ~/yourpath# php manage create:model ExampleModel
 ````
 
 * Create middleware:
@@ -47,36 +43,36 @@ PHP simple and fastest mini mvc framework
 
 * Create Database Session Table:
 ```
-  root@samir  ~/yourpath/TT# php manage session:table [--create tableName]
+  root@samir  ~/yourpath# php manage session:table [--create tableName]
 ```
 
 * Create Users  Table:
 ```
-  root@samir  ~/yourpath/TT# php manage users:table
+  root@samir  ~/yourpath# php manage users:table
 ```
 
 * Template Engine cache clear:
 ```
-  root@samir  ~/yourpath/TT# php manage view:cache
+  root@samir  ~/yourpath# php manage view:cache
 ```
 
 * Config cache clear:
 ```
-  root@samir  ~/yourpath/TT# php manage config:cache
+  root@samir  ~/yourpath# php manage config:cache
 ```
 
 * Create cache config files:
 ```
-  root@samir  ~/yourpath/TT# php manage config:cache --create
+  root@samir  ~/yourpath# php manage config:cache --create
 ```
 
 
 * Route cache clear:
 ```
-  root@samir  ~/yourpath/TT# php manage route:cache
+  root@samir  ~/yourpath# php manage route:cache
 ```
 
 * Routes cached:
 ```
-  root@samir  ~/yourpath/TT# php manage route:cache --create
+  root@samir  ~/yourpath# php manage route:cache --create
 ```
