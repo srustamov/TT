@@ -31,7 +31,7 @@ require __DIR__.'/../vendor/autoload.php';
 $TT = new App\Kernel(realpath('../'));
 
 
-$TT->bootstrap()->routing();
+$response = $TT->bootstrap()->routing();
 
 
 
@@ -40,15 +40,12 @@ $TT->bootstrap()->routing();
 // Application Benchmark panel view
 //------------------------------------------
 
-$TT->benchmark(microtime(true));
+$response->appendContent($TT->benchmark(microtime(true)));
 
 
 
 //------------------------------------------
 // Response content and headers send
 //------------------------------------------
-$TT->response()->send();
 
-
-
-
+$response->send();

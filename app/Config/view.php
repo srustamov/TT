@@ -1,8 +1,5 @@
 <?php
-
 return array(
-
-
     /*
     |--------------------------------------------------------------------------
     | Template engine files paths
@@ -12,7 +9,6 @@ return array(
     'files'=> array(
         path('app/Views') ,
     ),
-
     /*
     |--------------------------------------------------------------------------
     | Template engine files cache path
@@ -20,8 +16,6 @@ return array(
     |
     */
     'cache_path'=> storage_path('cache/views'),
-
-
     /*
     |--------------------------------------------------------------------------
     | Template engine extension classes
@@ -31,7 +25,6 @@ return array(
     'extensions' => array(
         App\Views\Edge\Extension::class,
     ),
-
     /*
     |--------------------------------------------------------------------------
     | Content source code minify
@@ -39,8 +32,6 @@ return array(
     |
     */
     'minify' => false,
-
-
     /*
     |--------------------------------------------------------------------------
     | View files extensions [Example -> home.blade.php,user.blade.html]
@@ -50,6 +41,4 @@ return array(
     'file_extensions' => array(
         //'.php','.html','.mytemplate'
     ),
-
-
 );

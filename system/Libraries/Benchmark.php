@@ -17,8 +17,10 @@ class Benchmark
 
 
 
-    public function loadTime($finish, $start = APP_START)
+    public function loadTime($finish = null, $start = APP_START)
     {
+        if($finish === null) $finish = microtime(true);
+        
         return round($finish - $start, 4);
     }
 

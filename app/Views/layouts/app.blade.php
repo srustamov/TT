@@ -11,7 +11,7 @@
     @yield('style')
   </head>
   <body>
-      <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-lg">
           <a class="navbar-brand" href="#">
               <strong class="text-primary">{{config('app.name','TT')}}</strong>
           </a>
@@ -31,22 +31,20 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="nav-item">
-                  <a class="nav-link lang" href="{{route('lang',['lang' => 'az'])}}">az</a>
+                  <a class="nav-link text-uppercase font-weight-bold lang" href="{{route('lang',['lang' => 'az'])}}">az</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link lang" href="{{route('lang',['lang' => 'en'])}}">en</a>
+                  <a class="nav-link text-uppercase font-weight-bold lang" href="{{route('lang',['lang' => 'en'])}}">en</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link lang" href="{{route('lang',['lang' => 'tr'])}}">tr</a>
+                  <a class="nav-link text-uppercase font-weight-bold lang" href="{{route('lang',['lang' => 'tr'])}}">tr</a>
                 </li>
                 @auth
-                <li class="btn-group">
-                  <button style="border-radius:0;min-height:50px" class="btn btn-success">
-                   {{ Auth::name() }}
+                <li class="nav-item btn-group">
+                  <button class="btn btn-success rounded-0 shadow-sm">
+                   {{ ucfirst(Auth::name()) }}
                  </button>
-                  <button onclick="window.location.href='{{route('logout')}}'"
-                      style="border-radius:0;min-height:50px"
-                      role="button" class="btn btn-danger">
+                  <button onclick="window.location.href='{{route('logout')}}'" class="btn btn-danger rounded-0 shadow-sm">
                     Logout
                   </button>
                 </li>
@@ -79,4 +77,4 @@
     </script>
     @yield('js')
   </body>
-</html>
+</html>{{-- <!--Load Time (seconds) : {{(new \System\Libraries\Benchmark)->loadTime()}} --> --}}

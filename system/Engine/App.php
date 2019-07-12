@@ -11,6 +11,7 @@ use System\Facades\Config;
 use System\Facades\Http;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
+use System\Engine\Http\Response;
 
 class App implements ArrayAccess
 {
@@ -115,25 +116,17 @@ class App implements ArrayAccess
     }
 
 
-    public function routing()
+    public function routing():Response
     {
-        Route::execute($this, $this->routeMiddleware);
-
-        return $this;
+        return Route::execute($this, $this->routeMiddleware);
     }
 
-    public function response()
-    {
-        return Load::class('response');
-    }
 
-    public function benchmark($finish)
+    public function benchmark($finish):String
     {
-        if (CONSOLE || !Config::get('app.debug') || Http::isAjax()) {
-            return null;
-        }
-
-        $this->response()->appendContent(Benchmark::table($finish));
+        return  (CONSOLE || !Config::get('app.debug') || Http::isAjax())
+                ? ''
+                : Benchmark::table($finish);
     }
 
     public function setPublicPath(String $path = null)

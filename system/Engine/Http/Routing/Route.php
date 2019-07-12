@@ -12,6 +12,7 @@ use System\Engine\App;
 use System\Engine\Load;
 use System\Engine\Reflections;
 use System\Engine\Http\Middleware;
+use System\Engine\Http\Response;
 use System\Exceptions\RouteException;
 use System\Exceptions\NotFoundException;
 
@@ -222,7 +223,7 @@ class Route
                 throw new RouteException("Route Handler type undefined");
             }
         }
-        $this->notFound = true;
+        throw new NotFoundException;
     }
 
 
@@ -260,7 +261,7 @@ class Route
 
             $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method], $args);
 
-            $this->response($content);
+            return Load::class('response')->setContent($content);
         } else {
             throw new NotFoundException;
         }
@@ -282,7 +283,7 @@ class Route
 
         $content = call_user_func_array($handler, $args);
 
-        $this->response($content);
+        return Load::class('response')->setContent($content);
     }
 
 
@@ -401,12 +402,6 @@ class Route
 
 
 
-    protected function response($content)
-    {
-        Load::class('response')->setContent($content);
-    }
-
-
     public function getRoutes()
     {
         return (array) $this->routes;
@@ -448,7 +443,7 @@ class Route
 
 
 
-    public function execute(App $app, $routeMiddleware)
+    public function execute(App $app, $routeMiddleware):Response
     {
         $this->middlewareAliases = $routeMiddleware;
 
@@ -460,12 +455,6 @@ class Route
             }
         }
 
-        if (!CONSOLE) {
-            $this->run();
-        }
-
-        if ($this->notFound) {
-            throw new NotFoundException;
-        }
+        return !CONSOLE ? $this->run() : new Response;
     }
 }

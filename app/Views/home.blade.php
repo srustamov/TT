@@ -2,13 +2,13 @@
 @section('content')
   <div class="container">
     <div class="row">
-      <div class="col-md-8 offset-md-2">
-        <div class="card card-default shadow-sm mt-5">
+      <div class="col-md-8 offset-md-2 ">
+        <div class="card  shadow-lg mt-5 rounded-0">
           <div class="card-header">
             <h3>Home Page</h3>
           </div>
           <div class="card-body">
-            <h3>{{ Auth::check() ? 'Logged in' : 'Hello Guest' }}</h3>
+            <h6 class="text-success">{{ Auth::check() ? 'Logged in' : 'Hello Guest' }}</h6>
           </div>
         </div>
       </div>

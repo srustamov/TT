@@ -29,11 +29,14 @@ class Config
         $file = App::instance()->configsCacheFile();
 
         if ($subCommand == '--create') {
+
             $configsArray = [];
 
-            foreach (glob(path('app/Config/*.php')) as $file) {
-                $configsArray[ substr(basename($file), 0, -4) ] = require $file;
+            foreach (glob(path('app/Config/*.php')) as $config) {
+                $configsArray[ substr(basename($config), 0, -4) ] = require $config;
             }
+
+            
 
             file_put_contents($file, "<?php \n\n return array(\n\n");
 

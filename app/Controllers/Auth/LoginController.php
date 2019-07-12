@@ -12,7 +12,7 @@
 
 namespace App\Controllers\Auth;
 
-use App\Controllers\Controller;
+
 use System\Engine\Http\Request;
 use System\Facades\Validator;
 use System\Facades\Redirect;

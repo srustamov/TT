@@ -28,30 +28,37 @@ class ApiController extends Controller
           'email'    => 'required|email|unique:users',
           'password' => 'required|min:6',
           'name'     => 'required|min:5|unique:users',
-      ]);
+        ]);
 
       
 
 
         if (!$validation->check()) {
-            return Response::json(['Error' => Validator::messages()]);
+            return Response::json([
+                'message' => Validator::messages(),
+                'created' => fasle
+                ]);
         } else {
             $token = bin2hex(OpenSsl::random(64));
 
             $create = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'api_token' => $token
-        ]);
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'api_token' => $token
+            ]);
 
             if ($create) {
                 return Response::json([
-                'response' =>'User create successfully',
-                'auth_token' => $token
-              ]);
+                    'message' =>'User create successfully',
+                    'created' => true,
+                    'auth_token' => $token
+                ]);
             } else {
-                return Response::json(['response'=>'User register error occurred.Please try again']);
+                return Response::json([
+                    'message'=>'User register error occurred.Please try again',
+                    'created' => false
+                    ]);
             }
         }
     }
