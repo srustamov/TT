@@ -2,19 +2,19 @@ APP_DEBUG = TRUE
 
 APP_NAME  = TT
 
-APP_KEY = XjnvLEU9GG4K9Vp98tvR8+5rIh1ji9occE11FzSYhFGQkJIs0Xuhvg
+APP_KEY = 
 
-LOCALE = az
+LOCALE = en
 
-URL  = http://tt.com
+URL  = http://localhost:8000
 
 
 #DATABASE CONFIGURATION
 
 DB_HOST = localhost
-DB_NAME = framework
+DB_NAME = tt
 DB_USER = root
-DB_PASS = samir96.S
+DB_PASS = 
 DB_CHARSET = utf8
 DB_PREFIX =
 
