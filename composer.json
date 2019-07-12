@@ -20,6 +20,11 @@
     "filp/whoops": "^2.4",
     "cboden/ratchet": "^0.4.1"
   },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
   "autoload": {
     "psr-4": {
       "App\\": "app/",
@@ -29,6 +34,8 @@
       "system/Engine/helpers.php"
     ]
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "scripts": {
     "post-create-project-cmd": ["php manage key:generate"]
   }
