@@ -1,6 +1,4 @@
-/storage/cache/views/*
-/storage/sessions/*
-/storage/logs/*
+/storage/*
 /vendor/
 /.idea/
 /.gitignore
