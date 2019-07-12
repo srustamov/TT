@@ -8,7 +8,7 @@ return array(
 
 
     'file' => array(
-        'path' => storage_dir('cache/data')
+        'path' => storage_path('cache/data')
     ),
 
     /*--------------------------------------------------------

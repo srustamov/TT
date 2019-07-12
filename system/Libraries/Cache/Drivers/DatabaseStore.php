@@ -3,10 +3,8 @@
 use System\Engine\Load;
 use System\Facades\DB;
 
-
 class DatabaseStore implements CacheStore
 {
-
     private $put = false;
 
     private $key;
@@ -16,80 +14,68 @@ class DatabaseStore implements CacheStore
     private $table;
 
 
-    function  __construct ()
+    public function __construct()
     {
-        $this->table = Load::class('config')->get('cache.database',['table' => 'cache'])['table'];
+        $this->table = Load::class('config')->get('cache.database', ['table' => 'cache'])['table'];
 
         $this->gc();
     }
 
 
-    public function put ( String $key , $value , $expires = null ,$forever = false)
+    public function put(String $key, $value, $expires = null, $forever = false)
     {
+        if (is_null($expires)) {
+            if (is_null($this->expires) && !$forever) {
+                $this->put = true;
 
-        if(is_null($expires))
-        {
+                $this->key = $key;
 
-          if(is_null($this->expires) && !$forever)
-          {
-            $this->put = true;
+                DB::pdo("REPLACE INTO $this->table SET cache_key= '$key',cache_value='$value'");
+            } else {
+                $expires = time() + $this->expires;
 
-            $this->key = $key;
+                DB::pdo("REPLACE INTO $this->table SET cache_key='$key',cache_value='$value', expires=".($forever ? 0 : $expires));
 
-            DB::pdo("REPLACE INTO $this->table SET cache_key= '$key',cache_value='$value'");
-          }
-          else
-          {
-            $expires = time() + $this->expires;
-
-            DB::pdo("REPLACE INTO $this->table SET cache_key='$key',cache_value='$value', expires=".($forever ? 0 : $expires));
+                $this->expires = null;
+            }
+        } else {
+            DB::pdo("REPLACE INTO $this->table SET cache_key='$key',cache_value='$value' ,expires=$expires");
 
             $this->expires = null;
-          }
-
-        }
-        else
-        {
-          DB::pdo("REPLACE INTO $this->table SET cache_key='$key',cache_value='$value' ,expires=$expires");
-
-          $this->expires = null;
         }
 
         return $this;
     }
 
-    public function forever ( String $key , $value )
+    public function forever(String $key, $value)
     {
-        return $this->put($key , $value , null, true);
+        return $this->put($key, $value, null, true);
     }
 
-    public function has ( $key ):Bool
+    public function has($key):Bool
     {
-        return (bool) DB::table($this->table)->where('cache_key',$key)->first();
+        return (bool) DB::table($this->table)->where('cache_key', $key)->first();
     }
 
-    public function get ( $key )
+    public function get($key)
     {
-        return DB::table($this->table)->where('cache_key',$key)->first();
+        return DB::table($this->table)->where('cache_key', $key)->first();
     }
 
-    public function forget ( $key )
+    public function forget($key)
     {
-        return DB::table($this->table)->where('cache_key',$key)->delete();
+        return DB::table($this->table)->where('cache_key', $key)->delete();
     }
 
-    public function expires ( Int $expires )
+    public function expires(Int $expires)
     {
-        if($this->put && !is_null($this->key))
-        {
-            DB::table($this->table)->where('cache_key',$this->key)->update(['expires'=> time() + $expires]);
+        if ($this->put && !is_null($this->key)) {
+            DB::table($this->table)->where('cache_key', $this->key)->update(['expires'=> time() + $expires]);
 
             $this->put = false;
 
             $this->key = null;
-        }
-        else
-        {
+        } else {
             $this->expires = $expires;
         }
 
@@ -97,25 +83,25 @@ class DatabaseStore implements CacheStore
     }
 
 
-    public function minutes ( Int $minutes )
+    public function minutes(Int $minutes)
     {
-      return $this->expires($minutes * 60);
+        return $this->expires($minutes * 60);
     }
 
 
-    public function hours ( Int $hours )
+    public function hours(Int $hours)
     {
-      return $this->expires($hours * 3600);
+        return $this->expires($hours * 3600);
     }
 
 
-    public function day ( Int $day )
+    public function day(Int $day)
     {
-      return $this->expires($day * 3600 * 24);
+        return $this->expires($day * 3600 * 24);
     }
 
 
-    public function flush ()
+    public function flush()
     {
         DB::table($this->table)->truncate();
     }
@@ -126,16 +112,15 @@ class DatabaseStore implements CacheStore
     }
 
 
-    public function __call($method,$args)
+    public function __call($method, $args)
     {
         throw new CacheDatabaseStoreException("Call to undefined method Cache::$method()");
     }
 
 
 
-    public function close ()
+    public function close()
     {
         return true;
     }
-
 }

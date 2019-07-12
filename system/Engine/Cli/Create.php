@@ -14,16 +14,13 @@ namespace System\Engine\Cli;
  */
 
 
-class Create {
-
-
-    public static function execute ( $manage )
+class Create
+{
+    public static function execute($manage)
     {
+        $type= explode(':', $manage[ 0 ], 2)[1];
 
-        $type= explode ( ':' , $manage[ 0 ] , 2 )[1];
-
-        if($type == 'facade')
-        {
+        if ($type == 'facade') {
             return static::facade($manage[1]);
         }
 
@@ -34,12 +31,12 @@ class Create {
             $type = 'controller';
         }
 
-        $type = ucfirst ( $type );
+        $type = ucfirst($type);
 
         $_type = $type;
 
-        if (!isset( $manage[ 1 ] )) {
-            new PrintConsole ( "error" , "\nPlease enter {$type} name \n\n" );
+        if (!isset($manage[ 1 ])) {
+            new PrintConsole("error", "\nPlease enter {$type} name \n\n");
             exit();
         }
 
@@ -47,13 +44,13 @@ class Create {
 
         $namespace = $type == 'Middleware' ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
 
-        if (strpos ( $name , '/' )) {
-            $_file = explode ( '/' , $manage[ 1 ] );
+        if (strpos($name, '/')) {
+            $_file = explode('/', $manage[ 1 ]);
 
-            $name = array_pop ( $_file );
+            $name = array_pop($_file);
 
-            if (count ( $_file ) > 0) {
-                $namespace .= '\\' . implode ( '\\' , $_file );
+            if (count($_file) > 0) {
+                $namespace .= '\\' . implode('\\', $_file);
             }
         }
 
@@ -62,92 +59,80 @@ class Create {
             case 'Controller':
                 $type = 'Controllers';
                 if ($is_resource) {
-                    $write_data = str_replace ( [ ':namespace' , ':name' ] , [ $namespace , $name ] , file_get_contents ( __DIR__ . '/resource/resource.mask' ) );
+                    $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/resource.mask'));
                 } else {
-                    $write_data = str_replace ( [ ':namespace' , ':name' ] , [ $namespace , $name ] , file_get_contents ( __DIR__ . '/resource/controller.mask' ) );
+                    $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/controller.mask'));
                 }
                 break;
             case 'Model':
-                $write_data = str_replace ( [ ':namespace' , ':name' ] , [ $namespace , $name ] , file_get_contents ( __DIR__ . '/resource/model.mask' ) );
+                $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/model.mask'));
                 $type = 'Models';
                 break;
             case 'Middleware':
                 $type = 'Middleware';
-                $write_data = str_replace ( [ ':namespace' , ':name' ] , [ $namespace , $name ] , file_get_contents ( __DIR__ . '/resource/middleware.mask' ) );
+                $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/middleware.mask'));
                 break;
             default:
-                new PrintConsole ( "error" , "\nCreate {$type} name undefained. Please use type ['controller,model,middleware']\n\n" );
+                new PrintConsole("error", "\nCreate {$type} name undefained. Please use type ['controller,model,middleware']\n\n");
                 exit();
                 break;
         }
 
 
-        if (!file_exists ( "app/{$type}/" . $manage[ 1 ] . '.php' )) {
+        if (!file_exists("app/{$type}/" . $manage[ 1 ] . '.php')) {
+            $_ = explode('/', $manage[ 1 ]);
 
+            if (\count($_) > 1) {
+                array_pop($_);
 
-            $_ = explode ( '/' , $manage[ 1 ] );
-
-            if (\count ( $_ ) > 1) {
-                array_pop ( $_ );
-
-                if (\count( $_ ) > 1) {
+                if (\count($_) > 1) {
                     $__ = $_;
                     $path = '';
                     foreach ($_ as $dir) {
-                        $path .= array_shift ( $__ ) . '/';
+                        $path .= array_shift($__) . '/';
 
-                        @mkdir ( path ( $type . '/' . $path , 'app' ) );
+                        mkdir(app_path($type . '/' . $path, 'app'));
                     }
                 } else {
-                    @mkdir ( path ( $type . '/' . implode ( '/' , $_ ) , 'app' ) );
+                    mkdir(app_path($type . '/' . implode('/', $_), 'app'));
                 }
-
             }
 
-            $file = @touch ( "app/{$type}/{$manage[1]}.php" );
 
-            if ($file) {
+            if (touch(app_dir("{$type}/{$manage[1]}.php"))) {
                 try {
-                    file_put_contents ( "app/{$type}/$manage[1].php" , $write_data );
+                    file_put_contents(app_path("{$type}/{$manage[1]}.php"), $write_data);
 
-                    new PrintConsole ( "green" , "\nCreate $name {$_type} successfully\n\n" );
+                    new PrintConsole("green", "\nCreate $name {$_type} successfully\n\n");
                 } catch (\Exception $e) {
                 }
             } else {
-                new PrintConsole ( "error" , "\nCreate file failed\n\n" );
+                new PrintConsole("error", "\nCreate file failed\n\n");
             }
-
         } else {
-            new PrintConsole ( "error" , "\nThe file was already created\n\n" );
+            new PrintConsole("error", "\nThe file was already created\n\n");
         }
     }
 
 
     protected static function facade($name)
     {
-        if(!file_exists($file = path('system/Facades/'.ucfirst($name).'.php')))
-        {
+        if (!file_exists($file = path('system/Facades/'.ucfirst($name).'.php'))) {
             $content = str_replace(
                 [':namespace',':name',':accessor'],
                 ['namespace System\\Facades',ucfirst($name),strtolower($name)],
                 file_get_contents(__DIR__.'/resource/facade.mask')
             );
 
-            $create_and_put = file_put_contents($file,$content);
+            $create_and_put = file_put_contents($file, $content);
 
-            if($create_and_put)
-            {
-                new PrintConsole ( "green" , "\nCreate Facade successfully\n\n" );
+            if ($create_and_put) {
+                new PrintConsole("green", "\nCreate Facade successfully\n\n");
+            } else {
+                new PrintConsole("error", "\nCreate Facade failed\n\n");
             }
-            else
-            {
-                new PrintConsole ( "error" , "\nCreate Facade failed\n\n" );
-            }
-        }
-        else
-        {
-            new PrintConsole ( "error" , "\nFacade already exists\n\n" );
+        } else {
+            new PrintConsole("error", "\nFacade already exists\n\n");
         }
     }
-
 }

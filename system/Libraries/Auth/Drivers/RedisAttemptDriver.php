@@ -1,76 +1,67 @@
 <?php namespace System\Libraries\Auth\Drivers;
 
-
 use System\Facades\Redis as RDriver;
 use System\Facades\Http;
 
-
-
 class RedisAttemptDriver implements AttemptDriverInterface
 {
-
-
-
-  public function getAttemptsCountOrFail($guard)
-  {
-       if (($result = RDriver::get("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip())))
-       {
-         return (object) array('count' => $result);
-       }
-       return false;
-  }
-
-  public function addAttempt($guard)
-  {
-      $count = $this->getAttemptsCountOrFail($guard);
-
-      RDriver::setex("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip(),60*60,
-          $count ? $count->count+1 :1
-        );
-
-  }
-
-
-
-  public function startLockTime($guard,$lock_time)
-  {
-    $expire = strtotime("+ {$lock_time} seconds");
-
-    RDriver::expire("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip(), $expire);
-
-    RDriver::setex("AUTH_ATTEMPT_EXPIRE_{$guard}".Http::ip(),$expire,$expire);
-  }
-
-
-  public function deleteAttempt($guard)
-  {
-    RDriver::delete("AUTH_ATTEMPT_COUNT_{$guard}".Http::ip());
-    RDriver::delete("AUTH_ATTEMPT_EXPIRE_{$guard}".Http::ip());
-  }
-
-
-
-  public function expireTimeOrFail($guard)
-  {
-    return RDriver::get("AUTH_ATTEMPT_EXPIRE_{$guard}".Http::ip());
-  }
-
-
-  public function getRemainingSecondsOrFail($guard)
-  {
-    if(($expireTime = $this->expireTimeOrFail($guard)))
+    public function getAttemptsCountOrFail()
     {
-        $remaining_seconds = $expireTime - time();
-
-        if($remaining_seconds > 0)
-        {
-            return $remaining_seconds;
+        if (($result = RDriver::get("AUTH_ATTEMPT_COUNT".Http::ip()))) {
+            return (object) array('count' => $result);
         }
+        return false;
     }
 
-    $this->deleteAttempt($guard);
+    public function addAttempt()
+    {
+        $count = $this->getAttemptsCountOrFail();
 
-    return false;
-  }
+        RDriver::setex(
+          "AUTH_ATTEMPT_COUNT".Http::ip(),
+          60*60,
+          $count ? $count->count+1 :1
+        );
+    }
 
+
+
+    public function startLockTime($lockTime)
+    {
+        $expire = strtotime("+ {$lockTime} seconds");
+
+        RDriver::expire("AUTH_ATTEMPT_COUNT".Http::ip(), $expire);
+
+        RDriver::setex("AUTH_ATTEMPT_EXPIRE".Http::ip(), $expire, $expire);
+    }
+
+
+    public function deleteAttempt()
+    {
+        RDriver::delete("AUTH_ATTEMPT_COUNT".Http::ip());
+        RDriver::delete("AUTH_ATTEMPT_EXPIRE".Http::ip());
+    }
+
+
+
+    public function expireTimeOrFail()
+    {
+        return RDriver::get("AUTH_ATTEMPT_EXPIRE".Http::ip());
+    }
+
+
+    public function getRemainingSecondsOrFail()
+    {
+        if (($expireTime = $this->expireTimeOrFail())) {
+            $remaining_seconds = $expireTime - time();
+
+            if ($remaining_seconds > 0) {
+                return $remaining_seconds;
+            }
+        }
+
+        $this->deleteAttempt();
+
+        return false;
+    }
 }

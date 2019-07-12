@@ -1,79 +1,61 @@
 <?php namespace System\Libraries\Auth\Drivers;
 
-
-
-
 use System\Facades\Session;
-
 
 class SessionAttemptDriver implements AttemptDriverInterface
 {
-
-
-
-    public function getAttemptsCountOrFail($guard)
+    public function getAttemptsCountOrFail()
     {
-        if($count = Session::get("AUTH_ATTEMPT_COUNT_{$guard}"))
-        {
+        if ($count = Session::get("AUTH_ATTEMPT_COUNT")) {
             return (object) array('count' => $count);
         }
         return false;
     }
 
-    public function addAttempt($guard)
+    public function addAttempt()
     {
-        if($this->getAttemptsCountOrFail($guard))
-        {
-            Session::set("AUTH_ATTEMPT_COUNT_{$guard}",function($session) use ($guard){
-                return $session->get("AUTH_ATTEMPT_COUNT_{$guard}")+1;
+        if ($this->getAttemptsCountOrFail()) {
+            Session::set("AUTH_ATTEMPT_COUNT", function ($session) {
+                return $session->get("AUTH_ATTEMPT_COUNT")+1;
             });
+        } else {
+            Session::set("AUTH_ATTEMPT_COUNT", 1);
         }
-        else
-        {
-            Session::set("AUTH_ATTEMPT_COUNT_{$guard}",1);
-        }
-
     }
 
 
 
-    public function startLockTime($guard,$lock_time)
+    public function startLockTime($lockTime)
     {
-        Session::set("AUTH_ATTEMPT_EXPIRE_{$guard}", strtotime("+ {$lock_time} seconds"));
+        Session::set("AUTH_ATTEMPT_EXPIRE", strtotime("+ {$lockTime} seconds"));
     }
 
 
-    public function deleteAttempt($guard)
+    public function deleteAttempt()
     {
-        Session::delete(array("AUTH_ATTEMPT_COUNT_{$guard}","AUTH_ATTEMPT_EXPIRE_{$guard}"));
+        Session::delete(array("AUTH_ATTEMPT_COUNT","AUTH_ATTEMPT_EXPIRE"));
     }
 
 
 
-    public function expireTimeOrFail($guard)
+    public function expireTimeOrFail()
     {
-        return Session::get("AUTH_ATTEMPT_EXPIRE_{$guard}");
+        return Session::get("AUTH_ATTEMPT_EXPIRE");
     }
 
 
-    public function getRemainingSecondsOrFail($guard)
+    public function getRemainingSecondsOrFail()
     {
-        if(($expireTime = $this->expireTimeOrFail($guard)))
-        {
+        if (($expireTime = $this->expireTimeOrFail())) {
             $remaining_seconds = $expireTime - time();
 
-            if($remaining_seconds > 0)
-            {
+            if ($remaining_seconds > 0) {
                 return $remaining_seconds;
             }
         }
 
-        $this->deleteAttempt($guard);
+        $this->deleteAttempt();
 
         return false;
     }
-
-
-
-
 }

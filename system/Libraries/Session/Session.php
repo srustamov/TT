@@ -20,12 +20,8 @@ use System\Facades\OpenSsl;
 use System\Libraries\Session\Drivers\SessionFileHandler;
 use System\Libraries\Session\Drivers\SessionDBHandler;
 
-
-
 class Session implements ArrayAccess, Countable
 {
-
-
     protected $config;
 
 
@@ -34,7 +30,6 @@ class Session implements ArrayAccess, Countable
      */
     public function start()
     {
-
         if (session_status() === PHP_SESSION_NONE) {
             $this->config = Load::class('config')->get('session');
 
@@ -79,7 +74,6 @@ class Session implements ArrayAccess, Countable
 
 
             $this->token();
-
         }
     }
 
@@ -92,7 +86,7 @@ class Session implements ArrayAccess, Countable
 
     public function set($key, $value)
     {
-        if ($value instanceOf Closure) {
+        if ($value instanceof Closure) {
             return $this->set($key, $value($this));
         }
 
@@ -135,18 +129,15 @@ class Session implements ArrayAccess, Countable
 
     public function get($key, $default = false)
     {
-
         if (isset($_SESSION[$key])) {
             return $_SESSION[$key];
         }
 
-        if ($default instanceOf Closure) {
+        if ($default instanceof Closure) {
             $default = call_user_func($default, $this);
         }
 
         return $_SESSION[$key] ?? $default;
-
-
     }
 
 
@@ -210,13 +201,13 @@ class Session implements ArrayAccess, Countable
 
     public function delete($key): Session
     {
-        if ($key instanceOf Closure) {
+        if ($key instanceof Closure) {
             $this->delete(call_user_func($key, $this));
-        } else if (is_array($key)) {
+        } elseif (is_array($key)) {
             foreach ($key as $value) {
                 $this->delete($value);
             }
-        } else if (isset($_SESSION[$key])) {
+        } elseif (isset($_SESSION[$key])) {
             unset($_SESSION[$key]);
         }
 
@@ -264,12 +255,16 @@ class Session implements ArrayAccess, Countable
         $_SESSION = [];
 
         if (ini_get("session.use_cookies")) {
-
             $params = session_get_cookie_params();
 
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
             );
         }
 

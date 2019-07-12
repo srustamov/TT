@@ -1,15 +1,9 @@
 <?php namespace System\Libraries\Session\Drivers;
 
-
-
 use SessionHandlerInterface;
-
-
 
 class SessionFileHandler implements SessionHandlerInterface
 {
-
-
     private $save_path;
 
     private $file_path;
@@ -34,12 +28,10 @@ class SessionFileHandler implements SessionHandlerInterface
 
 
 
-    public function open($save_path,$name):Bool
+    public function open($save_path, $name):Bool
     {
-        if(!is_dir($save_path))
-        {
-            if (!mkdir($save_path,0700,true))
-            {
+        if (!is_dir($save_path)) {
+            if (!mkdir($save_path, 0700, true)) {
                 throw new \Exception("Session: Configured save path [{$save_path}] is not a directory, doesn't exist or cannot be created.");
             }
         }
@@ -61,25 +53,22 @@ class SessionFileHandler implements SessionHandlerInterface
 
     public function read($id)
     {
-        if(!file_exists($this->file_path.$id))
-        {
+        if (!file_exists($this->file_path.$id)) {
             $this->newFile($id);
         }
 
         return ''.file_get_contents($this->file_path.$id);
-
     }
 
 
 
-    public function write($id,$session_data):Bool
+    public function write($id, $session_data):Bool
     {
-        if(!file_exists($this->file_path.$id))
-        {
+        if (!file_exists($this->file_path.$id)) {
             $this->newFile($id);
         }
 
-        return file_put_contents($this->file_path.$id, $session_data ,LOCK_EX);
+        return file_put_contents($this->file_path.$id, $session_data, LOCK_EX);
     }
 
 
@@ -87,8 +76,7 @@ class SessionFileHandler implements SessionHandlerInterface
 
     public function destroy($id):Bool
     {
-        if(file_exists($this->file_path.$id))
-        {
+        if (file_exists($this->file_path.$id)) {
             return unlink($this->file_path.$id);
         }
         return true;
@@ -98,10 +86,8 @@ class SessionFileHandler implements SessionHandlerInterface
 
     public function gc($maxlifetime):Bool
     {
-        foreach (glob("{$this->save_path}/session_*") as $file)
-        {
-            if((filemtime($file) + $maxlifetime) < time())
-            {
+        foreach (glob("{$this->save_path}/session_*") as $file) {
+            if ((filemtime($file) + $maxlifetime) < time()) {
                 unlink($file);
             }
         }
@@ -111,18 +97,12 @@ class SessionFileHandler implements SessionHandlerInterface
 
     private function newFile($session_id)
     {
-        $file = fopen($this->file_path.$session_id,'c+b');
+        $file = fopen($this->file_path.$session_id, 'c+b');
 
-        flock($file,LOCK_EX);
+        flock($file, LOCK_EX);
 
-        chmod($this->file_path.$session_id,0600);
+        chmod($this->file_path.$session_id, 0600);
 
         fclose($file);
-
     }
-
-
-
-
-
 }

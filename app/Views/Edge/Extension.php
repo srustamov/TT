@@ -1,11 +1,9 @@
 <?php namespace App\Views\Edge;
 
-
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
 
 class Extension implements EdgeExtensionInterface
 {
-
     public function getName()
     {
         return 'tt_extension';
@@ -28,7 +26,7 @@ class Extension implements EdgeExtensionInterface
 
     public function lang()
     {
-        return "<?php echo lang".implode(',',func_get_args())."; ?>";
+        return "<?php echo lang".implode(',', func_get_args())."; ?>";
     }
 
 
@@ -61,17 +59,17 @@ class Extension implements EdgeExtensionInterface
 
     public function css()
     {
-        return '<?php echo css'.implode(',',func_get_args()).'; ?>';
+        return '<?php echo css'.implode(',', func_get_args()).'; ?>';
     }
 
     public function js()
     {
-        return '<?php echo js'.implode(',',func_get_args()).'; ?>';
+        return '<?php echo js'.implode(',', func_get_args()).'; ?>';
     }
 
     public function img()
     {
-        return '<?php echo img'.implode(',',func_get_args()).'; ?>';
+        return '<?php echo img'.implode(',', func_get_args()).'; ?>';
     }
 
 
@@ -84,5 +82,4 @@ class Extension implements EdgeExtensionInterface
     {
         return array();
     }
-
 }

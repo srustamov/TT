@@ -9,43 +9,34 @@
 use System\Engine\App;
 use System\Engine\Load;
 
-
 function app(String $class = null)
 {
-  $app = App::instance();
+    $app = App::instance();
 
-  if(is_null($class))
-  {
-    return $app;
-  }
-  else
-  {
-    return $app[$class];
-  }
-
+    if (is_null($class)) {
+        return $app;
+    } else {
+        return $app[$class];
+    }
 }
 
-function load(String $class = null,...$args)
+function load(String $class = null, ...$args)
 {
-  if(!is_null($class))
-  {
-    return Load::instance();
-  }
-  else
-  {
-    return Load::class($class,...$args);
-  }
+    if (is_null($class)) {
+        return Load::instance();
+    } else {
+        return Load::class($class,...$args);
+    }
 }
 
 
 function config(String $name = null, $default = null)
 {
-  if(is_null($name))
-  {
-    return Load::class('config');
-  }
+    if (is_null($name)) {
+        return Load::class('config');
+    }
 
-  return Load::class('config')->get($name, $default);
+    return Load::class('config')->get($name, $default);
 }
 
 
@@ -55,65 +46,63 @@ function setting($key, $default = null)
 }
 
 
-function import(String $file,$once = true)
+function import(String $file, $once = true)
 {
-  return load('file')->import($file, $once);
+    return load('file')->import($file, $once);
 }
 
 
-function importFiles($directory,$once = true)
+function importFiles($directory, $once = true)
 {
-  foreach (glob(rtrim($dir,DIRECTORY_SEPARATOR)."/*") as $file)
-  {
-      import($file,$once);
-  }
-}
-
-
-
-function storage_dir($path = '')
-{
-    return App::instance()->storage_path($path);
+    foreach (glob(rtrim($directory, DIRECTORY_SEPARATOR)."/*") as $file) {
+        import($file, $once);
+    }
 }
 
 
 
-function app_dir($path = '')
+function storage_path($path = '')
 {
-    return App::instance()->app_path($path);
+    return App::instance()->storagePath($path);
 }
 
 
 
-function system_dir($path = '')
+function app_path($path = '')
 {
-    return App::instance()->path('system'.DIRECTORY_SEPARATOR.ltrim($path,DIRECTORY_SEPARATOR));
+    return App::instance()->appPath($path);
 }
 
 
 
-function public_dir($path = '')
+function system_path($path = '')
 {
-    return App::instance()->public_path($path);
+    return App::instance()->path('system'.DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR));
 }
 
 
 
-function path( $path = '' )
+function public_path($path = '')
+{
+    return App::instance()->publicPath($path);
+}
+
+
+
+function path($path = '')
 {
     return App::instance()->path($path);
 }
 
 
 
-function abort(Int $http_code, $message = null,$headers = [])
+function abort(Int $http_code, $message = null, $headers = [])
 {
-    if (file_exists(app_dir('Views/errors/'.$http_code.'.blade.php')))
-    {
+    if (file_exists(app_dir('Views/errors/'.$http_code.'.blade.php'))) {
         $content =  view('errors.'.$http_code);
     }
 
-    $response = Load::class('response')->setStatusCode($http_code,$message);
+    $response = Load::class('response')->setStatusCode($http_code, $message);
 
     $response->withHeaders($headers);
 
@@ -121,7 +110,7 @@ function abort(Int $http_code, $message = null,$headers = [])
 
     $response->send();
 
-    exit();
+    App::instance()->end();
 }
 
 
@@ -137,8 +126,7 @@ function csrf_token():String
 {
     static $token;
 
-    if (is_null($token))
-    {
+    if (is_null($token)) {
         $token = Load::class('session')->get('_token');
     }
 
@@ -153,98 +141,86 @@ function csrf_field():String
 }
 
 
-function route($name,Array $parameters = [])
+function route($name, array $parameters = [])
 {
-  return Load::class('route')->getName($name,$parameters);
+    return Load::class('route')->getName($name, $parameters);
 }
 
 
 
-if (!function_exists ( 'flash' ))
-{
-    function flash ( $key )
+if (!function_exists('flash')) {
+    function flash($key)
     {
         return Load::class('session')->flash($key);
     }
 }
 
 
-if (!function_exists ( 'is_base64' ))
-{
-    function is_base64 ( String $string ):Bool
+if (!function_exists('is_base64')) {
+    function is_base64(String $string):Bool
     {
-        return base64_encode ( base64_decode ( $string ) ) == $string;
+        return base64_encode(base64_decode($string)) == $string;
     }
 }
 
 
 
-if (!function_exists ( 'response' ))
-{
-    function response ()
+if (!function_exists('response')) {
+    function response()
     {
         return Load::class('response',...func_get_args());
     }
 }
 
 
-if (!function_exists ( 'json' ))
-{
-    function json ( $data )
+if (!function_exists('json')) {
+    function json($data)
     {
-      return Load::class('response')->json($data);
+        return Load::class('response')->json($data);
     }
 }
 
 
-if (!function_exists ( 'report' ))
-{
-    function report ( String $subject , String $message , $destination = null )
+if (!function_exists('report')) {
+    function report(String $subject, String $message, $destination = null)
     {
-        if (empty( $destination ))
-        {
-            $destination = str_replace ( ' ' , '-' , $subject );
+        if (empty($destination)) {
+            $destination = str_replace(' ', '-', $subject);
         }
 
-        $logDir = path ( 'storage/logs/' );
+        $logDir = path('storage/logs/');
 
         $extension = '.report';
 
-        if (!is_dir ( $logDir ))
-        {
-            mkdir ( $logDir , 0755 , true );
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0755, true);
         }
 
         $report = '----------------------------' . PHP_EOL .
                   ' Report                     ' . PHP_EOL .
                   '----------------------------' . PHP_EOL .
-                  '|IP: ' . Load::class('http')->ip () . PHP_EOL .
+                  '|IP: ' . Load::class('http')->ip() . PHP_EOL .
                   '|Subject: ' . $subject . PHP_EOL .
-                  '|File: ' . debug_backtrace ()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
-                  '|Line: ' . debug_backtrace ()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
-                  '|Date: ' . strftime ( '%d %B %Y %H:%M:%S' ) . PHP_EOL .
+                  '|File: ' . debug_backtrace()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
+                  '|Line: ' . debug_backtrace()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
+                  '|Date: ' . strftime('%d %B %Y %H:%M:%S') . PHP_EOL .
                   '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
-        return Load::class('file')->append ( $logDir . $destination . $extension , $report );
+        return Load::class('file')->append($logDir . $destination . $extension, $report);
     }
 }
 
 
-if (!function_exists ( 'env' ))
-{
-    function env ( $name )
+if (!function_exists('env')) {
+    function env($name)
     {
-        if (function_exists ( 'getenv' ))
-        {
-            if (getenv ( $name ))
-            {
-                return getenv ( $name );
+        if (function_exists('getenv')) {
+            if (getenv($name)) {
+                return getenv($name);
             }
         }
-        if (function_exists ( 'apache_getenv' ))
-        {
-            if (apache_getenv ( $name ))
-            {
-                return apache_getenv ( $name );
+        if (function_exists('apache_getenv')) {
+            if (apache_getenv($name)) {
+                return apache_getenv($name);
             }
         }
 
@@ -253,87 +229,62 @@ if (!function_exists ( 'env' ))
 }
 
 
-if (!function_exists ( 'cookie' ))
-{
+if (!function_exists('cookie')) {
     function cookie()
     {
-
-        if(func_num_args() == 0)
-        {
+        if (func_num_args() == 0) {
             return Load::class('cookie');
-        }
-        else if(func_num_args() == 1)
-        {
+        } elseif (func_num_args() == 1) {
             return Load::class('cookie')->get(func_get_args(0));
-        }
-        else
-        {
+        } else {
             return Load::class('cookie',...func_get_args());
         }
-
     }
 }
 
 
-if (!function_exists ( 'cache' ))
-{
-    function cache ()
+if (!function_exists('cache')) {
+    function cache()
     {
-        if (func_num_args() == 0)
-        {
+        if (func_num_args() == 0) {
             return Load::class('cache');
-        }
-        elseif (func_num_args() == 1)
-        {
-            return Load::class('cache')->get ( func_get_arg(0) );
-        }
-        else
-        {
-            return Load::class('cache')->put (...func_get_args());
+        } elseif (func_num_args() == 1) {
+            return Load::class('cache')->get(func_get_arg(0));
+        } else {
+            return Load::class('cache')->put(...func_get_args());
         }
     }
 }
 
 
-if (!function_exists ( 'session' ))
-{
-    function session ()
+if (!function_exists('session')) {
+    function session()
     {
-        if (func_num_args() == 0)
-        {
+        if (func_num_args() == 0) {
             return Load::class('session');
-        }
-        elseif (func_num_args() == 1)
-        {
-            return Load::class('session')->get (func_get_arg(0));
-        }
-        else
-        {
-            return Load::class('session')->set (...func_get_args());
+        } elseif (func_num_args() == 1) {
+            return Load::class('session')->get(func_get_arg(0));
+        } else {
+            return Load::class('session')->set(...func_get_args());
         }
     }
 }
 
 
-if (!function_exists ( 'view' ))
-{
-    function view ( String $file , $data = [] , $cache = false )
+if (!function_exists('view')) {
+    function view(String $file, $data = [], $cache = false)
     {
-        return Load::class('view')->render ( $file , $data , $cache );
+        return Load::class('view')->render($file, $data, $cache);
     }
 }
 
 
-if (!function_exists ( 'redirect' ))
-{
-    function redirect ( $link = false , $refresh = 0 , $http_response_code = 302 )
+if (!function_exists('redirect')) {
+    function redirect($link = false, $refresh = 0, $http_response_code = 302)
     {
-        if ($link)
-        {
-            return Load::class('redirect')->to( $link , $refresh , $http_response_code );
-        }
-        else
-        {
+        if ($link) {
+            return Load::class('redirect')->to($link, $refresh, $http_response_code);
+        } else {
             return Load::class('redirect');
         }
     }
@@ -341,302 +292,250 @@ if (!function_exists ( 'redirect' ))
 
 
 
-if (!function_exists ( 'lang' ))
-{
-    function lang ( $word = null , $replace = [] )
+if (!function_exists('lang')) {
+    function lang($word = null, $replace = [])
     {
-        if (!is_null ( $word ))
-        {
-            return Load::class('language')->translate ( $word , $replace );
-        }
-        else
-        {
+        if (!is_null($word)) {
+            return Load::class('language')->translate($word, $replace);
+        } else {
             return Load::class('language');
         }
     }
 }
 
 
-if (!function_exists ( 'validator' ))
-{
-    function validator ( $data = null , $rules = [] )
+if (!function_exists('validator')) {
+    function validator($data = null, $rules = [])
     {
-        if (!is_null ( $data ))
-        {
-            return Load::class('validator')->make ( $data , $rules );
-        }
-        else
-        {
+        if (!is_null($data)) {
+            return Load::class('validator')->make($data, $rules);
+        } else {
             return Load::class('validator');
         }
     }
 }
 
 
-if (!function_exists ( 'get' ))
-{
-    function get ( $name = false )
+if (!function_exists('get')) {
+    function get($name = false)
     {
-        return Load::class('input')->get ( $name );
+        return Load::class('input')->get($name);
     }
 }
 
 
-if (!function_exists ( 'post' ))
-{
-
-    function post ( $name = false)
+if (!function_exists('post')) {
+    function post($name = false)
     {
-        return Load::class('input')->post ( $name  );
+        return Load::class('input')->post($name);
     }
 }
 
 
-if (!function_exists ( 'request' ))
-{
-    function request ()
+if (!function_exists('request')) {
+    function request()
     {
-        if (func_num_args() == 0)
-        {
+        if (func_num_args() == 0) {
             return Load::class('request');
-        }
-        elseif (func_num_args() == 1)
-        {
+        } elseif (func_num_args() == 1) {
             return Load::class('request')->{func_get_arg(0)};
-        }
-        else
-        {
+        } else {
             return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
         }
     }
 }
 
 
-if (!function_exists ( 'xssClean' ))
-{
-    function xssClean ( $data )
+if (!function_exists('xssClean')) {
+    function xssClean($data)
     {
-        return Load::class('input')->xssClean ( $data );
+        return Load::class('input')->xssClean($data);
     }
 }
 
 
-if (!function_exists ( 'fullTrim' ))
-{
-    function fullTrim ( $str , $char = ' ' ): String
+if (!function_exists('fullTrim')) {
+    function fullTrim($str, $char = ' '): String
     {
-        return str_replace ( $char , '' , $str );
+        return str_replace($char, '', $str);
     }
 }
 
 
-if (!function_exists ( 'encode_php_tag' ))
-{
-    function encode_php_tag ( $str ): String
+if (!function_exists('encode_php_tag')) {
+    function encode_php_tag($str): String
     {
-        return str_replace ( array( '<?' , '?>' ) , array( '&lt;?' , '?&gt;' ) , $str );
+        return str_replace(array( '<?' , '?>' ), array( '&lt;?' , '?&gt;' ), $str);
     }
 }
 
 
-if (!function_exists ( 'preg_replace_array' ))
-{
-
-    function preg_replace_array ( $pattern , array $replacements , $subject ): String
+if (!function_exists('preg_replace_array')) {
+    function preg_replace_array($pattern, array $replacements, $subject): String
     {
-        $callback = function () use ( &$replacements ) {
-            foreach ($replacements as $key => $value)
-            {
-                return array_shift ( $replacements );
+        $callback = function () use (&$replacements) {
+            foreach ($replacements as $key => $value) {
+                return array_shift($replacements);
             }
         };
 
-        return preg_replace_callback ( $pattern , $callback , $subject );
+        return preg_replace_callback($pattern, $callback, $subject);
     }
 }
 
 
-if (!function_exists ( 'str_replace_first' ))
-{
-    function str_replace_first ( $search , $replace , $subject ): String
+if (!function_exists('str_replace_first')) {
+    function str_replace_first($search, $replace, $subject): String
     {
-        return Load::class('str')->replace_first ( $search , $replace , $subject );
+        return Load::class('str')->replace_first($search, $replace, $subject);
     }
 }
 
 
-if (!function_exists ( 'str_replace_last' ))
-{
-    function str_replace_last ( $search , $replace , $subject ): String
+if (!function_exists('str_replace_last')) {
+    function str_replace_last($search, $replace, $subject): String
     {
-        return Load::class('str')->replace_last ( $search , $replace , $subject );
+        return Load::class('str')->replace_last($search, $replace, $subject);
     }
 }
 
 
-if (!function_exists ( 'str_slug' ))
-{
-    function str_slug ( $str , $separator = '-' ): String
+if (!function_exists('str_slug')) {
+    function str_slug($str, $separator = '-'): String
     {
-        return Load::class('str')->slug ( $str , $separator );
+        return Load::class('str')->slug($str, $separator);
     }
 }
 
 
-if (!function_exists ( 'str_limit' ))
-{
-    function str_limit ( $str , $limit = 100,$end = '...' ): String
+if (!function_exists('str_limit')) {
+    function str_limit($str, $limit = 100, $end = '...'): String
     {
-        return Load::class('str')->limit ( $str , $limit , $end );
+        return Load::class('str')->limit($str, $limit, $end);
     }
 }
 
 
-if (!function_exists ( 'upper' ))
-{
-
-    function upper ( String $str , $encoding = 'UTF-8' ): String
+if (!function_exists('upper')) {
+    function upper(String $str, $encoding = 'UTF-8'): String
     {
-        return mb_strtoupper ( $str , $encoding );
+        return mb_strtoupper($str, $encoding);
     }
 }
 
 
-if (!function_exists ( 'lower' ))
-{
-
-    function lower ( String $str , $encoding = 'UTF-8' ): String
+if (!function_exists('lower')) {
+    function lower(String $str, $encoding = 'UTF-8'): String
     {
-        return mb_strtolower ( $str , $encoding );
+        return mb_strtolower($str, $encoding);
     }
 }
 
 
-if (!function_exists ( 'title' ))
-{
+if (!function_exists('title')) {
     /**
      * @param $str
      * @return string
      */
-    function title ( String $str , $encoding = 'UTF-8' ): String
+    function title(String $str, $encoding = 'UTF-8'): String
     {
-        return mb_convert_case ( $str , MB_CASE_TITLE , $encoding );
+        return mb_convert_case($str, MB_CASE_TITLE, $encoding);
     }
 }
 
 
-if (!function_exists ( 'len' ))
-{
+if (!function_exists('len')) {
     /**
      * @param array|string $value
      * @param null|string $encoding
      * @return int|bool
      */
-    function len ( $value , $encoding = null )
+    function len($value, $encoding = null)
     {
-        if (is_string ( $value ))
-        {
-            return mb_strlen ( $value , $encoding );
-        }
-        elseif (is_array ( $value ))
-        {
-            return count ( $value );
-        }
-        else
-        {
+        if (is_string($value)) {
+            return mb_strlen($value, $encoding);
+        } elseif (is_array($value)) {
+            return count($value);
+        } else {
             return 0;
         }
-
     }
 }
 
 
-if (!function_exists ( 'str_replace_array' ))
-{
-
-    function str_replace_array ( $search , array $replace , $subject ): String
+if (!function_exists('str_replace_array')) {
+    function str_replace_array($search, array $replace, $subject): String
     {
-        return Load::class('str')->replace_array ( $search , $replace , $subject );
+        return Load::class('str')->replace_array($search, $replace, $subject);
     }
 }
 
 
-if (!function_exists ( 'url' ))
-{
-    function url ($url = null, $parameters = [])
+if (!function_exists('url')) {
+    function url($url = null, $parameters = [])
     {
-        if (is_null($url))
-        {
+        if (is_null($url)) {
             return Load::class('url');
+        } else {
+            return Load::class('url')->to(...func_get_args());
         }
-        else
-        {
-            return Load::class('url')->to (...func_get_args());
-        }
-
     }
 }
 
 
-if (!function_exists ( 'current_url' ))
-{
-    function current_url ( $url = '' ): String
+if (!function_exists('current_url')) {
+    function current_url($url = ''): String
     {
-        return Load::class('url')->current ( $url );
+        return Load::class('url')->current($url);
     }
 }
 
 
-if (!function_exists ( 'clean_url' ))
-{
-    function clean_url ( $url ): String
+if (!function_exists('clean_url')) {
+    function clean_url($url): String
     {
-        if ($url == '') return '';
-
-        $url = str_replace ( "http://" , "" , strtolower ( $url ) );
-
-        $url = str_replace ( "https://" , "" , $url );
-
-        if (substr ( $url , 0 , 4 ) == 'www.')
-        {
-            $url = substr ( $url , 4 );
+        if ($url == '') {
+            return '';
         }
-        $url = explode ( '/' , $url );
 
-        $url = reset ( $url );
+        $url = str_replace("http://", "", strtolower($url));
 
-        $url = explode ( ':' , $url );
+        $url = str_replace("https://", "", $url);
 
-        $url = reset ( $url );
+        if (substr($url, 0, 4) == 'www.') {
+            $url = substr($url, 4);
+        }
+        $url = explode('/', $url);
+
+        $url = reset($url);
+
+        $url = explode(':', $url);
+
+        $url = reset($url);
 
         return $url;
     }
 }
 
 
-if (!function_exists ( 'segment' ))
-{
-    function segment ( Int $number )
+if (!function_exists('segment')) {
+    function segment(Int $number)
     {
-        return Load::class('url')->segment ( $number );
+        return Load::class('url')->segment($number);
     }
 }
 
 
-if (!function_exists ( 'debug' ))
-{
-    function debug ( $data )
+if (!function_exists('debug')) {
+    function debug($data)
     {
-        ob_get_clean ();
+        ob_get_clean();
         echo '<pre style="background-color:#fff; color:#222; line-height:1.2em; font-weight:normal; font:12px Monaco, Consolas, monospace; word-wrap: break-word; white-space: pre-wrap; position:relative; z-index:100000">';
 
-        if (is_array ( $data ))
-        {
+        if (is_array($data)) {
             print_r($data);
-        }
-        else
-        {
-            var_dump ( $data );
+        } else {
+            var_dump($data);
         }
         echo "</pre>";
         die(1);
@@ -645,55 +544,49 @@ if (!function_exists ( 'debug' ))
 
 
 
-if (!function_exists ( 'is_mail' ))
-{
-    function is_mail ( String $mail )
+if (!function_exists('is_mail')) {
+    function is_mail(String $mail)
     {
-        return Load::class('validator')->is_mail ( $mail );
+        return Load::class('validator')->is_mail($mail);
     }
 }
 
 
-if (!function_exists ( 'is_url' ))
-{
-    function is_url ( String $url )
+if (!function_exists('is_url')) {
+    function is_url(String $url)
     {
-        return Load::class('validator')->is_url ( $url );
+        return Load::class('validator')->is_url($url);
     }
 }
 
 
-if (!function_exists ( 'is_ip' ))
-{
-    function is_ip ( $ip )
+if (!function_exists('is_ip')) {
+    function is_ip($ip)
     {
-        return Load::class('validator')->is_ip ( $ip );
+        return Load::class('validator')->is_ip($ip);
     }
 }
 
 
-if (!function_exists ( 'css' ))
-{
-    function css ( $file , $modifiedTime = false ): String
+if (!function_exists('css')) {
+    function css($file, $modifiedTime = false): String
     {
-        return Load::class('html')->css ( $file , $modifiedTime );
+        return Load::class('html')->css($file, $modifiedTime);
     }
 }
 
 
-if (!function_exists ( 'js' ))
-{
-    function js ( $file , $modifiedTime = false ): String
+if (!function_exists('js')) {
+    function js($file, $modifiedTime = false): String
     {
-        return Load::class('html')->js ( $file , $modifiedTime );
+        return Load::class('html')->js($file, $modifiedTime);
     }
 }
 
 
-if (!function_exists ( 'img' ))
-{
-    function img ( $file , $attributes = [] ): String
+if (!function_exists('img')) {
+    function img($file, $attributes = []): String
     {
-        return Load::class('html')->img ( $file , $attributes );
+        return Load::class('html')->img($file, $attributes);
     }
 }

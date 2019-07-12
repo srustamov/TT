@@ -10,7 +10,6 @@ use System\Facades\File;
 
 class Response
 {
-
     private $content;
 
     private $headers = [];
@@ -93,9 +92,9 @@ class Response
      * @param Int $statusCode
      * @param array $headers
      */
-    function __construct ( $content = '' , $statusCode = 200 , Array $headers = [] )
+    public function __construct($content = '', $statusCode = 200, array $headers = [])
     {
-        $this->make ( $content , (int) $statusCode , $headers );
+        $this->make($content, (int) $statusCode, $headers);
     }
 
 
@@ -105,13 +104,13 @@ class Response
      * @param array $headers
      * @return $this
      */
-    public function make ( $content, $statusCode = 200 , Array $headers = [] )
+    public function make($content, $statusCode = 200, array $headers = [])
     {
-        $this->setContent ( $content );
+        $this->setContent($content);
 
         $this->headers = $headers;
 
-        $this->setStatusCode ( (int) $statusCode );
+        $this->setStatusCode((int) $statusCode);
 
         return $this;
     }
@@ -121,9 +120,9 @@ class Response
      * @param null $message
      * @return $this
      */
-    public function setStatusCode ( Int $code , $message = null )
+    public function setStatusCode(Int $code, $message = null)
     {
-        if (is_null ( $message )) {
+        if (is_null($message)) {
             $message = $this->messages[ $code ] ?? '';
         }
 
@@ -138,18 +137,17 @@ class Response
      * @param $data
      * @return Response
      */
-    public function json ( $data )
+    public function json($data)
     {
-        $this->contentType ( 'application/json' );
+        $this->contentType('application/json');
 
-        $this->setContent ( json_encode ( $data ) );
+        $this->setContent(json_encode($data));
 
-        if (JSON_ERROR_NONE !== json_last_error ()) {
-            throw new \InvalidArgumentException( json_last_error_msg () );
+        if (JSON_ERROR_NONE !== json_last_error()) {
+            throw new \InvalidArgumentException(json_last_error_msg());
         }
 
         return $this;
-
     }
 
 
@@ -158,26 +156,26 @@ class Response
      * @param String $fileName
      * @return Response
      */
-    public function download(String $path,String $fileName = null,$disposition = 'attachment')
+    public function download(String $path, String $fileName = null, $disposition = 'attachment')
     {
-      $this->header('Content-Disposition',$disposition.';filename='.(!is_null($fileName) ? $fileName : urlencode($fileName)));
-      $this->header('Content-Type','application/force-download');
-      $this->header('Content-Type','application/octet-stream');
-      $this->header('Content-Type','application/download');
-      $this->header('Content-Description','File Transfer');
-      $this->header('Content-Lenght',File::size($path));
-      $this->setContent(File::get($path));
+        $this->header('Content-Disposition', $disposition.';filename='.(!is_null($fileName) ? $fileName : urlencode($fileName)));
+        $this->header('Content-Type', 'application/force-download');
+        $this->header('Content-Type', 'application/octet-stream');
+        $this->header('Content-Type', 'application/download');
+        $this->header('Content-Description', 'File Transfer');
+        $this->header('Content-Lenght', File::size($path));
+        $this->setContent(File::get($path));
 
-      return $this;
+        return $this;
     }
 
     /**
      * @param $contentType
      * @return Response
      */
-    public function contentType ( $contentType )
+    public function contentType($contentType)
     {
-        return $this->header ( 'Content-Type' , $contentType );
+        return $this->header('Content-Type', $contentType);
     }
 
     /**
@@ -186,7 +184,7 @@ class Response
      * @param bool $replace
      * @return Response
      */
-    public function header ( $name , $value , $replace = true )
+    public function header($name, $value, $replace = true)
     {
         $this->headers[ $name ] = array( 'value' => $value , 'replace' => $replace );
 
@@ -197,13 +195,12 @@ class Response
      * @param Array $headers
      * @return $this
      */
-    public function withHeaders ( Array $headers)
+    public function withHeaders(array $headers)
     {
         $this->headers = [];
 
-        foreach ($headers as $name => $value)
-        {
-            $this->header($name,$value);
+        foreach ($headers as $name => $value) {
+            $this->header($name, $value);
         }
 
         return $this;
@@ -213,7 +210,7 @@ class Response
      * @param String $charset
      * @return $this
      */
-    public function charset ( String $charset )
+    public function charset(String $charset)
     {
         $this->charset = $charset;
 
@@ -224,15 +221,12 @@ class Response
      * @param $name
      * @return bool|mixed
      */
-    public function getHeader ( $name )
+    public function getHeader($name)
     {
-        if ($this->hasHeader($name))
-        {
+        if ($this->hasHeader($name)) {
             return $this->headers[ $name ];
-        }
-        else
-        {
-            $headers = headers_list ();
+        } else {
+            $headers = headers_list();
 
             return $headers[ $name ] ?? false;
         }
@@ -242,7 +236,7 @@ class Response
      * @param $name
      * @return bool
      */
-    public function hasHeader ( $name ): Bool
+    public function hasHeader($name): Bool
     {
         return array_key_exists($name, $this->headers);
     }
@@ -251,11 +245,10 @@ class Response
      * @param $name
      * @return Response
      */
-    public function removeHeader ( $name )
+    public function removeHeader($name)
     {
-        if ($this->hasHeader($name))
-        {
-            unset( $this->headers[ $name ] );
+        if ($this->hasHeader($name)) {
+            unset($this->headers[ $name ]);
         }
 
         return $this;
@@ -264,7 +257,7 @@ class Response
     /**
      * @return mixed
      */
-    public function getContent ()
+    public function getContent()
     {
         return $this->content;
     }
@@ -273,21 +266,19 @@ class Response
      * @param $content
      * @return $this
      */
-    public function setContent ( $content )
+    public function setContent($content)
     {
-        if($content instanceof $this)
-        {
+        if ($content instanceof $this) {
             return $this;
         }
 
-        if(is_array($content))
-        {
+        if (is_array($content)) {
             $content = json_encode($content);
         }
 
 
-        if (null !== $content && !is_string ( $content ) && !is_numeric ( $content ) && !is_callable ( array( $content , '__toString' ) )) {
-            throw new \UnexpectedValueException( sprintf ( 'The Response content must be a string or object implementing __toString(), "%s" given.' , gettype ( $content ) ) );
+        if (null !== $content && !is_string($content) && !is_numeric($content) && !is_callable(array( $content , '__toString' ))) {
+            throw new \UnexpectedValueException(sprintf('The Response content must be a string or object implementing __toString(), "%s" given.', gettype($content)));
         }
 
         $this->content = (string) $content;
@@ -299,7 +290,7 @@ class Response
      * @param $content
      * @return Response
      */
-    public function appendContent( $content)
+    public function appendContent($content)
     {
         return $this->setContent($this->getContent().$content);
     }
@@ -308,7 +299,7 @@ class Response
      * @param $content
      * @return Response
      */
-    public function prependContent( $content)
+    public function prependContent($content)
     {
         return $this->setContent($content.$this->getContent());
     }
@@ -317,7 +308,7 @@ class Response
      * @param Int $refresh
      * @return $this
      */
-    public function refresh ( Int $refresh )
+    public function refresh(Int $refresh)
     {
         $this->refresh = $refresh;
 
@@ -330,53 +321,49 @@ class Response
      * @param int $refresh
      * @return mixed
      */
-    public function redirect ( String $url , $statusCode = 302 , $refresh = 0 )
+    public function redirect(String $url, $statusCode = 302, $refresh = 0)
     {
-        return Load::class( 'redirect' )->to ( $url , $statusCode , $refresh );
+        return Load::class('redirect')->to($url, $statusCode, $refresh);
     }
 
     /**
      * @return Response
      */
-    public function send ()
+    public function send()
     {
         if ($this->refresh > 0) {
-            sleep ( $this->refresh );
+            sleep($this->refresh);
         }
 
         if (!$this->hasHeader('Content-Type')) {
-            $this->contentType ( "text/html;charset={$this->charset}" );
+            $this->contentType("text/html;charset={$this->charset}");
         }
 
-        $this->headersSend ();
+        $this->headersSend();
 
-        if (Load::class( 'request' )->isMethod ( 'HEAD' )) {
-            $this->setContent ( null );
+        if (Load::class('request')->isMethod('HEAD')) {
+            $this->setContent(null);
         }
 
-        $this->sendContent ();
+        $this->sendContent();
 
-        $this->setContent (null);
+        $this->setContent(null);
 
-        if (function_exists ( 'fastcgi_finish_request' ))
-        {
-            fastcgi_finish_request ();
-        }
-        else
-        {
-          if(!CONSOLE)
-          {
-            static::closeOutputBuffers();
-          }
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } else {
+            if (!CONSOLE) {
+                static::closeOutputBuffers();
+            }
         }
 
         return $this;
     }
 
 
-   /**
-    * @author Symfony
-   */
+    /**
+     * @author Symfony
+    */
     public static function closeOutputBuffers()
     {
         $status = ob_get_status(true);
@@ -385,8 +372,7 @@ class Response
 
         $flags = defined('PHP_OUTPUT_HANDLER_REMOVABLE') ? PHP_OUTPUT_HANDLER_REMOVABLE | PHP_OUTPUT_HANDLER_FLUSHABLE  : -1;
 
-        while ($level-- > 0 && ($s = $status[$level]) && (!isset($s['del']) ? !isset($s['flags']) || $flags === ($s['flags'] & $flags) : $s['del']))
-        {
+        while ($level-- > 0 && ($s = $status[$level]) && (!isset($s['del']) ? !isset($s['flags']) || $flags === ($s['flags'] & $flags) : $s['del'])) {
             ob_end_flush();
         }
     }
@@ -394,14 +380,13 @@ class Response
     /**
      * @return Response
      */
-    public function headersSend ()
+    public function headersSend()
     {
-
-        if (!headers_sent ()) {
+        if (!headers_sent()) {
             foreach ($this->headers as $name => $header) {
-                header ( $name . ":" . $header[ 'value' ] , $header[ 'replace' ] , $this->statusCode );
+                header($name . ":" . $header[ 'value' ], $header[ 'replace' ], $this->statusCode);
             }
-            header ( sprintf ( "%s %s %s" , $this->protocol () , $this->statusCode , $this->statusMessage ) , true , $this->statusCode );
+            header(sprintf("%s %s %s", $this->protocol(), $this->statusCode, $this->statusMessage), true, $this->statusCode);
         }
 
         return $this;
@@ -411,16 +396,13 @@ class Response
      * @param String $protocol
      * @return string|Response
      */
-    public function protocol ( String $protocol = null )
+    public function protocol(String $protocol = null)
     {
-        if (!is_null ( $protocol ))
-        {
+        if (!is_null($protocol)) {
             $this->protocol = $protocol;
 
             return $this;
-        }
-        else
-        {
+        } else {
             return $_SERVER[ 'SERVER_PROTOCOL' ] ?? $this->protocol;
         }
     }
@@ -428,7 +410,7 @@ class Response
     /**
      * @return Response
      */
-    public function sendContent ()
+    public function sendContent()
     {
         echo $this->content;
 
@@ -436,9 +418,8 @@ class Response
     }
 
 
-    public function  __toString ()
+    public function __toString()
     {
-      $this->send();
+        $this->send();
     }
-
 }

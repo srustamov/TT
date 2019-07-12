@@ -15,10 +15,8 @@ use System\Engine\Http\Middleware;
 use System\Exceptions\RouteException;
 use System\Exceptions\NotFoundException;
 
-
 class Route
 {
-
     use RouteMethodsTrait;
     use RouteGroupTrait;
 
@@ -31,6 +29,9 @@ class Route
         'PATCH'   => [] ,
         'NAMES'   => [] ,
     ];
+
+
+    private $middleware_alias = [];
 
     private $patterns = [];
 
@@ -66,7 +67,7 @@ class Route
     }
 
 
-    public function setGlobalPatterns(Array $pattrens)
+    public function setGlobalPatterns(array $pattrens)
     {
         $this->patterns = $pattrens;
     }
@@ -74,27 +75,21 @@ class Route
 
     public function domain(String $domain = null)
     {
-        if(!is_null($domain))
-        {
-            if(preg_match('/^https?:\/\//',$domain))
-            {
-                $domain = str_replace(['https://','http://'],'',$domain);
+        if (!is_null($domain)) {
+            if (preg_match('/^https?:\/\//', $domain)) {
+                $domain = str_replace(['https://','http://'], '', $domain);
             }
 
             $this->domain = Load::class('url')->scheme().'://'.$domain;
 
             return $this;
-        }
-        else
-        {
-
+        } else {
             $domain =  !is_null($this->domain)
                 ? $this->domain
                 : Load::class('url')->base();
 
-            return rtrim($domain,'/');
+            return rtrim($domain, '/');
         }
-
     }
 
 
@@ -114,43 +109,32 @@ class Route
 
         $url        = $path;
 
-        if(is_array($path))
-        {
-
-            if(isset($path['path']))
-            {
+        if (is_array($path)) {
+            if (isset($path['path'])) {
                 $url  = (string) $path['path'];
-            }
-            else
-            {
+            } else {
                 throw new \InvalidArgumentException("Route argument path (url) required");
             }
 
-            if(isset($path['middleware']))
-            {
-              $middleware = array_merge($middleware,(array) $path['middleware']);
+            if (isset($path['middleware'])) {
+                $middleware = array_merge($middleware, (array) $path['middleware']);
             }
 
-            if(isset($path['pattern']))
-            {
-              $pattern = array_merge($pattern,$path['pattern']);
+            if (isset($path['pattern'])) {
+                $pattern = array_merge($pattern, $path['pattern']);
             }
-
         }
 
-        $pattern = array_merge($this->patterns ,$pattern);
+        $pattern = array_merge($this->patterns, $pattern);
 
-        $middleware_array = array_merge($this->group_middleware,$middleware);
+        $middleware_array = array_merge($this->group_middleware, $middleware);
 
-        $_path = rtrim($this->domain().'/'.trim($this->prefix.strtolower($url),'/'),'/');
+        $_path = rtrim($this->domain().'/'.trim($this->prefix.strtolower($url), '/'), '/');
 
-        if(isset($path['name']))
-        {
-          $this->routes['NAMES'][$this->group_name.$path['name']] = $_path;
-        }
-        elseif(!is_null($this->name))
-        {
-          $this->routes['NAMES'][$this->group_name.$this->name] = $_path;
+        if (isset($path['name'])) {
+            $this->routes['NAMES'][$this->group_name.$path['name']] = $_path;
+        } elseif (!is_null($this->name)) {
+            $this->routes['NAMES'][$this->group_name.$this->name] = $_path;
         }
 
         foreach ($this->methods as $method) {
@@ -168,7 +152,6 @@ class Route
         $this->pattern = [];
 
         $this->middleware = [];
-
     }
 
 
@@ -191,16 +174,14 @@ class Route
      */
     protected function run()
     {
-        $requestUri = trim(Load::class('url')->current(),'/');
+        $requestUri = trim(Load::class('url')->current(), '/');
 
         $method     = $this->getRequestMethod();
 
         $ajax       = Load::class('http')->isAjax();
 
-        foreach ($this->routes[ $method ] as $resource)
-        {
-            if ($resource['ajax'] && !$ajax)
-            {
+        foreach ($this->routes[ $method ] as $resource) {
+            if ($resource['ajax'] && !$ajax) {
                 continue;
             }
 
@@ -210,112 +191,96 @@ class Route
 
             $handler = $resource[ 'handler' ];
 
-            if (preg_match('/({.+?})/', $route))
-            {
+            if (preg_match('/({.+?})/', $route)) {
                 list($args, $uri, $route) = $this->parseRoute($requestUri, $route, $resource[ 'pattern' ] ?? []);
             }
 
-            if (!preg_match("#^$route$#", $requestUri))
-            {
+            if (!preg_match("#^$route$#", $requestUri)) {
                 unset($this->routes[ $method ]);
                 continue;
             }
 
-            if (isset($uri))
-            {
+            if (isset($uri)) {
                 preg_match_all('/{(.+?)}/', $uri, $_request_keys);
 
-                $_request_keys = array_map(function ($item)
-                {
+                $_request_keys = array_map(function ($item) {
                     return str_replace('?', '', $item);
                 }, $_request_keys[1]);
 
                 $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
 
-                foreach ($_request_data as $key => $value)
-                {
+                foreach ($_request_data as $key => $value) {
                     $_REQUEST[$key] = $value;
                 }
             }
 
-            if (is_string($handler) && strpos($handler, '@'))
-            {
-                return $this->callAction($handler,$resource['middleware'],$args);
-            }
-            elseif (is_callable($handler))
-            {
-                return $this->callHandler($handler,$resource['middleware'],$args);
-            }
-            else
-            {
+            if (is_string($handler) && strpos($handler, '@')) {
+                return $this->callAction($handler, $resource['middleware'], $args);
+            } elseif (is_callable($handler)) {
+                return $this->callHandler($handler, $resource['middleware'], $args);
+            } else {
                 throw new RouteException("Route Handler type undefined");
             }
-
         }
         $this->notFound = true;
     }
 
 
 
-    protected function callAction(String $action,$middleware_array,$args)
+    protected function callAction(String $action, $middleware_array, $args)
     {
         list($controller, $method) = explode('@', $action);
 
-        if (strpos($controller, '/') !== false)
-        {
+        if (strpos($controller, '/') !== false) {
             $controller = str_replace('/', '\\', $controller);
         }
 
         $controller_with_namespace = "\\" .$this->namespace."\\$controller";
 
-        if (method_exists($controller_with_namespace, $method))
-        {
-            define('CALLED_CONTROLLER_METHOD',strtolower($method));
+        if (method_exists($controller_with_namespace, $method)) {
+            define('ACTION', strtolower($method));
 
-            define('CALLED_CONTROLLER',$controller);
+            define('CONTROLLER', $controller);
 
-            if (!empty($middleware_array))
-            {
-                foreach ($middleware_array as $middleware)
-                {
-                    Middleware::init($middleware);
+            if (!empty($middleware_array)) {
+                foreach ($middleware_array as $middleware) {
+                    if (isset($this->middlewareAliases[$middleware])) {
+                        Middleware::init($this->middlewareAliases[$middleware], true);
+                    }
                 }
             }
 
             $args = Reflections::classMethodParameters($controller_with_namespace, $method, $args);
 
-            if (method_exists($controller_with_namespace,'__construct')) {
+            if (method_exists($controller_with_namespace, '__construct')) {
                 $constructorArgs = Reflections::classMethodParameters($controller_with_namespace, '__construct');
             } else {
                 $constructorArgs = [];
             }
 
-            $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method],$args);
+            $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method], $args);
 
             $this->response($content);
-
-        }
-        else
-        {
+        } else {
             throw new NotFoundException;
         }
     }
 
 
 
-    protected function callHandler(Callable $handler,$middleware_array,$args)
+    protected function callHandler(callable $handler, $middleware_array, $args)
     {
-        if (!empty($middleware_array))
-        {
-            foreach ($middleware_array as $middleware)
-            {
-                Middleware::init($middleware);
+        if (!empty($middleware_array)) {
+            foreach ($middleware_array as $middleware) {
+                if (isset($this->middlewareAliases[$middleware])) {
+                    Middleware::init($this->middlewareAliases[$middleware], true);
+                }
             }
         }
 
         $args    = Reflections::functionParameters($handler, $args);
 
-        $content = call_user_func_array($handler,$args);
+        $content = call_user_func_array($handler, $args);
 
         $this->response($content);
     }
@@ -340,37 +305,25 @@ class Route
      */
     private function parseRoute($requestUri, $resource, $patterns): array
     {
+        $callback = function ($matches) use ($patterns) {
+            $normalize = str_replace('?', '', $matches[1]);
 
-        $callback = function ($matches) use ($patterns)
-        {
-            $normalize = str_replace('?','',$matches[1]);
-
-            if (in_array($normalize, array_keys($patterns)))
-            {
-                if (strpos($matches[1],'?') !== false)
-                {
+            if (in_array($normalize, array_keys($patterns))) {
+                if (strpos($matches[1], '?') !== false) {
                     return '?(\/' . $patterns[ $normalize ] . ')?';
-                }
-                else
-                {
+                } else {
                     return $patterns[ $normalize ];
                 }
+            } else {
+                if (strpos($matches[1], '?') !== false) {
+                    return '?(\/[a-zA-Z0-9_=\-\?]+)?';
+                } else {
+                    return '[a-zA-Z0-9_=\-\?]+';
+                }
             }
-            else
-            {
-              if (strpos($matches[1],'?') !== false)
-              {
-                  return '?(\/[a-zA-Z0-9_=\-\?]+)?';
-              }
-              else
-              {
-                  return '[a-zA-Z0-9_=\-\?]+';
-              }
-            }
-
         };
 
-        $route  = preg_replace_callback('/{(.+?)}/',$callback, $resource);
+        $route  = preg_replace_callback('/{(.+?)}/', $callback, $resource);
 
         $regUri = explode('/', str_replace('?}', '}', $resource));
 
@@ -386,18 +339,14 @@ class Route
      */
     public function middleware($middleware)
     {
-        if(!empty($this->methods))
-        {
+        if (!empty($this->methods)) {
             foreach ($this->methods as $method) {
-
                 $index = count($this->routes[ $method ]) - 1;
 
                 $this->routes[ $method ][ $index ][ 'middleware' ][] = $middleware;
             }
-        }
-        else
-        {
-          $this->middleware[] = $middleware;
+        } else {
+            $this->middleware[] = $middleware;
         }
 
         return $this;
@@ -409,24 +358,20 @@ class Route
      * @param null|string $value
      * @return void
      */
-    public function pattern($name,$value = null)
+    public function pattern($name, $value = null)
     {
         $pattern = is_array($name) ? $name : [$name => $value];
 
-        if(!empty($this->methods))
-        {
+        if (!empty($this->methods)) {
             foreach ($this->methods as $method) {
-
                 $index = count($this->routes[ $method ]) - 1;
 
                 $old = $this->routes[ $method ][ $index ][ 'pattern' ];
 
-                $this->routes[ $method ][ $index ][ 'pattern' ] = array_merge($old,$pattern);
+                $this->routes[ $method ][ $index ][ 'pattern' ] = array_merge($old, $pattern);
             }
-        }
-        else
-        {
-          $this->pattern = $pattern;
+        } else {
+            $this->pattern = $pattern;
         }
 
         return $this;
@@ -439,20 +384,16 @@ class Route
      */
     public function name(String $name)
     {
-        if(!empty($this->methods))
-        {
+        if (!empty($this->methods)) {
             foreach ($this->methods as $method) {
-
                 $index = count($this->routes[ $method ]) - 1;
 
                 $path = $this->routes[ $method ][ $index ][ 'path' ];
 
                 $this->routes['NAMES'][$this->group_name.$name] = $path;
             }
-        }
-        else
-        {
-          $this->name = $name;
+        } else {
+            $this->name = $name;
         }
 
         return $this;
@@ -472,65 +413,59 @@ class Route
     }
 
 
-    public function getName($name,Array $parameters = [])
+    public function getName($name, array $parameters = [])
     {
-      if(isset($this->routes['NAMES'][$name])) {
-        $route =  $this->routes['NAMES'][$name];
+        if (isset($this->routes['NAMES'][$name])) {
+            $route =  $this->routes['NAMES'][$name];
 
-        if(strpos($route,'}') !== false) {
-          if(!empty($parameters)) {
-            foreach ($parameters as $key => $value) {
-              $route = str_replace(['{'.$key.'}','{'.$key.'?}'],$value,$route);
+            if (strpos($route, '}') !== false) {
+                if (!empty($parameters)) {
+                    foreach ($parameters as $key => $value) {
+                        $route = str_replace(['{'.$key.'}','{'.$key.'?}'], $value, $route);
+                    }
+                }
+
+                $callback = function ($match) {
+                    if (strpos($match[0], '?') !== false) {
+                        return '';
+                    } else {
+                        return $match[0];
+                    }
+                };
+
+                $route = preg_replace_callback('/({.+?})/', $callback, $route);
+
+                if (strpos($route, '}') !== false) {
+                    throw new RouteException("Route url parameters required");
+                }
             }
-          }
 
-          $callback = function($match)
-          {
-              if(strpos($match[0],'?') !== false) {
-                return '';
-              } else {
-                return $match[0];
-              }
-          };
-
-          $route = preg_replace_callback('/({.+?})/',$callback,$route);
-
-          if(strpos($route,'}') !== false) {
-            throw new RouteException("Route url parameters required");
-          }
-
+            return $route;
+        } else {
+            throw new RouteException("Route name [{$name}] not found");
         }
-
-        return $route;
-
-      }
-      else {
-        throw new RouteException("Route name [{$name}] not found");
-      }
-
     }
 
 
 
-    public function execute(App $app)
+    public function execute(App $app, $routeMiddleware)
     {
-        if (file_exists ( $file = $app->routes_cache_file() ))
-        {
+        $this->middlewareAliases = $routeMiddleware;
+
+        if (file_exists($file = $app->routesCacheFile())) {
             $this->routes = require_once $file;
-        }
-        else
-        {
-            foreach (glob($app->path ( 'routes' )."/*") as $file) {
+        } else {
+            foreach (glob($app->path('routes')."/*") as $file) {
                 require_once $file;
             }
         }
 
-        if (!CONSOLE) $this->run();
-
-        if ($this->notFound) {
-           throw new NotFoundException;
+        if (!CONSOLE) {
+            $this->run();
         }
 
+        if ($this->notFound) {
+            throw new NotFoundException;
+        }
     }
-
 }

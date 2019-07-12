@@ -12,11 +12,8 @@
 
 namespace App\Controllers;
 
-
-
 use System\Facades\Language;
 use System\Facades\Redirect;
-
 
 class HomeController extends Controller
 {
@@ -53,8 +50,7 @@ class HomeController extends Controller
      */
     public function language($lang)
     {
-        if (in_array($lang, array('az','en','tr')))
-        {
+        if (in_array($lang, array('az','en','tr'))) {
             Language::locale($lang);
         }
 

@@ -1,13 +1,9 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-
-
-
 use System\Facades\Redis as DRedis;
 
 class RedisStore implements CacheStore
 {
-
     private $key;
 
     private $put;
@@ -16,58 +12,50 @@ class RedisStore implements CacheStore
 
 
 
-    public function put ( String $key , $value , $expires = null, $forever = false )
+    public function put(String $key, $value, $expires = null, $forever = false)
     {
-
         $this->put = true;
 
         $this->key = $key;
 
-        if(is_null($expires))
-        {
+        if (is_null($expires)) {
             $expires = $this->expires;
         }
 
-        if(is_null($expires))
-        {
-            DRedis::set($key ,$value);
-        }
-        else
-        {
-            DRedis::setex($key , $expires, $value);
+        if (is_null($expires)) {
+            DRedis::set($key, $value);
+        } else {
+            DRedis::setex($key, $expires, $value);
         }
 
         return $this;
     }
 
-    public function forever ( String $key , $value )
+    public function forever(String $key, $value)
     {
-        return $this->day(30)->put($key , $value );
+        return $this->day(30)->put($key, $value);
     }
 
-    public function has ( $key )
+    public function has($key)
     {
         return DRedis::exists($key);
     }
 
-    public function get ( $key )
+    public function get($key)
     {
         return DRedis::get($key);
     }
 
-    public function forget ( $key )
+    public function forget($key)
     {
         DRedis::del($key);
     }
 
-    public function expires ( Int $expires )
+    public function expires(Int $expires)
     {
-        if(!is_null($this->put))
-        {
-            DRedis::expire($this->key,$expires);
-        }
-        else
-        {
+        if (!is_null($this->put)) {
+            DRedis::expire($this->key, $expires);
+        } else {
             $this->expires = $expires;
         }
 
@@ -75,21 +63,21 @@ class RedisStore implements CacheStore
     }
 
 
-    public function minutes ( Int $minutes )
+    public function minutes(Int $minutes)
     {
-      return $this->expires($minutes * 60);
+        return $this->expires($minutes * 60);
     }
 
 
-    public function hours ( Int $hours )
+    public function hours(Int $hours)
     {
-      return $this->expires($hours * 3600);
+        return $this->expires($hours * 3600);
     }
 
 
-    public function day ( Int $day )
+    public function day(Int $day)
     {
-      return $this->expires($day * 3600 * 24);
+        return $this->expires($day * 3600 * 24);
     }
 
 
@@ -98,20 +86,19 @@ class RedisStore implements CacheStore
         DRedis::flushAll();
     }
 
-    public function __get ( $key )
+    public function __get($key)
     {
         return DRedis::get($key);
     }
 
 
-    public function __call($method,$args)
+    public function __call($method, $args)
     {
-      return DRedis::$method(...$args);
+        return DRedis::$method(...$args);
     }
 
-    public function close ()
+    public function close()
     {
         DRedis::close();
     }
-
 }

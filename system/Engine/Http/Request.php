@@ -10,16 +10,14 @@ use Countable;
 use Serializable;
 use JsonSerializable;
 use System\Engine\Load;
+use System\Facades\Auth;
 use System\Libraries\Arr;
 use System\Facades\Redirect;
 use System\Facades\Response;
 use System\Facades\Validator;
 
-
-class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
+class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 {
-
-
     private $request = [
       'GET'     => [],
       'POST'    => [],
@@ -30,9 +28,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
 
 
-    function __construct()
+    public function __construct()
     {
-        $this->method = $this->server('request_method','GET');
+        $this->method = $this->server('request_method', 'GET');
 
         $this->request = array(
           'GET'    => $this->trim($_GET),
@@ -44,14 +42,10 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     private function trim($data)
     {
-        $data = array_map(function ($item)
-        {
-            if (is_array($item))
-            {
+        $data = array_map(function ($item) {
+            if (is_array($item)) {
                 return $this->trim($item);
-            }
-            else
-            {
+            } else {
                 return trim($item);
             }
         }, $data);
@@ -60,15 +54,15 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
-    public function set($key,$value)
+    public function set($key, $value)
     {
-      $keys = is_array($key) ? $key : array($key=>$value);
+        $keys = is_array($key) ? $key : array($key=>$value);
 
-      foreach ($keys as $key => $value) {
-        $this->request[ $this->method ][ $key ] = $value;
-      }
+        foreach ($keys as $key => $value) {
+            $this->request[ $this->method ][ $key ] = $value;
+        }
 
-      return $this;
+        return $this;
     }
 
 
@@ -88,8 +82,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         $data = $this->request[ $this->method ];
 
-        if (isset($data[ '_token' ]))
-        {
+        if (isset($data[ '_token' ])) {
             unset($data[ '_token' ]);
         }
 
@@ -99,25 +92,22 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function params($key)
     {
-      return $this->request['REQUEST'][$key] ?? false;
+        return $this->request['REQUEST'][$key] ?? false;
     }
 
 
     public function route($key)
     {
-      return $this->params($key);
+        return $this->params($key);
     }
 
 
     public function session($key = null)
     {
-        if (is_null($key))
-        {
-          return Load::class('session');
-        }
-        else
-        {
-          return Load::class('session')->get($key);
+        if (is_null($key)) {
+            return Load::class('session');
+        } else {
+            return Load::class('session')->get($key);
         }
     }
 
@@ -128,7 +118,13 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     }
 
 
-    public function server($key,$default = null)
+    public function user()
+    {
+        return Auth::user();
+    }
+
+
+    public function server($key, $default = null)
     {
         return $_SERVER[strtoupper($key)] ?? $default;
     }
@@ -136,12 +132,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function input($name = null)
     {
-        if (!is_null($name))
-        {
+        if (!is_null($name)) {
             return Load::class('input')->{$this->method()}($name);
-        }
-        else
-        {
+        } else {
             return Load::class('input');
         }
     }
@@ -149,8 +142,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function file($name)
     {
-        if (isset($_FILES[ $name ]))
-        {
+        if (isset($_FILES[ $name ])) {
             return new UploadedFile($_FILES[ $name ]);
         }
         return false;
@@ -159,16 +151,14 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function has($key)
     {
-      return isset($this->request[ $this->method ][ $key ]);
+        return isset($this->request[ $this->method ][ $key ]);
     }
 
 
     public function post($name)
     {
-        if (isset($this->request['POST'][$name]))
-        {
-            if (!empty($this->request['POST'][$name]))
-            {
+        if (isset($this->request['POST'][$name])) {
+            if (!empty($this->request['POST'][$name])) {
                 return $this->request['POST'][$name];
             }
         }
@@ -178,10 +168,8 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function get($name)
     {
-        if (isset($this->request['GET'][$name]))
-        {
-            if (!empty($this->request['GET'][$name]))
-            {
+        if (isset($this->request['GET'][$name])) {
+            if (!empty($this->request['GET'][$name])) {
                 return $this->request['GET'][$name];
             }
         }
@@ -193,14 +181,12 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         $method = $this->server('request_method');
 
-        if ($method == 'POST')
-        {
+        if ($method == 'POST') {
             $headers = getallheaders();
 
             $xhmo    = $headers[ 'X-HTTP-Method-Override' ] ?? false;
 
-            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' )))
-            {
+            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
                 $method = $xhmo;
             }
         }
@@ -210,57 +196,47 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
 
     public function isMethod($method)
     {
-      return $this->method() === $method;
+        return $this->method() === $method;
     }
 
 
-    public function ajax(): String
+    public function ajax(): Bool
     {
-      return ($this->server('HTTP_X_REQUESTED_WITH')  === 'XMLHttpRequest');
+        return ($this->server('HTTP_X_REQUESTED_WITH')  === 'XMLHttpRequest');
     }
 
 
     public function controller($method = null)
     {
-        if(is_null($method))
-        {
-          return defined('CALLED_CONTROLLER') ? CALLED_CONTROLLER : false;
+        if (is_null($method)) {
+            return defined('CALLED_CONTROLLER') ? CALLED_CONTROLLER : false;
+        } else {
+            return defined('CALLED_CONTROLLER_METHOD') ? CALLED_CONTROLLER_METHOD : false;
         }
-        else
-        {
-          return defined('CALLED_CONTROLLER_METHOD') ? CALLED_CONTROLLER_METHOD : false;
-        }
-
     }
 
 
     public function only(): array
     {
-        if(func_num_args() == 0)
-        {
-          return [];
-        }
-        else
-        {
-          $only = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+        if (func_num_args() == 0) {
+            return [];
+        } else {
+            $only = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
         }
 
-        return Arr::only($this->all(),$only);
+        return Arr::only($this->all(), $only);
     }
 
 
     public function except()
     {
-      if(func_num_args() == 0)
-      {
-        return $this->all();
-      }
-      else
-      {
-        $excepts = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-      }
+        if (func_num_args() == 0) {
+            return $this->all();
+        } else {
+            $excepts = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+        }
 
-      return Arr::except($this->all(),$excepts);
+        return Arr::except($this->all(), $excepts);
     }
 
 
@@ -268,11 +244,10 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
     {
         $validation =  Validator::make($this->all(), $roles);
 
-        if(!$validation->check())
-        {
-          Redirect::back()->withErrors($validation->messages());
+        if (!$validation->check()) {
+            Redirect::back()->withErrors($validation->messages());
 
-          Response::send();
+            Response::send();
         }
     }
 
@@ -286,7 +261,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return $this->{$offset};
     }
@@ -303,7 +278,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
         $this->{$offset} = $value;
     }
@@ -317,9 +292,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
-        if (isset( $this->request[ $this->method ][ $offset ] )) {
+        if (isset($this->request[ $this->method ][ $offset ])) {
             unset($this->request[ $this->method ][ $offset ]);
         }
     }
@@ -336,9 +311,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
-        return isset( $this->request[ $this->method ][ $offset ] );
+        return isset($this->request[ $this->method ][ $offset ]);
     }
 
     /**
@@ -350,7 +325,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count ()
+    public function count()
     {
         return count($this->request[ $this->method ]);
     }
@@ -361,7 +336,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * @return string the string representation of the object or null
      * @since 5.1.0
      */
-    public function serialize ()
+    public function serialize()
     {
         return serialize($this->request[ $this->method ]);
     }
@@ -375,9 +350,9 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * @return void
      * @since 5.1.0
      */
-    public function unSerialize ( $serialized )
+    public function unSerialize($serialized)
     {
-       unserialize($serialized);
+        unserialize($serialized);
     }
 
     /**
@@ -387,7 +362,7 @@ class Request implements ArrayAccess ,Countable,Serializable,JsonSerializable
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
-    function jsonSerialize ()
+    public function jsonSerialize()
     {
         return json_encode($this->request[ $this->method ]);
     }

@@ -6,7 +6,6 @@
  */
 
 use ArrayAccess;
-use App\Kernel;
 use System\Facades\Route;
 use System\Facades\Config;
 use System\Facades\Http;
@@ -15,37 +14,28 @@ use System\Engine\Http\Middleware;
 
 class App implements ArrayAccess
 {
-
-    protected $middleware = [
-        \System\Engine\Http\Middleware\LoadSettingVariables::class ,
-        \System\Engine\Http\Middleware\PrepareConfigs::class ,
-        \System\Engine\Http\Middleware\RegisterExceptionHandler::class ,
-        \System\Engine\Http\Middleware\StartSession::class ,
-    ];
-
-    protected $custom_middleware = [];
+    const VERSION = '1.0.0';
 
     protected $bootstrap = false;
 
-    protected $application_path;
+    protected $middleware = [];
 
-    protected $public_path;
+    protected $routeMiddleware = [];
 
-    protected $storage_path   = 'storage';
+    protected $paths = [
+        'base' => 'app',
+        'public' => 'public',
+        'storage' => 'storage',
+        'lang' => 'lang',
+        'configs' => 'app/Config',
+        'settingFile' => '.settings',
+        'settingCacheFile' => 'storage/system/settings',
+        'configsCacheFile' => 'storage/system/configs.php',
+        'routesCacheFile' => 'storage/system/routes.php',
+    ];
 
-    protected $lang_path = 'lang';
 
-    protected $configs_path   = 'app/Config';
-
-    protected $settings_file  = '.settings';
-
-    protected $configs_cache_file   = 'storage/system/configs.php';
-
-    protected $routes_cache_file    = 'storage/system/routes.php';
-
-    protected $settings_cache_file  = 'storage/system/settings';
-
-    private static $instance;
+    protected static $instance;
 
 
     /**
@@ -54,22 +44,19 @@ class App implements ArrayAccess
      *
      * @param null $basePath
      */
-    function __construct ( $basePath = null )
+    public function __construct($basePath = null)
     {
-        if(!defined('CONSOLE')) {
-          define('CONSOLE',(php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg'));
+        if (!defined('CONSOLE')) {
+            define('CONSOLE', (php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg'));
         }
 
-        if (is_null ( $basePath ))
-        {
-            $this->application_path = dirname ( dirname ( __DIR__ ) );
-        }
-        else
-        {
-            $this->application_path = rtrim($basePath, DIRECTORY_SEPARATOR);
+        if (is_null($basePath)) {
+            $this->paths['base'] = dirname(dirname(__DIR__));
+        } else {
+            $this->paths['base'] = rtrim($basePath, DIRECTORY_SEPARATOR);
         }
 
-        chdir($this->application_path);
+        chdir($this->paths['base']);
 
         static::$instance = &$this;
 
@@ -81,223 +68,180 @@ class App implements ArrayAccess
      *
      * @return $this
      */
-    public function bootstrap ()
+    public function bootstrap()
     {
-        if(!$this->bootstrap)
-        {
-          $this->setPublicPath ();
+        if (!$this->bootstrap) {
+            $this->setPublicPath();
 
-          $this->registerMiddleware ($this->middleware);
+            $this->registerMiddleware($this->middleware);
 
-          $this->setLocale ();
+            $this->setLocale();
 
-          $this->registerMiddleware ($this->custom_middleware);
+            $this->setAliases();
 
-          $this->setAliases ();
+            Load::register('app', $this);
 
-          Load::register('app', $this);
-
-          $this->bootstrap = true;
+            $this->bootstrap = true;
         }
 
         return $this;
     }
 
 
-    public function makeMiddleware($middleware)
-    {
-      if(!$this->bootstrap) {
 
-        if(is_object($middleware)) {
-
-          $middleware = get_class($middleware);
-        }
-
-        array_push($this->custom_middleware, $middleware);
-      }
-    }
-
-
-    protected function registerMiddleware ($middleware_array)
+    protected function registerMiddleware(array $middleware_array)
     {
         foreach ($middleware_array as $middleware) {
-            Middleware::init ($middleware , true );
+            Middleware::init($middleware, true);
         }
     }
 
-    protected function setAliases ()
+    protected function setAliases()
     {
-        $aliases = Config::get ( 'aliases' , [] );
+        $aliases = Config::get('aliases', []);
 
-        $aliases['app'] = get_class( $this );
+        $aliases['app'] = get_class($this);
 
         foreach ($aliases as $key => $value) {
-            class_alias ( '\\' . $value , $key );
+            class_alias('\\' . $value, $key);
         }
     }
 
-    protected function setLocale ()
+    protected function setLocale()
     {
-        setlocale ( LC_ALL , Config::get ('datetime.setLocale'));
+        setlocale(LC_ALL, Config::get('datetime.setLocale'));
 
-        date_default_timezone_set (Config::get ('datetime.time_zone', 'UTC'));
+        date_default_timezone_set(Config::get('datetime.time_zone', 'UTC'));
     }
 
-    public function callAppKernel ()
+
+    public function routing()
     {
-        $kernel = new Kernel();
-
-        if (property_exists ( $kernel , 'middleware' ))
-        {
-            foreach ($kernel->middleware as $middleware)
-            {
-                Middleware::init ( $middleware , true );
-            }
-        }
-
-        if (method_exists ( $kernel , 'boot' ))
-        {
-            $kernel->boot ();
-        }
+        Route::execute($this, $this->routeMiddleware);
 
         return $this;
     }
 
-    public function routing ()
+    public function response()
     {
-        Route::execute($this);
-
-        return $this;
+        return Load::class('response');
     }
 
-    public function response ()
+    public function benchmark($finish)
     {
-        return Load::class( 'response' );
-    }
-
-    public function benchmark ( $finish )
-    {
-        if (CONSOLE || !Config::get ('app.debug') || Http::isAjax()) 
-        {
+        if (CONSOLE || !Config::get('app.debug') || Http::isAjax()) {
             return null;
         }
 
-        $this->response()->appendContent(Benchmark::table ( $finish ));
-      
+        $this->response()->appendContent(Benchmark::table($finish));
     }
 
-    public function setPublicPath (String $path = null)
+    public function setPublicPath(String $path = null)
     {
-        if(!is_null($path))
-        {
-            $this->public_path = $path;
-        }
-        else
-        {
-            if (isset( $_SERVER[ 'SCRIPT_FILENAME' ] ) && !empty( $_SERVER[ 'SCRIPT_FILENAME' ] ))
-            {
-                $parts = explode ( '/' , $_SERVER[ 'SCRIPT_FILENAME' ] );
+        if (!is_null($path)) {
+            $this->paths['public'] = $path;
+        } else {
+            if (isset($_SERVER[ 'SCRIPT_FILENAME' ]) && !empty($_SERVER[ 'SCRIPT_FILENAME' ])) {
+                $parts = explode('/', $_SERVER[ 'SCRIPT_FILENAME' ]);
 
                 array_pop($parts);
 
-                $this->public_path = implode ( '/' , $parts );
-            }
-            else
-            {
-                $this->public_path = $this->application_path . DIRECTORY_SEPARATOR . 'public';
+                $this->paths['public'] = implode('/', $parts);
+            } else {
+                $this->paths['public'] = $this->paths['base'] . DIRECTORY_SEPARATOR . 'public';
             }
         }
     }
 
     public function setStoragePath(String $path)
     {
-        $this->storage_path = trim($path,DIRECTORY_SEPARATOR);
+        $this->paths['storage'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
     public function setConfigsPath(String $path)
     {
-        $this->configs_path = trim($path,DIRECTORY_SEPARATOR);
+        $this->paths['configs'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
     public function setLangPath(String $path)
     {
-        $this->lang_path = trim($path,DIRECTORY_SEPARATOR);
+        $this->paths['lang'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
     public function setSettingsFile(String $file)
     {
-        $this->settings_file = $file;
+        $this->paths['setting'] = $file;
     }
 
     public function settingsFile()
     {
-        return $this->path($this->settings_file);
+        return $this->path($this->paths['setting']);
     }
 
-    public function public_path($path = '')
+    public function publicPath($path = '')
     {
-        return $this->public_path.DIRECTORY_SEPARATOR.(ltrim($path,DIRECTORY_SEPARATOR)) ;
+        return $this->paths['public'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)) ;
     }
 
     public function path($path = '')
     {
-        return $this->application_path.DIRECTORY_SEPARATOR.(ltrim($path,DIRECTORY_SEPARATOR));
+        return $this->paths['base'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR));
     }
 
-    public function storage_path($path = '')
+    public function storagePath($path = '')
     {
-        return $this->path($this->storage_path.DIRECTORY_SEPARATOR.(ltrim($path,DIRECTORY_SEPARATOR)));
+        return $this->path($this->paths['storage'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)));
     }
 
-    public function configs_path($path = '')
+    public function configsPath($path = '')
     {
-        return $this->path($this->configs_path.DIRECTORY_SEPARATOR.(ltrim($path,DIRECTORY_SEPARATOR)));
+        return $this->path($this->paths['configs'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)));
     }
 
-    public function app_path($path = '')
+    public function appPath($path = '')
     {
-        return $this->application_path
+        return $this->paths['base']
             .DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR
-            .ltrim($path,DIRECTORY_SEPARATOR);
+            .ltrim($path, DIRECTORY_SEPARATOR);
     }
 
 
-    public function lang_path($path = '')
+    public function langPath($path = '')
     {
-      return $this->path($this->lang_path.DIRECTORY_SEPARATOR.(ltrim($path,DIRECTORY_SEPARATOR)));
+        return $this->path($this->paths['lang'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)));
     }
 
-    public function configs_cache_file(String $file = null)
+    public function configsCacheFile(String $file = null)
     {
-        if(!is_null($file)) {
-            $this->configs_cache_file = $file;
+        if (!is_null($file)) {
+            $this->paths['configsCacheFile'] = $file;
         } else {
-            return $this->path($this->configs_cache_file);
+            return $this->path($this->paths['configsCacheFile']);
         }
     }
 
-    public function routes_cache_file(String $file = null)
+    public function routesCacheFile(String $file = null)
     {
-        if(!is_null($file)) {
-            $this->routes_cache_file = $file;
+        if (!is_null($file)) {
+            $this->paths['routesCacheFile'] = $file;
         } else {
-            return $this->path($this->routes_cache_file);
+            return $this->path($this->paths['routesCacheFile']);
         }
     }
 
-    public function settings_cache_file(String $file = null)
+    public function settingCacheFile(String $file = null)
     {
-        if(!is_null($file)) {
-            $this->settings_cache_file = $file;
+        if (!is_null($file)) {
+            $this->paths['settingCacheFile'] = $file;
         } else {
-            return $this->path($this->settings_cache_file);
+            return $this->path($this->paths['settingCacheFile']);
         }
     }
 
 
-    public function classes(String $name = null,Bool $isValue = false)
+    public function classes(String $name = null, Bool $isValue = false)
     {
-      $classes = array(
+        $classes = array(
           'array' => 'System\Libraries\Arr',
           'authentication' => 'System\Libraries\Auth\Authentication',
           'cache' => 'System\Libraries\Cache\Cache',
@@ -328,15 +272,15 @@ class App implements ArrayAccess
           'view' => 'System\Libraries\View\View',
       );
 
-      if(is_null($name)) {
-          return $classes;
-      }
+        if (is_null($name)) {
+            return $classes;
+        }
 
-      if(!$isValue) {
-          return $classes[strtolower($name)] ?? false;
-      } else {
-          return array_search($name,$classes);
-      }
+        if (!$isValue) {
+            return $classes[strtolower($name)] ?? false;
+        } else {
+            return array_search($name, $classes);
+        }
     }
 
     public static function instance()
@@ -347,8 +291,7 @@ class App implements ArrayAccess
 
     public static function end()
     {
-        if(function_exists('fastcgi_finish_request'))
-        {
+        if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
         }
 
@@ -366,7 +309,7 @@ class App implements ArrayAccess
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return Load::class($offset);
     }
@@ -383,9 +326,9 @@ class App implements ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
-        Load::register($offset,$value);
+        Load::register($offset, $value);
     }
 
     /**
@@ -397,11 +340,11 @@ class App implements ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
-      $load = Load::instance();
+        $load = Load::instance();
 
-      unset($load[$offset]);
+        unset($load[$offset]);
     }
 
     /**
@@ -416,11 +359,8 @@ class App implements ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
-      return array_key_exists($offset, Load::instance());
+        return array_key_exists($offset, Load::instance());
     }
-
-
-
 }

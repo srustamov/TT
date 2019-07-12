@@ -1,6 +1,5 @@
 <?php namespace System\Libraries;
 
-
 /**
  * @package TT
  * @author Samir Rustamov <rustemovv96@gmail.com>
@@ -18,7 +17,7 @@ class Http
     /**
      * @return String
      */
-    public function userAgent (): String
+    public function userAgent(): String
     {
         return $_SERVER[ 'HTTP_USER_AGENT' ]  ?? '';
     }
@@ -27,7 +26,7 @@ class Http
     /**
      * @return String
      */
-    public function host (): String
+    public function host(): String
     {
         return $_SERVER[ 'HTTP_HOST' ] ?? '';
     }
@@ -36,7 +35,7 @@ class Http
     /**
      * @return String
      */
-    public function name (): String
+    public function name(): String
     {
         return $_SERVER[ 'SERVER_NAME' ] ?? '';
     }
@@ -45,16 +44,16 @@ class Http
     /**
      * @return String
      */
-    public function language (): String
+    public function language(): String
     {
-        return substr ( $_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] ?? 'en' , 0 , 2 );
+        return substr($_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] ?? 'en', 0, 2);
     }
 
 
     /**
      * @return String
      */
-    public function encoding (): String
+    public function encoding(): String
     {
         return $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ?? '';
     }
@@ -64,27 +63,23 @@ class Http
      * @param null $key
      * @return array | bool
      */
-    public function cookie ($key = null)
+    public function cookie($key = null)
     {
-        if(isset($_SERVER[ 'HTTP_COOKIE' ]))
-        {
-          $cookies_string_array = explode(';',$_SERVER[ 'HTTP_COOKIE' ]);
+        if (isset($_SERVER[ 'HTTP_COOKIE' ])) {
+            $cookies_string_array = explode(';', $_SERVER[ 'HTTP_COOKIE' ]);
 
-          $cookies = [];
+            $cookies = [];
 
-          foreach ($cookies_string_array as $value)
-          {
-            list($cookie_key,$cookie_value) = explode('=',$value,2);
+            foreach ($cookies_string_array as $value) {
+                list($cookie_key, $cookie_value) = explode('=', $value, 2);
 
-            $cookies[$cookie_key] = $cookie_value;
-          }
+                $cookies[$cookie_key] = $cookie_value;
+            }
 
-          if($key !== null)
-          {
-            return $cookies[$key] ?? false;
-          }
-          return !empty($cookies) ? $cookies : false;
-
+            if ($key !== null) {
+                return $cookies[$key] ?? false;
+            }
+            return !empty($cookies) ? $cookies : false;
         }
 
         return false;
@@ -94,7 +89,7 @@ class Http
     /**
      * @return String
      */
-    public function connection (): String
+    public function connection(): String
     {
         return $_SERVER[ 'HTTP_CONNECTION' ] ?? '';
     }
@@ -103,31 +98,25 @@ class Http
     /**
      * @return bool|String
      */
-    public function referer ()
+    public function referer()
     {
-        if( !isset( $_SERVER[ 'HTTP_REFERER' ] ) || trim($_SERVER[ 'HTTP_REFERER' ]) == '' )
-        {
-          return false;
+        if (!isset($_SERVER[ 'HTTP_REFERER' ]) || trim($_SERVER[ 'HTTP_REFERER' ]) == '') {
+            return false;
         }
-        return trim ( $_SERVER[ 'HTTP_REFERER' ] );
+        return trim($_SERVER[ 'HTTP_REFERER' ]);
     }
 
 
     /**
      * @return String
      */
-    public function ip (): String
+    public function ip(): String
     {
-        if (!empty( $_SERVER[ 'HTTP_CLIENT_IP' ] ))
-        {
+        if (!empty($_SERVER[ 'HTTP_CLIENT_IP' ])) {
             $ip = $_SERVER[ 'HTTP_CLIENT_IP' ];
-        }
-        elseif (!empty( $_SERVER[ 'HTTP_X_FORWARDED_FOR' ] ))
-        {
+        } elseif (!empty($_SERVER[ 'HTTP_X_FORWARDED_FOR' ])) {
             $ip = $_SERVER[ 'HTTP_X_FORWARDED_FOR' ];
-        }
-        else
-        {
+        } else {
             $ip = $_SERVER[ 'REMOTE_ADDR' ] ?? '';
         }
 
@@ -138,28 +127,26 @@ class Http
     /**
      * @return bool
      */
-    public function isRobot (): Bool
+    public function isRobot(): Bool
     {
-        return  (isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) && preg_match ( '/bot|crawl|slurp|spider/i' , $_SERVER[ 'HTTP_USER_AGENT' ] )) ;
+        return  (isset($_SERVER[ 'HTTP_USER_AGENT' ]) && preg_match('/bot|crawl|slurp|spider/i', $_SERVER[ 'HTTP_USER_AGENT' ])) ;
     }
 
 
     /**
      * @return bool
      */
-    public function isMobile (): Bool
+    public function isMobile(): Bool
     {
-        return preg_match ( "/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i" , $_SERVER[ "HTTP_USER_AGENT" ] );
+        return preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i", $_SERVER[ "HTTP_USER_AGENT" ]);
     }
 
 
     /**
      * @return bool
      */
-    public function isAjax (): Bool
+    public function isAjax(): Bool
     {
-        return  (isset( $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] ) && $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] === 'XMLHttpRequest');
+        return  (isset($_SERVER[ 'HTTP_X_REQUESTED_WITH' ]) && $_SERVER[ 'HTTP_X_REQUESTED_WITH' ] === 'XMLHttpRequest');
     }
-
-
 }

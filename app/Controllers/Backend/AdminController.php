@@ -14,17 +14,10 @@ namespace App\Controllers\Backend;
 
 use App\Controllers\Controller;
 
-
-
 class AdminController extends Controller
 {
-
-    public function dashboard ()
+    public function dashboard()
     {
         // Dashboard
     }
-
-
-
-
 }

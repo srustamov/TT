@@ -13,11 +13,8 @@ use System\Engine\Load;
 use PDOException;
 use PDO;
 
-
-
 abstract class Connection
 {
-
     protected $general = [];
 
     protected $config = [];
@@ -27,38 +24,31 @@ abstract class Connection
     protected $group = 'default';
 
 
-    public function __construct ()
+    public function __construct()
     {
-        $this->reconnect ();
+        $this->reconnect();
     }
 
 
-    public function reconnect ()
+    public function reconnect()
     {
-        if (!isset( $this->general[ $this->group ] ))
-        {
-
-            $this->config[ $this->group ] = Load::class('config')->get ( "database.$this->group" );
+        if (!isset($this->general[ $this->group ])) {
+            $this->config[ $this->group ] = Load::class('config')->get("database.$this->group");
 
             $config = $this->config[ $this->group ];
 
-            try
-            {
+            try {
                 $dsn = "host={$config[ 'hostname' ]};dbname={$config[ 'dbname' ]};charset={$config[ 'charset' ]}";
-                $this->general[ $this->group ] = new PDO( "mysql:{$dsn}" , $config[ 'username' ] , $config[ 'password' ] );
+                $this->general[ $this->group ] = new PDO("mysql:{$dsn}", $config[ 'username' ], $config[ 'password' ]);
                 $this->pdo = $this->general[ $this->group ];
-                $this->pdo->setAttribute ( PDO::ATTR_DEFAULT_FETCH_MODE , PDO::FETCH_OBJ );
-                $this->pdo->setAttribute ( PDO::ATTR_ERRMODE , PDO::ERRMODE_EXCEPTION );
-                $this->pdo->query ( "SET CHARACTER SET  " . $config[ 'charset' ] );
-                $this->pdo->query ( "SET NAMES " . $config[ 'charset' ] );
+                $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+                $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $this->pdo->query("SET CHARACTER SET  " . $config[ 'charset' ]);
+                $this->pdo->query("SET NAMES " . $config[ 'charset' ]);
+            } catch (PDOException $e) {
+                throw new DatabaseException($e->getMessage());
             }
-            catch (PDOException $e)
-            {
-                throw new DatabaseException( $e->getMessage() );
-            }
-        }
-        else
-        {
+        } else {
             $this->pdo = $this->general[ $this->group ];
         }
     }
@@ -68,11 +58,10 @@ abstract class Connection
      * @param String|null $query
      * @return mixed
      */
-    public function pdo (String $query = null)
+    public function pdo(String $query = null)
     {
-        if($query !== null)
-        {
-          return $this->pdo->query($query);
+        if ($query !== null) {
+            return $this->pdo->query($query);
         }
         return $this->pdo;
     }
@@ -83,11 +72,11 @@ abstract class Connection
      * @return $this
      * @throws DatabaseException
      */
-    public function connect ($group = 'default' )
+    public function connect($group = 'default')
     {
         $this->group = $group;
 
-        $this->reconnect ();
+        $this->reconnect();
 
         return $this;
     }
@@ -97,18 +86,14 @@ abstract class Connection
      * Database connection close;
      * @param String|null $group
      */
-    public function disconnect (String $group = null)
+    public function disconnect(String $group = null)
     {
         $connect = $group? :$this->group;
 
-        if (isset( $this->general[ $connect ] ))
-        {
-            unset( $this->general[ $connect ] );
+        if (isset($this->general[ $connect ])) {
+            unset($this->general[ $connect ]);
         }
 
         $this->pdo = null;
-
     }
-
-
 }

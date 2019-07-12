@@ -1,11 +1,9 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-
 use System\Engine\Load;
 
 class MemcacheStore implements CacheStore
 {
-
     private $put = false;
 
     private $key;
@@ -15,99 +13,79 @@ class MemcacheStore implements CacheStore
     private $memcache;
 
 
-    function __construct ()
+    public function __construct()
     {
-
         $config = Load::class('config')->get('cache.memcache');
 
-        if(class_exists('\\Memcache'))
-        {
-          $this->memcache = new \Memcache;
-        }
-        elseif (class_exists('\\Memcached'))
-        {
-          $this->memcache = new \Memcached;
-        }
-        elseif(function_exists('memcache_connect'))
-        {
-          $this->memcache = memcache_connect($config['host'],$config['port']);
-        }
-        else
-        {
-          throw new \Exception("Class Memcache (Memcached) not found");
+        if (class_exists('\\Memcache')) {
+            $this->memcache = new \Memcache;
+        } elseif (class_exists('\\Memcached')) {
+            $this->memcache = new \Memcached;
+        } elseif (function_exists('memcache_connect')) {
+            $this->memcache = memcache_connect($config['host'], $config['port']);
+        } else {
+            throw new \Exception("Class Memcache (Memcached) not found");
         }
 
         if ($this->memcache === null) {
-            $this->memcache->addServer($config['host'],$config['port']);
+            $this->memcache->addServer($config['host'], $config['port']);
         }
     }
 
 
 
-    public function put ( String $key , $value , $expires = null, $forever = false )
+    public function put(String $key, $value, $expires = null, $forever = false)
     {
-      if(is_null($expires))
-      {
+        if (is_null($expires)) {
+            if (is_null($this->expires)) {
+                $this->put = true;
 
-        if(is_null($this->expires))
-        {
-          $this->put = true;
+                $this->key = $key;
 
-          $this->key = $key;
+                $this->memcache->set($key, $value, null, 10);
+            } else {
+                $this->memcache->set($key, $value, null, $this->expires);
 
-          $this->memcache->set($key , $value , null ,10);
+                $this->expires = null;
+            }
+        } else {
+            $this->memcache->set($key, $value, null, $expires);
 
+            $this->expires = null;
         }
-        else
-        {
-          $this->memcache->set($key , $value , null ,$this->expires);
 
-          $this->expires = null;
-        }
-
-      }
-      else
-      {
-        $this->memcache->set($key , $value , null ,$expires);
-
-        $this->expires = null;
-      }
-
-      return $this;
+        return $this;
     }
 
-    public function forever ( String $key , $value )
+    public function forever(String $key, $value)
     {
-        return $this->day(30)->put($key , $value);
+        return $this->day(30)->put($key, $value);
     }
 
-    public function has ( $key )
+    public function has($key)
     {
         return $this->memcache->get($key) ? true : false;
     }
 
-    public function get ( $key )
+    public function get($key)
     {
         return $this->memcache->get($key);
     }
 
-    public function forget ( $key )
+    public function forget($key)
     {
         return $this->memcache->delete($key);
     }
 
-    public function expires ( Int $expires )
+    public function expires(Int $expires)
     {
-        if($this->put && !is_null($this->key))
-        {
-            $this->memcache->set($this->key,$this->memcache->get($this->key),null,$expires);
+        if ($this->put && !is_null($this->key)) {
+            $this->memcache->set($this->key, $this->memcache->get($this->key), null, $expires);
 
             $this->put = false;
 
             $this->key = null;
-        }
-        else
-        {
+        } else {
             $this->expires = $expires;
         }
 
@@ -115,21 +93,21 @@ class MemcacheStore implements CacheStore
     }
 
 
-    public function minutes ( Int $minutes )
+    public function minutes(Int $minutes)
     {
-      return $this->expires($minutes * 60);
+        return $this->expires($minutes * 60);
     }
 
 
-    public function hours ( Int $hours )
+    public function hours(Int $hours)
     {
-      return $this->expires($hours * 3600);
+        return $this->expires($hours * 3600);
     }
 
 
-    public function day ( Int $day )
+    public function day(Int $day)
     {
-      return $this->expires($day * 3600 * 24);
+        return $this->expires($day * 3600 * 24);
     }
 
     public function flush()
@@ -137,21 +115,20 @@ class MemcacheStore implements CacheStore
         $this->memcache->flush();
     }
 
-    public function __get ( $key )
+    public function __get($key)
     {
         return $this->memcache->get($key);
     }
 
 
-    public function __call($method,$args)
+    public function __call($method, $args)
     {
-      return $this->memcache->$method(...$args);
+        return $this->memcache->$method(...$args);
     }
 
 
-    public function close ()
+    public function close()
     {
         $this->memcache->close();
     }
-
 }

@@ -13,22 +13,20 @@ use System\Facades\Route;
 
 class Url
 {
-
-
-    public function to($url = '',array $parameters = [])
+    public function to($url = '', array $parameters = [])
     {
         return $this->scheme().'://'.$this->host().'/'.
             (
-            !empty($parameters)
-                ? trim($url,'/').'/?'.http_build_query($parameters)
-                : ltrim($url,'/')
+                !empty($parameters)
+                ? trim($url, '/').'/?'.http_build_query($parameters)
+                : ltrim($url, '/')
             );
     }
 
 
-    public function route($name,Array $parameters = [])
+    public function route($name, array $parameters = [])
     {
-      return Route::getName($name,$parameters);
+        return Route::getName($name, $parameters);
     }
 
 
@@ -38,12 +36,12 @@ class Url
      */
     public function request()
     {
-        $request = urldecode (
-            parse_url ($_SERVER[ 'REQUEST_URI' ] ?? '/' , PHP_URL_PATH )
+        $request = urldecode(
+            parse_url($_SERVER[ 'REQUEST_URI' ] ?? '/', PHP_URL_PATH)
         );
-        $request = str_replace ( ' ' , '' , $request );
+        $request = str_replace(' ', '', $request);
 
-        return  ($request == '' || $request == '/') ? '/' : rtrim($request,'/');
+        return  ($request == '' || $request == '/') ? '/' : rtrim($request, '/');
     }
 
 
@@ -52,8 +50,7 @@ class Url
      */
     public function scheme()
     {
-        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off')
-        {
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off') {
             return 'https';
         }
         return 'http';
@@ -74,33 +71,26 @@ class Url
      * @param array $parameters
      * @return String
      */
-    public function base ( $url = '',array $parameters = []):String
+    public function base($url = '', array $parameters = []):String
     {
-        if(preg_match('/^(https?:\/\/)/',$url))
-        {
-            return trim($url,'/').(
+        if (preg_match('/^(https?:\/\/)/', $url)) {
+            return trim($url, '/').(
                 !empty($parameters) ? '/?'.http_build_query($parameters) : '/'
                 );
-        }
-        else
-        {
+        } else {
             $base_url = Load::class('config')->get('app.url');
 
-            if(!$base_url || empty($base_url))
-            {
+            if (!$base_url || empty($base_url)) {
                 $base_url  = $this->scheme().'://'.$this->host();
-            }
-            else
-            {
-                if(!preg_match('/^(https?:\/\/)/',$base_url))
-                {
+            } else {
+                if (!preg_match('/^(https?:\/\/)/', $base_url)) {
                     $base_url = $this->scheme().'://'.$base_url;
                 }
             }
         }
 
 
-        return rtrim($base_url,'/') . '/' . ltrim($url,'/').(
+        return rtrim($base_url, '/') . '/' . ltrim($url, '/').(
             !empty($parameters) ? '/?'.http_build_query($parameters) : ''
             );
     }
@@ -110,9 +100,9 @@ class Url
      * @param null $url
      * @return String
      */
-    public function current ( $url = null ):String
+    public function current($url = null):String
     {
-        return $this->scheme().'://'.$this->host().'/'.trim ( $this->request() , '/' ) . '/' . $url;
+        return $this->scheme().'://'.$this->host().'/'.trim($this->request(), '/') . '/' . $url;
     }
 
 
@@ -121,14 +111,11 @@ class Url
      */
     public function host()
     {
-        if( isset($_SERVER['HTTP_X_FORWARDED_HOST']) )
-        {
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
             $host     = $_SERVER['HTTP_X_FORWARDED_HOST'];
             $elements = explode(',', $host);
             $host     = trim(end($elements));
-        }
-        else
-        {
+        } else {
             $host = $_SERVER['HTTP_HOST']   ??
                 $_SERVER['SERVER_NAME'] ??
                 $_SERVER['SERVER_ADDR'] ??
@@ -143,7 +130,7 @@ class Url
      * @param Int $number
      * @return Bool|Mixed
      */
-    public function segment ( Int $number )
+    public function segment(Int $number)
     {
         return $this->segments()[ $number ] ?? false;
     }
@@ -152,12 +139,8 @@ class Url
     /**
      * @return Array
      */
-    public function segments ():array
+    public function segments():array
     {
-        return array_filter ( explode ( '/' , $this->request() ) );
+        return array_filter(explode('/', $this->request()));
     }
-
-
-
-
 }

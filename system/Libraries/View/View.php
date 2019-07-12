@@ -15,12 +15,8 @@ use Windwalker\Edge\Extension\EdgeExtensionInterface;
 use Windwalker\Edge\Edge;
 use System\Engine\Load;
 
-
-
 class View
 {
-
-
     protected $file;
 
     protected $data = [];
@@ -28,29 +24,26 @@ class View
     protected $minify;
 
 
-    public function render ( String $file , $data = [] )
+    public function render(String $file, $data = [])
     {
         $this->file = $file;
-        $this->data = array_merge ( $this->data , $data );
+        $this->data = array_merge($this->data, $data);
         return $this;
     }
 
 
-    public function file (String $file)
+    public function file(String $file)
     {
-      $this->file = $file;
-      return $this;
+        $this->file = $file;
+        return $this;
     }
 
 
-    public function data ( $key , $value = null )
+    public function data($key, $value = null)
     {
-        if (is_array ( $key ))
-        {
-            $this->data = array_merge ( $this->data , $key );
-        }
-        else
-        {
+        if (is_array($key)) {
+            $this->data = array_merge($this->data, $key);
+        } else {
             $this->data[ $key ] = $value;
         }
 
@@ -67,15 +60,11 @@ class View
 
     protected function withFlashData()
     {
-
-        if (($errors = Load::class('session')->flash ( 'view-errors' )))
-        {
+        if (($errors = Load::class('session')->flash('view-errors'))) {
             $errors = new Errors($errors);
-
         }
 
-        if(!isset($this->data['errors']))
-        {
+        if (!isset($this->data['errors'])) {
             $this->data['errors'] = $errors ?: new Errors;
         }
     }
@@ -92,63 +81,52 @@ class View
 
     protected function finishRender()
     {
-
-        if(is_null($this->file))
-        {
-          throw new ViewException("View File not found");
+        if (is_null($this->file)) {
+            throw new ViewException("View File not found");
         }
 
         $this->withFlashData();
 
         $loader = new EdgeFileLoader(Load::class('config')->get('view.files'));
 
-        foreach (Load::class('config')->get ( 'view.file_extensions',[]) as $file_extension)
-        {
-          $loader->addFileExtension ( $file_extension );
+        foreach (Load::class('config')->get('view.file_extensions', []) as $file_extension) {
+            $loader->addFileExtension($file_extension);
         }
 
-        $edge = new Edge( $loader , null , new EdgeFileCache( Load::class('config')->get ( 'view.cache_path' ) ) );
+        $edge = new Edge($loader, null, new EdgeFileCache(Load::class('config')->get('view.cache_path')));
 
-        if ($extensions = Load::class('config')->get ( 'view.extensions'))
-        {
-            foreach ($extensions as $extension)
-            {
-                if (new $extension instanceof EdgeExtensionInterface)
-                {
-                    $edge->addExtension ( new $extension() );
+        if ($extensions = Load::class('config')->get('view.extensions')) {
+            foreach ($extensions as $extension) {
+                if (new $extension instanceof EdgeExtensionInterface) {
+                    $edge->addExtension(new $extension());
                 }
             }
         }
 
-        $content = $edge->render ( $this->file , $this->data );
+        $content = $edge->render($this->file, $this->data);
 
-        if (is_null($this->minify))
-        {
+        if (is_null($this->minify)) {
             $this->minify = Load::class('config')->get('view.minify');
         }
 
-        if ($this->minify)
-        {
-            $content  = preg_replace('/([\n]+)|([\s]{2})/','',$content);
+        if ($this->minify) {
+            $content  = preg_replace('/([\n]+)|([\s]{2})/', '', $content);
         }
 
         $this->reset();
 
         return $content;
-
     }
 
 
     public function getContent()
     {
-      return $this->finishRender();
+        return $this->finishRender();
     }
 
 
-    public function __toString ()
+    public function __toString()
     {
-       return $this->finishRender();
+        return $this->finishRender();
     }
-
-
 }

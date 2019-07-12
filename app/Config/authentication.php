@@ -1,29 +1,15 @@
 <?php
 
-return  array(
-    "guards" => [
+return[
 
-        'user' => [
-            'table' => 'users',
-            // Attempt drivers [session,database,redis]
-            'attempts_driver' => 'session',
-            'max_attempts' => 5,
-            'lock_time' => 300, //seconds
-            'hidden' => [
-                'password',
-                'remember_token'
-            ]
-        ],
-
-        'admin' => [
-            'table' => 'admins',
-            'attempts_driver' => 'database',
-            'max_attempts' => 3,
-            'lock_time' => 60*30, //seconds
-            'hidden' => [
-                'password',
-                'remember_token'
-            ]
-        ]
-    ],
-);
+    'table' => 'users',
+    // Attempt drivers [session,database,redis]
+    'attemptDriver' => 'session',
+    'maxAttempts' => 5,
+    'lockTime' => 300, //seconds
+    'hidden' => [
+        'password',
+        'remember_token',
+    ]
+   
+];

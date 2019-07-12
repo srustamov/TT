@@ -32,7 +32,7 @@
                 </tr>
             </table>
         </div>
-        <?php if(isset($e->xdebug_message)): ?>
+        <?php if (isset($e->xdebug_message)): ?>
         <hr><div style="text-align: center"><h3>Xdebug Message</h3></p><hr>
         <table class="table">
             <?php echo $e->xdebug_message ?>

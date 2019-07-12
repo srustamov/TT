@@ -12,8 +12,6 @@
 
 namespace App\Controllers;
 
-
-
 use System\Engine\Http\Controller as BaseController;
 
 class Controller extends BaseController

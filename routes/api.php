@@ -1,27 +1,11 @@
-<?php 
+<?php
 
-use System\Engine\Http\Request;
-use System\Engine\Http\Response;
-use System\Engine\App;
 
 $this->group(['prefix' => '/api','middleware' => ['api','cors'] ],function($api)
 {
+    $api->get('/user','Api/ApiController@user');
 
-    $api->get('/users',function(Response $response,App $application){
-
-        $response->json(['users' => []])->send();
-
-        $application->end();
-        
-    });
-
-
-    $api->post('/users',function(Request $request,Response $response,App $application){
-
-        $response->json($request->all())->send();
-
-        $application->end();
-    });
-
-
+    //your routes
 });
+
+$this->post(['path' => '/api/user/create','middleware' => ['cors']],'Api/ApiController@create');

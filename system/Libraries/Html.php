@@ -12,12 +12,13 @@
 
 class Html
 {
-
-
     public function filter(String $str):String
     {
         return htmlspecialchars(
-            trim(html_entity_decode($str, ENT_QUOTES)), ENT_QUOTES, 'UTF-8', false
+            trim(html_entity_decode($str, ENT_QUOTES)),
+            ENT_QUOTES,
+            'UTF-8',
+            false
         );
     }
 
@@ -36,10 +37,9 @@ class Html
     }
 
 
-    public function css(String $file ,$modified = false):String
+    public function css(String $file, $modified = false):String
     {
-        if ($modified)
-        {
+        if ($modified) {
             $file = $file . '?v=' . @filemtime(public_dir($file));
         }
 
@@ -48,10 +48,9 @@ class Html
 
 
 
-    public function js(String $file,$modified = false):String
+    public function js(String $file, $modified = false):String
     {
-        if ($modified)
-        {
+        if ($modified) {
             $file = $file . '?v=' . @filemtime(public_dir($file));
         }
 
@@ -60,13 +59,11 @@ class Html
 
 
 
-    public function img(String $file , $attributes = []):String
+    public function img(String $file, $attributes = []):String
     {
-
         $img  = '<img src="'.url($file).'" ';
 
-        foreach ($attributes as $key => $value)
-        {
+        foreach ($attributes as $key => $value) {
             $img .= $key.'='."\"$value\" ";
         }
 
@@ -74,12 +71,11 @@ class Html
     }
 
 
-    public function link($content,$href,$attributes = [])
+    public function link($content, $href, $attributes = [])
     {
         $link = '<a href="'.$href.'" ';
 
-        foreach ($attributes as $key => $value)
-        {
+        foreach ($attributes as $key => $value) {
             $link .= $key.'="'.$value.'" ';
         }
 
@@ -87,7 +83,7 @@ class Html
     }
 
 
-    public function __call($method,$arguments)
+    public function __call($method, $arguments)
     {
         $once  = array('meta','img','link','br','hr');
 
@@ -95,47 +91,32 @@ class Html
 
         $attributes = $arguments[1] ?? [];
 
-        if(in_array($method,$once))
-        {
+        if (in_array($method, $once)) {
             $attributes = $arguments[0] ?? [];
 
             $tag = "<{$method} ";
 
-            if(is_array($attributes))
-            {
-                foreach ($attributes as $key => $value)
-                {
+            if (is_array($attributes)) {
+                foreach ($attributes as $key => $value) {
                     $tag .= $key.'="'.$value.'" ';
                 }
 
                 return $tag."/>";
-            }
-            else
-            {
+            } else {
                 return $tag.$attributes."/>";
             }
-        }
-        else
-        {
-
+        } else {
             $tag = "<{$method} ";
 
-            if(is_array($attributes))
-            {
-                foreach ($attributes as $key => $value)
-                {
+            if (is_array($attributes)) {
+                foreach ($attributes as $key => $value) {
                     $tag .= $key.'="'.$value.'" ';
                 }
 
                 return $tag.">{$content}</{$method}>";
-            }
-            else
-            {
+            } else {
                 return $tag.$attributes.">{$content}<{$method}>";
             }
         }
-
     }
-
-
 }

@@ -1,6 +1,5 @@
 <?php namespace System\Libraries\Encrypt;
 
-
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -14,8 +13,6 @@ use System\Engine\Load;
 
 class OpenSsl
 {
-
-
     private $method = 'AES-128-CBC';
 
 
@@ -32,12 +29,11 @@ class OpenSsl
      * OpenSsl constructor.
      * @throws EncryptException
      */
-    function __construct()
+    public function __construct()
     {
-        $key = Load::class('config')->get ('app.key',false);
+        $key = Load::class('config')->get('app.key', false);
 
-        if(!$key && !CONSOLE)
-        {
+        if (!$key && !CONSOLE) {
             throw new EncryptException("<b>Application Down</b> ! Application Encryption key not found!");
         }
 
@@ -49,10 +45,9 @@ class OpenSsl
      * @param $method
      * @return $this
      */
-    public function method( $method)
+    public function method($method)
     {
-        if(in_array(strtoupper($method), openssl_get_cipher_methods()))
-        {
+        if (in_array(strtoupper($method), openssl_get_cipher_methods())) {
             $this->method = $method;
         }
         return $this;
@@ -62,7 +57,7 @@ class OpenSsl
      * @param $key
      * @return $this
      */
-    public function key( $key)
+    public function key($key)
     {
         $this->key = $key;
         return $this;
@@ -73,7 +68,7 @@ class OpenSsl
      * @param $iv
      * @return $this
      */
-    public function iv( $iv)
+    public function iv($iv)
     {
         $this->iv = $iv;
         return $this;
@@ -84,7 +79,7 @@ class OpenSsl
      * @param $option
      * @return $this
      */
-    public function option( $option)
+    public function option($option)
     {
         $this->option = $option;
         return $this;
@@ -95,10 +90,10 @@ class OpenSsl
      * @param $data
      * @return String
      */
-    public function encrypt ( $data):String
+    public function encrypt($data):String
     {
-        $encrypted_data = openssl_encrypt($data, $this->method, $this->key,$this->option,$this->getIv());
-        return base64_encode ($encrypted_data);
+        $encrypted_data = openssl_encrypt($data, $this->method, $this->key, $this->option, $this->getIv());
+        return base64_encode($encrypted_data);
     }
 
 
@@ -106,10 +101,10 @@ class OpenSsl
      * @param $data
      * @return String
      */
-    public function decrypt ( $data):String
+    public function decrypt($data):String
     {
-        $decoded  = openssl_decrypt ( base64_decode ( $data ), $this->method, $this->key,$this->option,$this->getIv() );
-        return trim ( $decoded );
+        $decoded  = openssl_decrypt(base64_decode($data), $this->method, $this->key, $this->option, $this->getIv());
+        return trim($decoded);
     }
 
 
@@ -118,15 +113,11 @@ class OpenSsl
      */
     private function getIv()
     {
-        if(is_null($this->iv))
-        {
-            return substr(md5($this->key),0,16);
+        if (is_null($this->iv)) {
+            return substr(md5($this->key), 0, 16);
+        } else {
+            return substr(md5($this->iv), 0, 16);
         }
-        else
-        {
-            return substr(md5($this->iv),0,16);
-        }
-
     }
 
 
@@ -134,13 +125,8 @@ class OpenSsl
      * @param Int $length
      * @return string
      */
-    public function random( Int $length)
+    public function random(Int $length)
     {
         return openssl_random_pseudo_bytes($length);
     }
-
-
-
-
-
 }

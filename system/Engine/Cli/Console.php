@@ -6,6 +6,7 @@
  */
 
 use System\Engine\Cli\Route as CliRoute;
+use System\Engine\Http\Middleware\LoadSettingVariables;
 
 class Console
 {
@@ -16,63 +17,68 @@ class Console
      * @param bool $shell
      * @return null
      */
-    public static function command ( $command , $shell = false )
+    public static function command($command, $shell = false)
     {
-        if ($shell == true)
-        {
-            return shell_exec ( $command );
+        if ($shell == true) {
+            return shell_exec($command);
         }
 
-        $_command = explode( ' ' , str_replace ( '  ' , ' ' , $command ) );
+        if (!is_array($command)) {
+            $command = explode(' ', $command);
+        }
 
-        static::run ( array_merge ( [ 'manage' ] , $_command ) );
-
+        static::run(array_merge([ 'manage' ], array_filter($command)));
     }
 
 
     /**
      * @param array $argv
      */
-    public static function run ( array $argv )
+    public static function run(array $argv)
     {
         $instance = new static();
 
 
-        if (isset( $argv[ 1 ] ))
-        {
-            $manage = array_slice ( $argv , '1' );
-        }
-        else
-        {
-            return PrintConsole::commandList ();
+        if (isset($argv[ 1 ])) {
+            $manage = array_slice($argv, '1');
+        } else {
+            return PrintConsole::commandList();
         }
 
-        PrintConsole::output ();
+        PrintConsole::output();
 
-        switch (strtolower ( $manage[ 0 ] )) {
+        switch (strtolower($manage[ 0 ])) {
             case 'runserver':
-                $instance->startPhpDevelopmentServer ( $manage );
+                $instance->startPhpDevelopmentServer($manage);
                 break;
             case 'session:table':
-                CreateTables::session ( $manage );
+                CreateTables::session($manage);
                 break;
             case 'users:table':
-                CreateTables::users ();
+                CreateTables::users();
                 break;
             case 'view:cache':
-                $instance->clearViewCache ();
+                $instance->clearViewCache();
                 break;
             case 'config:cache':
-                Config::clearConfigsCacheOrCreate ( $manage[ 1 ] ?? null );
+                Config::clearConfigsCacheOrCreate($manage[ 1 ] ?? null);
                 break;
             case 'route:cache':
-                CliRoute::clearRoutesCacheOrCreate ( $manage[ 1 ] ?? null );
+                CliRoute::clearRoutesCacheOrCreate($manage[ 1 ] ?? null);
                 break;
             case 'route:list':
-                CliRoute::list ();
+                CliRoute::list();
                 break;
             case 'key:generate':
-                $instance->keyGenerate ();
+                $instance->keyGenerate();
+                break;
+            case 'build':
+                self::appDebugFalse();
+                $instance->keyGenerate();
+                (new LoadSettingVariables())->settingVariables();
+                self::command('config:cache --create');
+                self::command('route:cache --create');
+                new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL.PHP_EOL);
                 break;
             default:
                 $create = array(
@@ -82,13 +88,10 @@ class Console
                     "create:resource",
                     "create:facade",
                 );
-                if(in_array($manage[ 0 ], $create))
-                {
+                if (in_array($manage[ 0 ], $create)) {
                     Create::execute($manage);
-                }
-                else
-                {
-                    PrintConsole::commandList ();
+                } else {
+                    PrintConsole::commandList();
                 }
 
                 break;
@@ -97,94 +100,102 @@ class Console
 
 
 
-    protected function startPhpDevelopmentServer ( array $manage )
+    protected function startPhpDevelopmentServer(array $manage)
     {
-        if(isset( $manage[ 1 ] ) && is_numeric ( $manage[ 1 ] ))
-        {
+        if (isset($manage[ 1 ]) && is_numeric($manage[ 1 ])) {
             $port = $manage[ 1 ];
-        }
-        else
-        {
+        } else {
             $port = 8000;
         }
 
-        new PrintConsole ( 'green' ,"\nPhp Server Run <http://localhost:$port>\n" );
+        new PrintConsole('green', "\nPhp Server Run <http://localhost:$port>\n");
 
-        exec ( 'php -S localhost:' . $port . ' -t public/' );
-
+        exec('php -S localhost:' . $port . ' -t public/');
     }
 
 
 
 
-    protected function clearViewCache ()
+    protected function clearViewCache()
     {
-
-        foreach (glob ( path ( 'storage/cache/views/*' ) ) as $file)
-        {
-            if (is_file ( $file ))
-            {
-                if (unlink ( $file ))
-                {
+        foreach (glob(path('storage/cache/views/*')) as $file) {
+            if (is_file($file)) {
+                if (unlink($file)) {
                     echo "Delete: [{$file}]\n";
+                } else {
+                    new PrintConsole('error', 'Delete failed:[' . $file . ']');
                 }
-                else
-                {
-                    new PrintConsole ( 'error' , 'Delete failed:[' . $file . ']' );
-                }
-
             }
         }
-        new PrintConsole ( 'green' , "\n\nCache files clear successfully \n\n" );
-
+        new PrintConsole('green', "\n\nCache files clear successfully \n\n");
     }
 
 
-    protected function keyGenerate ()
+    protected function keyGenerate()
     {
-        $settings_file = path ( '.settings' );
+        $settings_file = path('.settings');
 
-        try
-        {
-            $file = fopen ( $settings_file , 'r+' );
+        try {
+            $file = fopen($settings_file, 'r+');
 
-            while (( $line = fgets ( $file , 4096 ) ) !== false)
-            {
-                if (strpos ( trim($line) , 'APP_KEY' ) === 0)
-                {
-                    $replace = $line; break;
+            while (($line = fgets($file, 4096)) !== false) {
+                if (strpos(trim($line), 'APP_KEY') === 0) {
+                    $replace = $line;
+                    break;
                 }
             }
 
-            fclose ( $file );
+            fclose($file);
 
 
-            $content = \file_get_contents( $settings_file );
+            $content = \file_get_contents($settings_file);
 
-            $key = base64_encode ( openssl_random_pseudo_bytes ( 40 ) );
+            $key = base64_encode(openssl_random_pseudo_bytes(40));
 
-            $key = "APP_KEY = " . str_replace ( '=' , '' , $key ) . "\n";
+            $key = "APP_KEY = " . str_replace('=', '', $key) . "\n";
 
-            $new_content = \preg_replace( "/{$replace}/" , $key , $content );
+            $new_content = \preg_replace("/{$replace}/", $key, $content);
 
-            file_put_contents ( path ( '.settings' ) , $new_content );
+            file_put_contents(path('.settings'), $new_content);
 
-            if(file_exists(path('storage/system/settings')))
-            {
-              unlink(path('storage/system/settings'));
+            if (file_exists(path('storage/system/settings'))) {
+                unlink(path('storage/system/settings'));
             }
 
-            new PrintConsole ( 'green' , $key );
-
+            new PrintConsole('green', $key);
+        } catch (\Exception $e) {
+            new PrintConsole('error', $e->getMessage() . "\n");
         }
-        catch (\Exception $e)
-        {
-            new PrintConsole ( 'error' , $e->getMessage () . "\n" );
-        }
-
     }
 
 
+    private static function appDebugFalse()
+    {
+        $settings_file = path('.settings');
+
+        try {
+            $file = fopen($settings_file, 'r+');
+
+            while (($line = fgets($file, 4096)) !== false) {
+                if (strpos(trim($line), 'APP_DEBUG') === 0) {
+                    $replace = $line;
+                    break;
+                }
+            }
+
+            fclose($file);
 
 
+            $content = \file_get_contents($settings_file);
+
+
+            $key = "APP_DEBUG = " . str_replace('=', '', 'FALSE') . "\n";
+
+            $new_content = \preg_replace("/{$replace}/", $key, $content);
+
+            file_put_contents(path('.settings'), $new_content);
+        } catch (\Exception $e) {
+            new PrintConsole('error', $e->getMessage() . "\n");
+        }
+    }
 }

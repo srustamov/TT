@@ -15,56 +15,43 @@ use System\Facades\Route;
 
 class Redirect
 {
-
-
-
-
-    function __construct()
+    public function __construct()
     {
-        if(func_num_args() > 0)
-        {
-          call_user_func_array([$this,'to'], func_get_args());
+        if (func_num_args() > 0) {
+            call_user_func_array([$this,'to'], func_get_args());
         }
     }
 
 
-    public function route($name,Array $parameters = [])
+    public function route($name, array $parameters = [])
     {
-      return $this->to(Route::getName($name,$parameters));
+        return $this->to(Route::getName($name, $parameters));
     }
 
 
     public function back($refresh = 0, $http_response_code = 302)
     {
-        if($refresh)
-        {
+        if ($refresh) {
             $this->refresh = $refresh;
         }
 
-        if (($back = Load::class('http')->referer()))
-        {
+        if (($back = Load::class('http')->referer())) {
             $url = $back;
-        }
-        elseif (($back = Load::class('session')->prevUrl()))
-        {
+        } elseif (($back = Load::class('session')->prevUrl())) {
             $url = $back;
-        }
-        else
-        {
+        } else {
             $url = '';
         }
 
         return call_user_func_array([$this,'to'], array($url,$refresh,$http_response_code));
-
     }
 
 
     public function to(String $url, $refresh = 0, $http_response_code = 302)
     {
-
         $url = $this->prepareUrl($url);
 
-        $response = Load::class('response')->header('Location',$url,true);
+        $response = Load::class('response')->header('Location', $url, true);
 
         $response->setStatusCode($http_response_code);
 
@@ -75,13 +62,12 @@ class Redirect
 
 
 
-    public function with($key,$value = null)
+    public function with($key, $value = null)
     {
         $data = is_array($key) ?:[$key => $value];
 
-        foreach ($data as $key => $value)
-        {
-            Load::class('session')->flash($key,$value);
+        foreach ($data as $key => $value) {
+            Load::class('session')->flash($key, $value);
         }
 
         return $this;
@@ -89,11 +75,11 @@ class Redirect
 
 
 
-    public function withErrors($key,$value = null)
+    public function withErrors($key, $value = null)
     {
         $data = is_array($key) ? $key : [$key => $value];
 
-        Load::class('session')->flash('view-errors',$data);
+        Load::class('session')->flash('view-errors', $data);
 
         return $this;
     }
@@ -101,14 +87,12 @@ class Redirect
 
     protected function prepareUrl($url)
     {
-        if (empty(trim($url)))
-        {
+        if (empty(trim($url))) {
             throw new \Exception('Redirect location empty url');
         }
 
 
-        if (!preg_match('/^https?:\/\//', $url))
-        {
+        if (!preg_match('/^https?:\/\//', $url)) {
             $url = Load::class('url')->to($url);
         }
 
@@ -118,22 +102,16 @@ class Redirect
 
     public function __call($method, $args)
     {
-
-        if(func_num_args() > 0)
-        {
-            if(strlen($method) > 4 && substr($method,0,4) == 'with')
-            {
+        if (func_num_args() > 0) {
+            if (strlen($method) > 4 && substr($method, 0, 4) == 'with') {
                 $method = strtolower($method);
 
-                $var  = substr($method,4);
+                $var  = substr($method, 4);
 
                 $args = is_array($args[0]) ? $args[0] : [$args[0] => $args[1] ?? null];
 
-                Load::class('session')->flash($var,$args[0]);
-
-            }
-            else
-            {
+                Load::class('session')->flash($var, $args[0]);
+            } else {
                 throw new \BadMethodCallException("Call to undefined method Redirect::{$method}()");
             }
         }
@@ -143,16 +121,14 @@ class Redirect
 
 
 
-    public function __toString ()
+    public function __toString()
     {
-       return Load::class('response')->send();
+        return Load::class('response')->send();
     }
 
 
     public function instance()
     {
-      return $this;
+        return $this;
     }
-
-
 }

@@ -1,7 +1,5 @@
 <?php  namespace App\Middleware;
 
-
-
 /*
 |-------------------------------------------
 | Example Guest Middleware
@@ -14,18 +12,14 @@
 use System\Facades\Auth;
 use System\Facades\Redirect;
 
-class Guest
+class GuestMiddleware
 {
-
-    public function handle($request, \Closure $next,$guard)
+    public function handle($request, \Closure $next)
     {
+        if (Auth::check()) {
+            return Redirect::back();
+        }
 
-      if(Auth::guard($guard)->check())
-      {
-        return Redirect::back();
-      }
-
-      return $next($request);
+        return $next($request);
     }
-
 }

@@ -1,4 +1,5 @@
 <?php namespace System\Libraries\Auth;
+
 /**
  * @package TT
  * @author Samir Rustamov <rustemovv96@gmail.com>
@@ -15,20 +16,14 @@ use System\Facades\Redirect;
 use System\Facades\Session;
 use System\Facades\Cookie;
 use System\Facades\Config;
+use System\Facades\Hash;
+use System\Libraries\Arr;
 use System\Facades\DB;
-
+use stdClass;
 
 class Authentication
 {
-
-
-    private $config;
-
-
     private $message;
-
-
-    private $guard  = 'user';
 
 
     private $driver;
@@ -37,113 +32,117 @@ class Authentication
     private $table;
 
 
-    private $lock_time;
+    private $lockTime;
 
 
-    private $max_attempts;
+    private $maxAttempts;
+
+
+    private $attemptDriver = 'session';
 
 
     private $hidden;
 
 
+    private $user;
 
 
-    function __construct()
+
+
+    public function __construct()
     {
-        $this->config = Config::get('authentication.guards');
+        $config = Config::get('authentication');
 
-        foreach ($this->config as $guard => $config)
-        {
-            $this->max_attempts[$guard] = $config['max_attempts'];
-            $this->lock_time[$guard]    = $config['lock_time'];
-            $this->table[$guard]        = $config['table'];
-            $this->hidden[$guard]       = $config['hidden'];
-        }
+        $this->attemptDriver = $config['attemptDriver'];
+        $this->maxAttempts   = $config['maxAttempts'];
+        $this->lockTime      = $config['lockTime'];
+        $this->table         = $config['table'];
+        $this->hidden        = $config['hidden'];
     }
 
 
-    protected function beforeLogin($guard,$user)
-    {
-        //
-    }
-
-
-    protected function afterLogin($guard,$user):Bool
+    protected function beforeLogin($user):Bool
     {
         return true;
     }
 
 
-    public function guard($guard)
+    protected function afterLogin($user)
     {
-        $this->guard = $guard;
-
-        return $this;
+        return true;
     }
 
 
-    public function getGuard()
+    public function user($user = false)
     {
-        return $this->guard;
+        if ($user && is_object($user)) {
+            $this->user = (object) Arr::except((array) $user, $this->hidden);
+        } else {
+            if (!$this->user) {
+                $authId = Session::get('AuthId');
+    
+                if ($authId) {
+                    $result = DB::table($this->table)->where(['id' => $authId])->first();
+    
+                    $this->user = (object) Arr::except((array) $result, $this->hidden);
+                }
+            }
+        }
+
+        
+        return $this->user;
     }
+
 
 
     public function attempt(array $data, $remember = false)
     {
         $this->setAttemptDriver();
 
-        if (($attempts = $this->driver[$this->guard]->getAttemptsCountOrFail($this->guard)))
-        {
-            if ($attempts->count >= $this->max_attempts[$this->guard])
-            {
-                if (($seconds =  $this->driver[$this->guard]->getRemainingSecondsOrFail($this->guard)))
-                {
+        if (($attempts = $this->driver->getAttemptsCountOrFail())) {
+            if ($attempts->count >= $this->maxAttempts) {
+                if (($seconds =  $this->driver->getRemainingSecondsOrFail())) {
                     $this->message = $this->getLockMessage($seconds);
                     return false;
                 }
             }
         }
 
-        if(isset($data['password']))
-        {
-           $password = $data['password'];
+        if (isset($data['password'])) {
+            $password = $data['password'];
 
-           unset($data['password']);
-        }
-        else
-        {
-          throw new \InvalidArgumentException("Auth password not found");
+            unset($data['password']);
+        } else {
+            throw new \InvalidArgumentException("Auth password not found");
         }
 
 
-        if (($result = DB::table($this->table[$this->guard])->where($data)->first()))
-        {
+        if (($result = DB::table($this->table)->where($data)->first())) {
+            if (Hash::check($password, $result->password)) {
+                $this->driver->deleteAttempt();
 
-            if (password_verify($password, $result->password))
-            {
-                $this->driver[$this->guard]->deleteAttempt($this->guard);
-
-                if ($remember)
-                {
+                if ($remember) {
                     $this->setRemember($result);
                 }
 
-                $this->beforeLogin($this->guard, $result);
+                if ($this->beforeLogin($result)) {
+                    $this->setSession($result);
 
-                $this->setSession($result);
+                    $this->afterLogin($result);
 
-                return $this->afterLogin($this->guard, $result);
+                    return true;
+                }
 
+                return false;
             }
         }
 
-        $this->driver[$this->guard]->addAttempt($this->guard);
+        $this->driver->addAttempt();
 
-        $remaining =  $this->max_attempts[$this->guard] - $this->driver[$this->guard]->getAttemptsCountOrFail($this->guard)->count;
+        $remaining =  $this->maxAttempts - $this->driver->getAttemptsCountOrFail()->count;
 
-        if ($remaining == 0)
-        {
-            $this->driver[$this->guard]->startLockTime($this->guard, $this->lock_time[$this->guard]);
+        if ($remaining == 0) {
+            $this->driver->startLockTime($this->lockTime);
         }
         $this->message = $this->getFailMessage($remaining);
 
@@ -153,20 +152,15 @@ class Authentication
 
     public function loginUser($user, $remember = false)
     {
-        if (is_array($user) || is_object($user))
-        {
-            try
-            {
+        if (is_array($user) || is_object($user)) {
+            try {
                 $this->setSession($user);
 
-                if ($remember)
-                {
+                if ($remember) {
                     $this->setRemember($user);
                 }
                 return true;
-            }
-            catch (\Exception $e)
-            {
+            } catch (\Exception $e) {
                 return false;
             }
         }
@@ -176,20 +170,23 @@ class Authentication
 
     public function check()
     {
-        if (Session::get($this->guard.'_login') === true)
-        {
-            return true;
-        }
-        else
-        {
-            if (($result = $this->remember($this->guard)))
-            {
-                $this->beforeLogin($this->guard, $result);
+        if (Session::get('Login') === true) {
+            if ($this->user() && is_object($this->user)) {
+                $authId = Session::get('AuthId');
+
+                
+                if ($authId && $this->user->id === $authId) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            if (($result = $this->remember())) {
+                $this->beforeLogin($result);
 
                 $this->setSession($result);
 
-                return $this->afterLogin($this->guard, $result);
-
+                return $this->afterLogin($result);
             }
 
             return false;
@@ -203,13 +200,12 @@ class Authentication
     }
 
 
-    public function remember($guard)
+    public function remember()
     {
-        if (Cookie::has('remember_'.$guard))
-        {
-            $_token = Cookie::get('remember_'.$guard);
+        if (Cookie::has('remember')) {
+            $token = Cookie::get('remember');
 
-            return DB::table($this->table[$this->guard])->where('remember_token', base64_decode($_token))->first();
+            return DB::table($this->table)->where('remember_token', base64_decode($token))->first();
         }
         return false;
     }
@@ -217,17 +213,14 @@ class Authentication
 
     public function setRemember($user)
     {
-        if ($user->remember_token)
-        {
-            Cookie::set('remember_' . $this->guard, base64_encode($user->remember_token), 3600 * 24 * 30);
-        }
-        else
-        {
+        if ($user->remember_token) {
+            Cookie::set('remember', base64_encode($user->remember_token), 3600 * 24 * 30);
+        } else {
             $_token = hash_hmac('sha256', $user->email . $user->name, Config::get('app.key'));
 
-            Cookie::set('remember_'.$this->guard, base64_encode($_token), 3600 * 24 * 30);
+            Cookie::set('remember', base64_encode($_token), 3600 * 24 * 30);
 
-            DB::table($this->config[$this->guard]['table'])
+            DB::table($this->table)
                 ->where('id', $user->id)
                 ->update(['remember_token' => $_token]);
         }
@@ -242,55 +235,31 @@ class Authentication
     }
 
 
+
     protected function setSession($user)
     {
-        $user = (array) $user;
+        $this->user = $user;
 
-        $set_data = [];
+        Session::set('AuthId', $user->id);
 
-        foreach ($user as $key => $value)
-        {
-            if (array_search($key, $this->hidden[$this->guard]) !== false)
-            {
-                continue;
-            }
-
-            $set_data[$this->guard.'_'.$key] = $value;
-        }
-
-        $set_data[ $this->guard . '_login' ] = true;
-
-        Session::setArray($set_data)->regenerate();
-
+        Session::set('Login', true);
     }
 
 
     public function logoutUser()
     {
-        try
-        {
-            Session::delete(function ($session)
-            {
-                $data    = array();
+        $this->user = null;
 
-                foreach (array_keys($session->all()) as $key => $value)
-                {
-                    if (preg_match("/".$this->guard."_(.*)/", $value))
-                    {
-                        array_push($data, $value);
-                    }
-                }
-                return $data;
-            })->regenerate();
+        try {
+            Session::delete('AuthId');
+
+            Session::delete('Login');
 
 
-            if (Cookie::has('remember_'.$this->guard))
-            {
-                Cookie::forget('remember_'.$this->guard);
+            if (Cookie::has('remember')) {
+                Cookie::forget('remember');
             }
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             Session::destroy();
         }
 
@@ -300,16 +269,18 @@ class Authentication
 
     public function redirect()
     {
-      if (empty(func_get_args())) {
-        return Redirect::instance();
-      }
-      return Redirect::to(...func_get_args());
+        if (empty(func_get_args())) {
+            return Redirect::instance();
+        }
+        return Redirect::to(...func_get_args());
     }
 
 
     protected function getFailMessage($remaining)
     {
-      return Language::translate('auth.incorrect',array(
+        return Language::translate(
+          'auth.incorrect',
+          array(
         'remaining' => $remaining)
       );
     }
@@ -317,7 +288,9 @@ class Authentication
 
     protected function getLockMessage($seconds)
     {
-      return Language::translate('auth.many_attempts.text',array(
+        return Language::translate(
+          'auth.many_attempts.text',
+          array(
         'time' => $this->convertTime($seconds))
       );
     }
@@ -329,35 +302,25 @@ class Authentication
 
         $second = "";
 
-        if ($seconds >= 60)
-        {
+        if ($seconds >= 60) {
             $minute = (int) ($seconds/60);
 
-            if ($minute > 1)
-            {
+            if ($minute > 1) {
                 $minute = $minute." ".Language::translate('auth.many_attempts.minutes')." ";
-            }
-            else
-            {
+            } else {
                 $minute = $minute." ".Language::translate('auth.many_attempts.minute')." ";
             }
 
-            if ($seconds%60 > 0)
-            {
+            if ($seconds%60 > 0) {
                 $second = ($seconds%60);
 
-                if ($second > 1)
-                {
+                if ($second > 1) {
                     $second = $second." ".Language::translate('auth.many_attempts.seconds')." ";
-                }
-                else
-                {
+                } else {
                     $second = $second." ".Language::translate('auth.many_attempts.second')." ";
                 }
             }
-        }
-        else
-        {
+        } else {
             $second = $seconds > 1
             ? $seconds." ".Language::translate('auth.many_attempts.seconds')." "
             : $seconds." ".Language::translate('auth.many_attempts.second')." ";
@@ -369,54 +332,50 @@ class Authentication
 
     protected function setAttemptDriver()
     {
-        foreach ($this->config as $guard => $config)
-        {
-            switch ($config['attempts_driver'])
-            {
-              case 'session':
-                $this->driver[$guard] = new SessionAttemptDriver();
+        switch ($this->attemptDriver) {
+            case 'session':
+                $this->driver = new SessionAttemptDriver();
                 break;
-              case 'database':
-                $this->driver[$guard] = new DatabaseAttemptDriver();
+            case 'database':
+                $this->driver = new DatabaseAttemptDriver();
                 break;
-              case 'redis':
-                $this->driver[$guard] = new RedisAttemptDriver();
+            case 'redis':
+                $this->driver = new RedisAttemptDriver();
                 break;
-              default:
-                $this->driver[$guard] = new SessionAttemptDriver();
+            default:
+                throw new \RuntimeException('Attempt Driver not found !');
                 break;
-            }
         }
     }
 
 
     public function __get($key)
     {
-        return Session::get($this->guard.'_'.$key);
+        $user = $this->user();
+
+        return $user->{$key} ?? false;
     }
 
 
     public function __set($key, $value)
     {
-        Session::set($this->guard.'_'.$key, $value);
+        $this->user->{$key} = $value;
+        
+        return $this;
     }
 
 
     public function __call($method, $args)
     {
-        $guard = $args[ 0 ] ?? $this->guard;
-
-        if ($this->check($guard))
-        {
-            return Session::get($guard . '_' . $method);
+        if ($this->check()) {
+            return $this->user->{$method} ?? false;
         }
-
         return false;
     }
 
 
     public function __toString()
     {
-      return $this->message;
+        return $this->message;
     }
 }

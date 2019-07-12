@@ -17,7 +17,6 @@ use ArrayAccess;
 
 class Cookie implements ArrayAccess
 {
-
     private $prefix = '';
 
     private $http_only = true;
@@ -32,7 +31,7 @@ class Cookie implements ArrayAccess
 
 
 
-    function __construct()
+    public function __construct()
     {
         $config = Load::class('config')->get('cookie');
 
@@ -100,8 +99,7 @@ class Cookie implements ArrayAccess
      */
     public function flush()
     {
-        foreach (array_keys($_COOKIE) as $key)
-        {
+        foreach (array_keys($_COOKIE) as $key) {
             $this->forget($key);
         }
     }
@@ -125,14 +123,12 @@ class Cookie implements ArrayAccess
      */
     public function set($key, $value, $time = 3600 * 24)
     {
-        if ($value instanceOf \Closure)
-        {
+        if ($value instanceof \Closure) {
             return $this->set($key, call_user_func($value, $this), $time);
         }
 
-        if (!empty(trim($value)))
-        {
-            $value = $this->encrypt($value,$key);
+        if (!empty(trim($value))) {
+            $value = $this->encrypt($value, $key);
         }
 
         $data = [
@@ -145,8 +141,7 @@ class Cookie implements ArrayAccess
           $this->http_only
         ];
 
-        if (!setcookie(...$data))
-        {
+        if (!setcookie(...$data)) {
             throw new CookieException("Could not set the cookie!");
         }
 
@@ -169,15 +164,11 @@ class Cookie implements ArrayAccess
      */
     public function get($key)
     {
-        if ($key instanceOf \Closure)
-        {
+        if ($key instanceof \Closure) {
             return $this->get(call_user_func($key, $this));
-        }
-        else
-        {
-            if (isset($_COOKIE[ $this->prefix . $key ]))
-            {
-                return $this->decrypt($_COOKIE[ $this->prefix . $key ],$key);
+        } else {
+            if (isset($_COOKIE[ $this->prefix . $key ])) {
+                return $this->decrypt($_COOKIE[ $this->prefix . $key ], $key);
             }
             return false;
         }
@@ -185,10 +176,9 @@ class Cookie implements ArrayAccess
 
 
 
-    private function encrypt($data,$key)
+    private function encrypt($data, $key)
     {
-        if(in_array($this->prefix.$key,$this->encrypt_except_keys))
-        {
+        if (in_array($this->prefix.$key, $this->encrypt_except_keys)) {
             return $data;
         }
 
@@ -196,10 +186,9 @@ class Cookie implements ArrayAccess
     }
 
 
-    private function decrypt($data,$key)
+    private function decrypt($data, $key)
     {
-        if(in_array($this->prefix.$key,$this->encrypt_except_keys))
-        {
+        if (in_array($this->prefix.$key, $this->encrypt_except_keys)) {
             return $data;
         }
 
@@ -216,7 +205,7 @@ class Cookie implements ArrayAccess
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return $this->get($offset);
     }
@@ -233,9 +222,9 @@ class Cookie implements ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
-        $this->set($offset,$value);
+        $this->set($offset, $value);
     }
 
     /**
@@ -247,7 +236,7 @@ class Cookie implements ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
         $this->forget($offset);
     }
@@ -264,10 +253,8 @@ class Cookie implements ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
         return $this->has($offset);
     }
-
-
 }

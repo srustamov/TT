@@ -1,7 +1,6 @@
 # TT
 PHP simple and fastest mini mvc framework
 
-[Download](https://github.com/srustamov/TT/archive/master.zip)
 
 * Goto Command Line
 ```
@@ -20,6 +19,11 @@ PHP simple and fastest mini mvc framework
 ```
    [http://localhost:8000](http://localhost:8000) - Open browser
 
+
+* Getting Application in Production:
+```
+  root@samir  ~/yourpath/TT# php manage build
+```
 
 * Create controller:
 ```
@@ -64,4 +68,15 @@ PHP simple and fastest mini mvc framework
 * Create cache config files:
 ```
   root@samir  ~/yourpath/TT# php manage config:cache --create
+```
+
+
+* Route cache clear:
+```
+  root@samir  ~/yourpath/TT# php manage route:cache
+```
+
+* Routes cached:
+```
+  root@samir  ~/yourpath/TT# php manage route:cache --create
 ```

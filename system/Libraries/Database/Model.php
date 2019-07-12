@@ -1,6 +1,5 @@
 <?php namespace System\Libraries\Database;
 
-
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -17,10 +16,8 @@
 use System\Libraries\Arr;
 use System\Facades\DB;
 
-
 abstract class Model
 {
-
     private static $attributes = [];
 
     protected $table;
@@ -36,7 +33,7 @@ abstract class Model
      * @param $column
      * @param $value
      */
-    public function __set( $column, $value)
+    public function __set($column, $value)
     {
         self::$attributes[$column] = $value;
     }
@@ -49,8 +46,7 @@ abstract class Model
      */
     public function save():Bool
     {
-        if (!empty(self::$attributes))
-        {
+        if (!empty(self::$attributes)) {
             $return = static::create(self::$attributes);
 
             self::$attributes = [];
@@ -69,13 +65,11 @@ abstract class Model
     {
         $fillable = (new static)->fillable;
 
-        if(!is_null($fillable))
-        {
-            $data = Arr::only($data,$fillable);
+        if (!is_null($fillable)) {
+            $data = Arr::only($data, $fillable);
 
-            if(!Arr::isAssoc($data))
-            {
-              $data = array_combine($fillable, $data);
+            if (!Arr::isAssoc($data)) {
+                $data = array_combine($fillable, $data);
             }
         }
 
@@ -102,7 +96,7 @@ abstract class Model
 
         return DB::table((new static)->getTable())
             ->select($select)
-            ->whereIn($primaryKey,$find)
+            ->whereIn($primaryKey, $find)
             ->get((count($find) == 1));
     }
 
@@ -118,7 +112,7 @@ abstract class Model
         $ids  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
         return   DB::table((new static)->getTable())
-                    ->whereIn($primaryKey,$ids)
+                    ->whereIn($primaryKey, $ids)
                     ->delete();
     }
 
@@ -147,8 +141,7 @@ abstract class Model
 
     public function getTable()
     {
-        if (is_null($this->table))
-        {
+        if (is_null($this->table)) {
             $called_class = explode('\\', get_called_class());
 
             $this->table  = strtolower(array_pop($called_class)).'s';
@@ -166,7 +159,7 @@ abstract class Model
     }
 
 
-    public function __call($name, $arguments)
+    private function callCustomMethod($name, $arguments)
     {
         $select = !is_null($this->select) ? $this->select : '*';
 
@@ -174,13 +167,15 @@ abstract class Model
     }
 
 
-
-    public static function __callStatic($name, $arguments)
+    public function __call($name, $arguments)
     {
-        return (new static)->_call($name, $arguments);
+        return $this->callCustomMethod($name, $arguments);
     }
 
 
 
-
+    public static function __callStatic($name, $arguments)
+    {
+        return (new static)->callCustomMethod($name, $arguments);
+    }
 }

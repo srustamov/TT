@@ -10,37 +10,30 @@
 
 namespace System\Libraries\View;
 
-
 use ArrayAccess;
 use Countable;
 
-class Errors implements ArrayAccess , Countable
+class Errors implements ArrayAccess, Countable
 {
-
-
     protected $errors = [];
 
 
-    public function __construct (array $errors = [])
+    public function __construct(array $errors = [])
     {
-        $this->errors = array_merge($this->errors,$errors);
+        $this->errors = array_merge($this->errors, $errors);
     }
 
 
     public function first($key)
     {
-      if (isset($this->errors[$key]))
-      {
-        if (is_array($this->errors[$key]))
-        {
-          return $this->errors[$key][0] ?? false;
+        if (isset($this->errors[$key])) {
+            if (is_array($this->errors[$key])) {
+                return $this->errors[$key][0] ?? false;
+            } else {
+                return $this->errors[$key] ?? false;
+            }
         }
-        else
-        {
-          return $this->errors[$key] ?? false;
-        }
-      }
-      return false;
+        return false;
     }
 
 
@@ -60,12 +53,12 @@ class Errors implements ArrayAccess , Countable
         return $this->errors[$key] ?? false;
     }
 
-    public  function __call ( $name , $arguments )
+    public function __call($name, $arguments)
     {
         return $this->errors[$name];
     }
 
-    public static function __callStatic ( $name , $arguments )
+    public static function __callStatic($name, $arguments)
     {
         return (new static)->errors[$name];
     }
@@ -82,7 +75,7 @@ class Errors implements ArrayAccess , Countable
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
         return isset($this->errors[$offset]);
     }
@@ -96,7 +89,7 @@ class Errors implements ArrayAccess , Countable
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return $this->errors[$offset];
     }
@@ -113,7 +106,7 @@ class Errors implements ArrayAccess , Countable
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
         $this->errors[$offset] = $value;
     }
@@ -127,7 +120,7 @@ class Errors implements ArrayAccess , Countable
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
         if (isset($this->errors[$offset])) {
             unset($this->errors[$offset]);
@@ -143,7 +136,7 @@ class Errors implements ArrayAccess , Countable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count ()
+    public function count()
     {
         return !empty($this->errors) ? count($this->errors) : 0;
     }

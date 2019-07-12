@@ -16,18 +16,14 @@ use System\Libraries\Cache\Drivers\RedisStore;
 use System\Engine\Load;
 use System\Facades\DB;
 
-
-
 class Cache
 {
-
-
     private $driver;
 
 
-    public function  __construct ()
+    public function __construct()
     {
-        $driver = Load::class('config')->get('cache.driver','file');
+        $driver = Load::class('config')->get('cache.driver', 'file');
 
         $this->driver($driver);
     }
@@ -36,14 +32,10 @@ class Cache
 
     public function driver($driver)
     {
-        if($driver instanceof CacheStore)
-        {
+        if ($driver instanceof CacheStore) {
             $this->driver = $driver;
-        }
-        else
-        {
-            switch (strtolower($driver))
-            {
+        } else {
+            switch (strtolower($driver)) {
                 case 'file':
                     $this->driver = new FileStore();
                     break;
@@ -67,11 +59,10 @@ class Cache
 
     public function createDatabaseTable()
     {
-      try
-      {
-        $table = Load::class('config')->get('cache.database',[])['table'] ?? 'cache';
+        try {
+            $table = Load::class('config')->get('cache.database', [])['table'] ?? 'cache';
 
-        $create = DB::exec("CREATE TABLE IF NOT EXISTS $table(
+            $create = DB::exec("CREATE TABLE IF NOT EXISTS $table(
                               `id` int(11) NOT NULL AUTO_INCREMENT,
                               `cache_key` varchar(255) NOT NULL,
                               `cache_value` longtext NOT NULL,
@@ -81,24 +72,22 @@ class Cache
                               ) DEFAULT CHARSET=utf8
                       ") !== false;
 
-        return $create ? $this : false;
-      }
-      catch (\PDOException $e)
-      {
-        throw new \Exception("Create database $table table failed.<br />[".$e->getMessage()."]");
-      }
+            return $create ? $this : false;
+        } catch (\PDOException $e) {
+            throw new \Exception("Create database $table table failed.<br />[".$e->getMessage()."]");
+        }
     }
 
 
-    public function put(String $key , $value ,$expires = null)
+    public function put(String $key, $value, $expires = null)
     {
-        return $this->driver->put($key , $value ,$expires);
+        return $this->driver->put($key, $value, $expires);
     }
 
 
-    public function forever(String $key , $value )
+    public function forever(String $key, $value)
     {
-        return $this->driver->forever($key , $value);
+        return $this->driver->forever($key, $value);
     }
 
 
@@ -141,23 +130,19 @@ class Cache
         return $this->driver->day($day);
     }
 
-    public function flush ()
+    public function flush()
     {
         $this->driver->flush();
     }
 
-    public function __call($method,$args)
+    public function __call($method, $args)
     {
-      return $this->driver->$method(...$args);
+        return $this->driver->$method(...$args);
     }
 
 
-    function __destruct()
+    public function __destruct()
     {
-      $this->driver->close();
+        $this->driver->close();
     }
-
-
-
-
 }

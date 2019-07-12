@@ -12,7 +12,6 @@
 
 namespace App\Controllers\Auth;
 
-
 use App\Controllers\Controller;
 use System\Engine\Http\Request;
 use System\Facades\Validator;
@@ -42,26 +41,19 @@ class LoginController extends Authentication
     * @return \System\Libraries\Redirect
     */
     public function login(Request $request)
-    { 
-
+    {
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email',
                 'password' => 'required|min:6'
             ]);
 
-        if (!$validation->check())
-        {
+        if (!$validation->check()) {
             return Redirect::to('/auth/login')->withErrors($validation->messages());
-        }
-        else
-        {
-            if ($this->attempt($request->only('email', 'password'), $request->remember))
-            {
+        } else {
+            if ($this->attempt($request->only('email', 'password'), $request->remember)) {
                 return Redirect::to('/home');
-            }
-            else
-            {
-                return Redirect::to('/auth/login')->withErrors('login' , $this->getMessage());
+            } else {
+                return Redirect::to('/auth/login')->withErrors('login', $this->getMessage());
             }
         }
     }

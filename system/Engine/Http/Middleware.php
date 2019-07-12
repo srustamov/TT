@@ -10,8 +10,6 @@ use System\Engine\Load;
 
 class Middleware
 {
-
-
     private static $instance;
 
 
@@ -22,53 +20,40 @@ class Middleware
      * @throws \Exception
      */
 
-    public static function init( String $extension ,Bool $isClassName = false)
+    public static function init(String $extension, Bool $isClassName = false)
     {
         $request  = Load::class('request');
 
-        if(!$isClassName)
-        {
-            list($name,$guard,$excepts) = static::instance()->getExceptsAndGuard($extension);
+        if (!$isClassName) {
+            list($name, $excepts) = static::instance()->getExcepts($extension);
 
-            foreach ($excepts as $action)
-            {
-                if ($request->controller(true) == strtolower($action))
-                {
+            foreach ($excepts as $action) {
+                if ($request->controller(true) == strtolower($action)) {
                     return true;
                 }
             }
 
             $middleware = "\\App\\Middleware\\{$name}";
-        }
-        else
-        {
+        } else {
             $middleware = $extension;
-            $guard      = null;
         }
 
-        $next = function($ClientRequest)
-        {
-            if(Load::isInstance($ClientRequest,'request'))
-            {
-              return Load::class('response');
+        $next = function ($ClientRequest) {
+            if (Load::isInstance($ClientRequest, 'request')) {
+                return Load::class('response');
             }
         };
 
 
-        if (class_exists($middleware))
-        {
-            $response = call_user_func_array([ new $middleware() , "handle" ],array($request ,$next,$guard));
+        if (class_exists($middleware)) {
+            $response = call_user_func_array([ new $middleware() , "handle" ], array($request ,$next));
 
-            if(!Load::isInstance($response,'response'))
-            {
-              Load::class('response')->setContent($response)->send();
+            if (!Load::isInstance($response, 'response')) {
+                Load::class('response')->setContent($response)->send();
             }
-        }
-        else
-        {
+        } else {
             throw new \Exception("Middleware {$middleware} class not found");
         }
-
     }
 
 
@@ -76,36 +61,20 @@ class Middleware
      * @param $extension
      * @return array
      */
-    protected function getExceptsAndGuard( $extension)
+    protected function getExcepts($extension)
     {
         $excepts = [];
 
-        $guard   = 'user';
-
         $name    = $extension;
 
-        if (strpos($extension, ':') !== false)
-        {
-            list($name, $guard) = explode(':', $name, 2);
+        if (strpos($extension, '|') !== false) {
+            list($name, $excepts) = explode('|', $extension, 2);
 
-            if(strpos($guard,'|') !== false)
-            {
-                list($guard,$excepts) = explode('|',$guard,2);
-
-                $excepts = explode(',',$excepts);
-            }
-
-        }
-        elseif (strpos($extension,'|') !== false)
-        {
-            list($name,$excepts) = explode('|',$extension,2);
-
-            $excepts = explode(',',$excepts);
+            $excepts = explode(',', $excepts);
         }
 
 
-        return array($name,$guard,$excepts);
-
+        return array($name,$excepts);
     }
 
 
@@ -117,10 +86,4 @@ class Middleware
         }
         return static::$instance;
     }
-
-
-
-
-
-
 }

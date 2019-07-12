@@ -19,13 +19,12 @@ class Str
      * @param $subject
      * @return mixed
      */
-    public function replace_first ( $search , $replace , $subject )
+    public function replace_first($search, $replace, $subject)
     {
-        $position = strpos ( $subject , $search );
+        $position = strpos($subject, $search);
 
-        if ($position !== false)
-        {
-            return substr_replace ( $subject , $replace , $position , strlen ( $search ) );
+        if ($position !== false) {
+            return substr_replace($subject, $replace, $position, strlen($search));
         }
 
         return $subject;
@@ -33,31 +32,25 @@ class Str
 
 
 
-    public function random($length = 6 ,$type = null):String
+    public function random($length = 6, $type = null):String
     {
-      $result   = '';
-      $alpha    = 'ABCDEFGHIJKLMNOQPRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-      $numeric  = '1234567890';
+        $result   = '';
+        $alpha    = 'ABCDEFGHIJKLMNOQPRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        $numeric  = '1234567890';
 
-      if(is_null($type))
-      {
-        $all = $alpha.$numeric;
-      }
-      elseif ('alpha')
-      {
-        $all = $alpha;
-      }
-      elseif ('numeric')
-      {
-        $all = $numeric;
-      }
+        if (is_null($type)) {
+            $all = $alpha.$numeric;
+        } elseif ('alpha') {
+            $all = $alpha;
+        } elseif ('numeric') {
+            $all = $numeric;
+        }
 
-      for( $i = 0; $i < $length; $i++ )
-      {
-          $result .= substr( $all, rand( 0, strlen($all)), 1 );
-      }
+        for ($i = 0; $i < $length; $i++) {
+            $result .= substr($all, rand(0, strlen($all)), 1);
+        }
 
-      return $result;
+        return $result;
     }
 
 
@@ -67,13 +60,12 @@ class Str
      * @param $subject
      * @return mixed
      */
-    public function replace_last ( $search , $replace , $subject )
+    public function replace_last($search, $replace, $subject)
     {
-        $position = strrpos ( $subject , $search );
+        $position = strrpos($subject, $search);
 
-        if ($position !== false)
-        {
-            return substr_replace ( $subject , $replace , $position , strlen ( $search ) );
+        if ($position !== false) {
+            return substr_replace($subject, $replace, $position, strlen($search));
         }
 
         return $subject;
@@ -85,11 +77,11 @@ class Str
      * @param string $separator
      * @return String
      */
-    public function slug ( $str , $separator = '-' ): String
+    public function slug($str, $separator = '-'): String
     {
-        $str = implode ( $separator , array_filter ( explode ( ' ' , $str ) ) );
+        $str = implode($separator, array_filter(explode(' ', $str)));
 
-        return $this->lower ( $str , 'UTF-8' );
+        return $this->lower($str, 'UTF-8');
     }
 
 
@@ -101,11 +93,10 @@ class Str
      */
     public function limit($value, $limit = 100, $end = '...'):String
     {
-      if($this->len($value) > $limit)
-      {
-        return mb_substr($value, 0 , $limit,"UTF-8").$end;
-      }
-      return $value;
+        if ($this->len($value) > $limit) {
+            return mb_substr($value, 0, $limit, "UTF-8").$end;
+        }
+        return $value;
     }
 
 
@@ -113,9 +104,9 @@ class Str
      * @param $str
      * @return String
      */
-    public function upper ( $str ): String
+    public function upper($str): String
     {
-        return mb_strtoupper ( $str , 'UTF-8' );
+        return mb_strtoupper($str, 'UTF-8');
     }
 
 
@@ -123,9 +114,9 @@ class Str
      * @param $str
      * @return String
      */
-    public function lower ( $str ): String
+    public function lower($str): String
     {
-        return mb_strtolower ( $str , 'UTF-8' );
+        return mb_strtolower($str, 'UTF-8');
     }
 
 
@@ -133,9 +124,9 @@ class Str
      * @param $str
      * @return String
      */
-    public function title ( $str ): String
+    public function title($str): String
     {
-        return mb_convert_case ( $str , MB_CASE_TITLE , 'UTF-8' );
+        return mb_convert_case($str, MB_CASE_TITLE, 'UTF-8');
     }
 
 
@@ -144,14 +135,13 @@ class Str
      * @param null $encoding
      * @return int
      */
-    public function len ( $value , $encoding = null )
+    public function len($value, $encoding = null)
     {
-        if ($encoding)
-        {
-            return mb_strlen ( $value , $encoding );
+        if ($encoding) {
+            return mb_strlen($value, $encoding);
         }
 
-        return mb_strlen ( $value );
+        return mb_strlen($value);
     }
 
 
@@ -161,11 +151,10 @@ class Str
      * @param $subject
      * @return String
      */
-    public function replace_array ( $search , array $replace , $subject ): String
+    public function replace_array($search, array $replace, $subject): String
     {
-        foreach ($replace as $value)
-        {
-            $subject = str_replace_first ( $search , $value , $subject );
+        foreach ($replace as $value) {
+            $subject = str_replace_first($search, $value, $subject);
         }
 
         return $subject;
@@ -173,10 +162,8 @@ class Str
 
 
 
-    public function fullTrim ( $str , $char = ' ' )
+    public function fullTrim($str, $char = ' ')
     {
-        return str_replace ( $char , '' , $str );
+        return str_replace($char, '', $str);
     }
-
-
 }

@@ -5,13 +5,11 @@ use Predis\Client as RedisDriver;
 
 class Redis extends RedisDriver
 {
-
     private $redis;
 
 
     public function __construct($option = [])
     {
-
         if (!empty($option)) {
             $this->redis = parent::__construct($option);
         } else {
@@ -30,6 +28,4 @@ class Redis extends RedisDriver
         }
         return $this->redis;
     }
-
-
 }

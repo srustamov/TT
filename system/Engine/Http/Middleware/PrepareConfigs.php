@@ -10,30 +10,24 @@ use System\Engine\Load;
 
 class PrepareConfigs
 {
-
     public function handle(Request $request, \Closure $next)
     {
         $configurations = [];
 
         $app = App::instance();
 
-        $configs_cache_file = $app->configs_cache_file();
+        $configs_cache_file = $app->configsCacheFile();
 
-        if(file_exists($configs_cache_file))
-        {
+        if (file_exists($configs_cache_file)) {
             $configurations = require_once $configs_cache_file;
-        }
-        else
-        {
-            foreach (glob($app->configs_path('*')) as $file) {
-                $configurations[pathinfo($file ,PATHINFO_FILENAME)] = require_once $file;
+        } else {
+            foreach (glob($app->configsPath('*')) as $file) {
+                $configurations[pathinfo($file, PATHINFO_FILENAME)] = require_once $file;
             }
         }
 
-        Load::register('config',new Config($configurations));
+        Load::register('config', new Config($configurations));
 
         return $next($request);
-
     }
-
 }

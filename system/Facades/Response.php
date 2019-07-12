@@ -1,4 +1,5 @@
 <?php namespace System\Facades;
+
 /**
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -7,10 +8,9 @@
 
 namespace System\Facades;
 
-
 class Response extends Facade
 {
-    protected static function getFacadeAccessor ()
+    protected static function getFacadeAccessor()
     {
         return 'response';
     }

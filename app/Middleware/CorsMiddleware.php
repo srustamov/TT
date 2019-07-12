@@ -1,15 +1,12 @@
 <?php  namespace App\Middleware;
 
-
 use System\Engine\Http\Request;
 use System\Facades\Response;
 
-class Cors
+class CorsMiddleware
 {
-
-    public function handle(Request $request, \Closure $next,$guard)
+    public function handle(Request $request, \Closure $next)
     {
-
         Response::withHeaders([
             'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Credentials' => 'true',
@@ -21,12 +18,4 @@ class Cors
 
         return $next($request);
     }
-
-
-
-
 }
-
-
-
-

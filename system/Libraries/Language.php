@@ -1,7 +1,5 @@
 <?php namespace System\Libraries;
 
-
-
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -16,11 +14,10 @@ use System\Engine\Load;
 
 class Language implements \ArrayAccess
 {
-
     protected $languages = [];
 
 
-    function __construct()
+    public function __construct()
     {
         $this->prepare();
     }
@@ -32,8 +29,8 @@ class Language implements \ArrayAccess
 
         $app = App::instance();
 
-        foreach (glob($app->lang_path($locale.'/*')) as $file) {
-            $this->languages[pathinfo($file ,PATHINFO_FILENAME)] = require_once($file);
+        foreach (glob($app->langPath($locale.'/*')) as $file) {
+            $this->languages[pathinfo($file, PATHINFO_FILENAME)] = require_once($file);
         }
     }
 
@@ -44,38 +41,31 @@ class Language implements \ArrayAccess
      * @return array|String
      * @internal param Null $locale
      */
-    public function translate ( String $word  ,array $replace = [])
+    public function translate(String $word, array $replace = [])
     {
-
-        if(strpos($word,'.') !== false)
-        {
+        if (strpos($word, '.') !== false) {
             $data = $this->get($word);
 
-            if(is_null($data) || empty($replace))
-            {
+            if (is_null($data) || empty($replace)) {
                 return $data;
             }
 
-            $keys = array_map(function($key){
+            $keys = array_map(function ($key) {
                 return ':'.$key;
-            },array_keys($replace));
+            }, array_keys($replace));
 
             $values = array_values($replace);
 
             return str_replace($keys, $values, $data);
-        }
-        else
-        {
+        } else {
             return $this->languages[$word] ?? '';
         }
-
     }
 
 
-    public function get($key,$default = null)
+    public function get($key, $default = null)
     {
-        if (strpos($key, '.'))
-        {
+        if (strpos($key, '.')) {
             $item_recursive = explode('.', $key);
 
             $lang = $this->languages;
@@ -85,16 +75,14 @@ class Language implements \ArrayAccess
             }
 
             return $lang ?: $default;
-        }
-        else
-        {
+        } else {
             return $this->languages[$key] ?? $default;
         }
     }
 
 
 
-    public function all ():array
+    public function all():array
     {
         return $this->languages;
     }
@@ -105,31 +93,22 @@ class Language implements \ArrayAccess
 
 
     public function locale($locale = null):String
-    { 
-        if(!is_null($locale))
-        {
-            Load::class('session')->set('_LOCALE',$locale);
+    {
+        if (!is_null($locale)) {
+            Load::class('session')->set('_LOCALE', $locale);
 
             return $locale;
-        }
-        else
-        {
-            if($locale = Load::class('session')->get('_LOCALE'))
-            {
+        } else {
+            if ($locale = Load::class('session')->get('_LOCALE')) {
                 return $locale;
-            }
-            else
-            {
-                $locale  = Load::class('config')->get('app.locale','en');
+            } else {
+                $locale  = Load::class('config')->get('app.locale', 'en');
 
-                Load::class('session')->set('_LOCALE',$locale);
+                Load::class('session')->set('_LOCALE', $locale);
                
                 return $locale;
             }
         }
-
-
-
     }
 
 
@@ -143,7 +122,7 @@ class Language implements \ArrayAccess
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return $this->get($offset);
     }
@@ -160,7 +139,7 @@ class Language implements \ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
         $this->languages[$offset]  = $value;
     }
@@ -174,10 +153,9 @@ class Language implements \ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
-        if(isset($this->languages[$offset]))
-        {
+        if (isset($this->languages[$offset])) {
             unset($this->languages[$offset]);
         }
     }
@@ -194,13 +172,8 @@ class Language implements \ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
         return isset($this->languages[$offset]);
     }
-
-
-
-
-
 }

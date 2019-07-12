@@ -1,6 +1,5 @@
 <?php  namespace App\Middleware;
 
-
 use System\Engine\Http\Request;
 use System\Facades\Cookie;
 use System\Facades\Config;
@@ -8,25 +7,18 @@ use System\Facades\Url;
 
 class CsrfProtected
 {
-
-
-
     private $except = [
       '/api/.*'
     ];
 
 
 
-    public function handle(Request $request,\Closure $next)
+    public function handle(Request $request, \Closure $next)
     {
-
-        if ($this->isReading($request) || CONSOLE || $this->isExcept() || $this->tokensMatch($request))
-        {
+        if ($this->isReading($request) || CONSOLE || $this->isExcept() || $this->tokensMatch($request)) {
             $this->addCookie($request);
-        }
-        else
-        {
-          throw new \Exception('VERIFY CSRF TOKEN FAILED');
+        } else {
+            throw new \Exception('VERIFY CSRF TOKEN FAILED');
         }
 
         return $next($request);
@@ -41,21 +33,18 @@ class CsrfProtected
 
     protected function isExcept()
     {
-      if(!empty($this->except)) {
+        if (!empty($this->except)) {
+            $url = trim(Url::request(), '/');
 
-        $url = trim(Url::request(),'/');
+            foreach ($this->except as $key => $value) {
+                $value = trim($value, '/');
 
-        foreach ($this->except as $key => $value)
-        {
-          $value = trim($value,'/');
-
-          if(preg_match("#^$value$#",$url))
-          {
-            return true;
-          }
+                if (preg_match("#^$value$#", $url)) {
+                    return true;
+                }
+            }
         }
-      }
-      return false;
+        return false;
     }
 
 
@@ -76,22 +65,17 @@ class CsrfProtected
 
         $response = $request->cookie('XSRF-TOKEN');
 
-        if(
+        if (
           !is_string($input) ||
           !is_string($response) ||
           empty(trim($input)) ||
           empty(trim($response))
-        )
-        {
-          return false;
-        }
-        elseif ($input !== $response)
-        {
-          return false;
-        }
-        else
-        {
-          return $input;
+        ) {
+            return false;
+        } elseif ($input !== $response) {
+            return false;
+        } else {
+            return $input;
         }
     }
 
@@ -100,5 +84,4 @@ class CsrfProtected
     {
         Cookie::set('XSRF-TOKEN', $request->session('_token'), Config::get('session.lifetime'));
     }
-
 }

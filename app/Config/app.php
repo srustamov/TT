@@ -11,7 +11,7 @@ return array(
     */
 
 
-    'debug'  => setting('APP_DEBUG',false),
+    'debug'  => setting('APP_DEBUG', false),
 
 
     /*
@@ -21,7 +21,7 @@ return array(
     |
     */
 
-    'locale' => setting('LOCALE','en'),
+    'locale' => setting('LOCALE', 'en'),
 
 
     /*
@@ -31,7 +31,7 @@ return array(
     |
     */
 
-    'name' => setting('APP_NAME','TT'),
+    'name' => setting('APP_NAME', 'TT'),
 
 
 
@@ -43,7 +43,7 @@ return array(
     |
     */
 
-    'url' => setting('URL','http://localhost:8000/'),
+    'url' => setting('URL', 'http://localhost:8000/'),
 
 
 

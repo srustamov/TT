@@ -138,12 +138,12 @@
     }
 </style>
 <div id="bench-autohide-loadtime">
-    <?php echo substr($data['Load time'],0,-6) ?>
+    <?php echo substr($data['Load time'], 0, -6) ?>
 </div>
 <div id="bench-container" style="display: none">
     <p class="http_status">
         <span><?php echo http_response_code() ?></span>
-        <span class="bench_app_name"><?php echo setting ( 'APP_NAME' , 'TT' ) ?></span>
+        <span class="bench_app_name"><?php echo setting('APP_NAME', 'TT') ?></span>
     </p>
     <p>
         <span style="color:green"> <span>root@</span><?php echo strtolower(setting('APP_NAME', 'TT')) ?></span>

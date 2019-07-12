@@ -30,13 +30,13 @@
               @endguest
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li class="na">
+                <li class="nav-item">
                   <a class="nav-link lang" href="{{route('lang',['lang' => 'az'])}}">az</a>
                 </li>
-                <li class="na">
+                <li class="nav-item">
                   <a class="nav-link lang" href="{{route('lang',['lang' => 'en'])}}">en</a>
                 </li>
-                <li class="na">
+                <li class="nav-item">
                   <a class="nav-link lang" href="{{route('lang',['lang' => 'tr'])}}">tr</a>
                 </li>
                 @auth
@@ -56,7 +56,8 @@
         </nav>
     @yield('content')
     <script type="text/javascript">
-      let locale   = '{{lang()->locale()}}';
+
+      let locale   = document.getElementsByTagName('html')[0].getAttribute('lang');
 
       let elements = document.querySelectorAll('a.lang');
 

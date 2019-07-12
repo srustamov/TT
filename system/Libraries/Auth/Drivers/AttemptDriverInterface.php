@@ -1,19 +1,16 @@
 <?php namespace System\Libraries\Auth\Drivers;
 
-
-
-
 interface AttemptDriverInterface
 {
-  public function getAttemptsCountOrFail($guard);
+    public function getAttemptsCountOrFail();
 
-  public function addattempt($guard);
+    public function addattempt();
 
-  public function startLockTime($guard,$lock_time);
+    public function startLockTime($lockTime);
 
-  public function deleteAttempt($guard);
+    public function deleteAttempt();
 
-  public function expireTimeOrFail($guard);
+    public function expireTimeOrFail();
 
-  public function getRemainingSecondsOrFail($guard);
+    public function getRemainingSecondsOrFail();
 }

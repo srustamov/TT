@@ -15,8 +15,6 @@ use System\Exceptions\DatabaseException;
 
 class Database extends Connection
 {
-
-
     private $table;
 
     private $select = [];
@@ -76,12 +74,9 @@ class Database extends Connection
             } else {
                 return null;
             }
-
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage(), $queryString);
         }
-
-
     }
 
 
@@ -101,7 +96,6 @@ class Database extends Connection
         $query .= implode(' ', array_merge($this->join, $this->where, $this->orderBy, $this->groupBy, $this->limit));
 
         return $query;
-
     }
 
     private function normalizeQueryString($query)
@@ -119,7 +113,9 @@ class Database extends Connection
     public function bindValues(PDOStatement $statement)
     {
         foreach ($this->bindValues as $key => $value) {
-            $statement->bindValue($key + 1, $value,
+            $statement->bindValue(
+                $key + 1,
+                $value,
                 is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR
             );
         }
@@ -196,7 +192,6 @@ class Database extends Connection
         }
 
         return $this;
-
     }
 
     private function array_is_assoc($array)
@@ -245,7 +240,6 @@ class Database extends Connection
     {
         $this->where[] = (!empty($this->where) ? $logic : "WHERE") . " {$column} IS NULL ";
         return $this;
-
     }
 
     public function orWhereNotNull($column)
@@ -374,7 +368,7 @@ class Database extends Connection
         }, array_keys($data)));
     }
 
-    public function insert($insert, Array $data = [], Bool $getId = false)
+    public function insert($insert, array $data = [], Bool $getId = false)
     {
         if (is_string($insert)) {
             $query = $insert;
@@ -408,15 +402,14 @@ class Database extends Connection
     }
 
 
-    public function insertGetId($insert, Array $data = [])
+    public function insertGetId($insert, array $data = [])
     {
         return $this->insert($insert, $data, true);
     }
 
 
-    public function update($update, Array $data = [])
+    public function update($update, array $data = [])
     {
-
         if (is_string($update)) {
             $query = $update;
 
@@ -449,14 +442,12 @@ class Database extends Connection
         }
     }
 
-    public function delete($delete = null, Array $data = [])
+    public function delete($delete = null, array $data = [])
     {
-
         if (is_string($delete)) {
             $query = $delete;
 
             $this->bindValues = $data;
-
         } else {
             if (is_array($delete)) {
                 if ($this->array_is_assoc($delete)) {
@@ -465,8 +456,10 @@ class Database extends Connection
             } else {
                 $query = "DELETE FROM {$this->table} " .
                     preg_replace(
-                        "/SELECT.*FROM {$this->table}/", '',
-                        $this->getQueryString(), 1
+                        "/SELECT.*FROM {$this->table}/",
+                        '',
+                        $this->getQueryString(),
+                        1
                     );
             }
         }
@@ -585,8 +578,6 @@ class Database extends Connection
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage(), $queryString);
         }
-
-
     }
 
     /**
@@ -603,7 +594,6 @@ class Database extends Connection
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage(), $queryString);
         }
-
     }
 
     /**
@@ -626,7 +616,6 @@ class Database extends Connection
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage(), $queryString);
         }
-
     }
 
     /**
@@ -647,7 +636,6 @@ class Database extends Connection
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage(), $queryString);
         }
-
     }
 
 
@@ -659,7 +647,6 @@ class Database extends Connection
         if (!is_null($this->pdo)) {
             return $this->pdo->lastInsertId();
         }
-
     }
 
     /**
@@ -720,6 +707,4 @@ class Database extends Connection
 
         return clone $this;
     }
-
-
 }

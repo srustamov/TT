@@ -24,15 +24,14 @@ define('APP_START', microtime(true));
 require __DIR__.'/../vendor/autoload.php';
 
 
-
 //------------------------------------------
 // Application Bootstrapping and Routing
 //------------------------------------------
 
-$TT = new System\Engine\App(realpath('../'));
+$TT = new App\Kernel(realpath('../'));
 
 
-$TT->bootstrap()->callAppKernel()->routing();
+$TT->bootstrap()->routing();
 
 
 
@@ -41,7 +40,7 @@ $TT->bootstrap()->callAppKernel()->routing();
 // Application Benchmark panel view
 //------------------------------------------
 
-//$TT->benchmark(microtime(true));
+$TT->benchmark(microtime(true));
 
 
 

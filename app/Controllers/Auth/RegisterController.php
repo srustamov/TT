@@ -12,18 +12,12 @@
 
 namespace App\Controllers\Auth;
 
-
-
-
-
 use App\Controllers\Controller;
 use System\Engine\Http\Request;
 use System\Facades\Validator;
 use System\Facades\Redirect;
 use System\Facades\Hash;
 use App\Models\User;
-
-
 
 class RegisterController extends Controller
 {
@@ -41,13 +35,13 @@ class RegisterController extends Controller
 
 
 
-     /**
-     * RegisterController register method.Post data validate and Create user
-     *
-     * @param \System\Engine\Http\Request
-     *
-     * @return \System\Libraries\Redirect
-     */
+    /**
+    * RegisterController register method.Post data validate and Create user
+    *
+    * @param \System\Engine\Http\Request
+    *
+    * @return \System\Libraries\Redirect
+    */
     public function register(Request $request)
     {
         $validation =  Validator::make($request->all(), [
@@ -56,25 +50,19 @@ class RegisterController extends Controller
                 'name'     => 'required|min:5|unique:users',
             ]);
 
-        if (!$validation->check())
-        {
+        if (!$validation->check()) {
             return Redirect::to('/auth/register')->withErrors(Validator::messages());
-        }
-        else
-        {
+        } else {
             $create = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password)
             ]);
 
-            if ($create)
-            {
+            if ($create) {
                 return Redirect::to('auth/login')->with('register', 'Register successfully');
-            }
-            else
-            {
-                return Redirect::to('auth/register')->with('register' , 'User register error occurred.Please try again');
+            } else {
+                return Redirect::to('auth/register')->with('register', 'User register error occurred.Please try again');
             }
         }
     }

@@ -9,60 +9,59 @@
 
 trait RouteMethodsTrait
 {
+    public function get($path, $handler)
+    {
+        $this->add(['GET'], $path, $handler);
 
-  public function get($path,$handler)
-  {
-    $this->add(['GET'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function post($path, $handler)
+    {
+        $this->add(['POST'], $path, $handler);
 
-  public function post($path,$handler)
-  {
-    $this->add(['POST'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function put($path, $handler)
+    {
+        $this->add(['PUT'], $path, $handler);
 
-  public function put($path,$handler)
-  {
-    $this->add(['PUT'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function delete($path, $handler)
+    {
+        $this->add(['DELETE'], $path, $handler);
 
-  public function delete($path,$handler)
-  {
-    $this->add(['DELETE'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function options($path, $handler)
+    {
+        $this->add(['OPTIONS'], $path, $handler);
 
-  public function options($path,$handler)
-  {
-    $this->add(['OPTIONS'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function patch($path, $handler)
+    {
+        $this->add(['PATCH'], $path, $handler);
 
-  public function patch($path,$handler)
-  {
-    $this->add(['PATCH'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function form($path, $handler)
+    {
+        $this->add(['GET','POST'], $path, $handler);
 
-  public function form($path,$handler)
-  {
-    $this->add(['GET','POST'],$path,$handler);
+        return $this;
+    }
 
-    return $this;
-  }
+    public function any($path, $handler)
+    {
+        $this->add(['GET','POST','PUT','DELETE','OPTIONS','PATCH'], $path, $handler);
 
-  public function any($path,$handler)
-  {
-    $this->add(['GET','POST','PUT','DELETE','OPTIONS','PATCH'],$path,$handler);
-
-    return $this;
-  }
+        return $this;
+    }
 }

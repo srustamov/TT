@@ -12,9 +12,8 @@ namespace System\Engine\Cli;
  *
  * @author Samir Rustamov
  */
-class PrintConsole {
-
-
+class PrintConsole
+{
     private static $support;
 
 
@@ -23,8 +22,7 @@ class PrintConsole {
      */
     public function __construct()
     {
-        if(count(func_get_args()) == 2)
-        {
+        if (count(func_get_args()) == 2) {
             $args = func_get_args();
             
             echo static::_printData($args[0], $args[1]);
@@ -32,15 +30,16 @@ class PrintConsole {
     }
 
 
+
+
     /**
      * @param $style
      * @param $text
      * @return null|string
      */
-    private static function _printData( $style , $text )
+    private static function _printData($style, $text)
     {
-        if (!CONSOLE)
-        {
+        if (!CONSOLE) {
             return null;
         }
 
@@ -54,46 +53,41 @@ class PrintConsole {
             'title' => "\033[34m" ,
            ];
 
-        if (is_null ( static::$support ))
-        {
-            if (DIRECTORY_SEPARATOR == '\\')
-            {
-                static::$support = false !== getenv ( 'ANSICON' ) || 'ON' === getenv ( 'ConEmuANSI' );
-            }
-            else
-            {
-                static::$support = function_exists ( 'posix_isatty' ) && posix_isatty ( STDOUT );
+        if (is_null(static::$support)) {
+            if (DIRECTORY_SEPARATOR == '\\') {
+                static::$support = false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI');
+            } else {
+                static::$support = function_exists('posix_isatty') && posix_isatty(STDOUT);
             }
         }
 
-        return  ( static::$support ? $styles[ $style ] : '' ) . $text . ( self::$support ? $styles[ 'reset' ] : '' );
-
+        return  (static::$support ? $styles[ $style ] : '') . $text . (self::$support ? $styles[ 'reset' ] : '');
     }
 
 
 
-    public static function commandList ()
+    public static function commandList()
     {
-        echo static::_printData("yellow",file_get_contents(__DIR__.'/resource/commands.mask'));
+        echo static::_printData("yellow", file_get_contents(__DIR__.'/resource/commands.mask'));
     }
 
 
 
-    public static function output ()
+    public static function output()
     {
-        echo static::_printData( "title" ,
-                "----------------------------------------------------\n".
-                " OUTPUT\n".
-                "----------------------------------------------------\n"
-            );
+        // echo static::_printData( "title" ,
+        //         "----------------------------------------------------\n".
+        //         " OUTPUT\n".
+        //         "----------------------------------------------------\n"
+        //     );
     }
 
 
     public static function benchmark($finish)
     {
-        return static::_printData('title',
-            'Execute Time:'.round($finish - APP_START,4)." seconds\n"
+        return static::_printData(
+            'title',
+            'Execute Time:'.round($finish - APP_START, 4)." seconds\n"
             );
     }
-
 }

@@ -5,8 +5,6 @@
 +---------------------------+--------------------------------------+
 + create:controller         + create:controller FooController      +
 +---------------------------+--------------------------------------+
-+ create:resource           + create:resource FooCtrl              +
-+---------------------------+--------------------------------------+
 + create:model              + create:model FooModel                +
 +---------------------------+--------------------------------------+
 + route:cache               + Routes cache file clear              +
@@ -28,4 +26,6 @@
 + config:cache --create     + Configs files cache                  +
 +---------------------------+--------------------------------------+
 + key:generate              + Generate Application encryption key  +
++---------------------------+--------------------------------------+
++ build                     + Getting Application in Production    +
 +---------------------------+--------------------------------------+

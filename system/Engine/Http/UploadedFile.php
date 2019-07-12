@@ -9,8 +9,6 @@
 
 class UploadedFile extends \SplFileInfo
 {
-
-
     private $name;
 
     private $size;
@@ -22,9 +20,8 @@ class UploadedFile extends \SplFileInfo
     private $mimeType;
 
 
-    function __construct(array $files)
+    public function __construct(array $files)
     {
-
         $this->error = $files['error'] ? : UPLOAD_ERR_OK;
 
         $this->setName($files['name']);
@@ -34,7 +31,6 @@ class UploadedFile extends \SplFileInfo
         $this->mimeType = $files['type'];
 
         parent::__construct($files['tmp_name']);
-
     }
 
 
@@ -84,21 +80,18 @@ class UploadedFile extends \SplFileInfo
     }
 
 
-    public function move($target,String $name = null)
+    public function move($target, String $name = null)
     {
-        if($this->isValid())
-        {
-            $target = rtrim($target,'/').'/';
+        if ($this->isValid()) {
+            $target = rtrim($target, '/').'/';
 
             $name   = !is_null($name) ? $name : $this->name();
 
-            if(!is_dir($target))
-            {
-                @mkdir($target,0777,true);
+            if (!is_dir($target)) {
+                @mkdir($target, 0777, true);
             }
 
-            if(!@move_uploaded_file($this->getRealPath(),$target.$name))
-            {
+            if (!@move_uploaded_file($this->getRealPath(), $target.$name)) {
                 $error = error_get_last();
 
                 $this->uploadError = $error['message'] ?? '';
@@ -111,7 +104,4 @@ class UploadedFile extends \SplFileInfo
 
         return false;
     }
-
-
-
 }

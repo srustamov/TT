@@ -12,48 +12,40 @@
 
 class File
 {
-
     public function create($path)
     {
-      return touch($path);
+        return touch($path);
     }
 
 
-    public function open(String $fileAndMode,Callable $callback = null )
+    public function open(String $fileAndMode, callable $callback = null)
     {
-
-      if(strpos('|',$fileAndMode))
-      {
-        list($file,$mode) = explode('|', $fileAndMode,2);
-      }
-      else
-      {
-        list($file,$mode) = array($fileAndMode,'r+');
-      }
+        if (strpos('|', $fileAndMode)) {
+            list($file, $mode) = explode('|', $fileAndMode, 2);
+        } else {
+            list($file, $mode) = array($fileAndMode,'r+');
+        }
 
 
-      if(is_null($callback))
-      {
-        return fopen($file,$mode);
-      }
-      else
-      {
-        return $callback(fopen($file,$mode),$this);
-      }
+        if (is_null($callback)) {
+            return fopen($file, $mode);
+        } else {
+            return $callback(fopen($file, $mode), $this);
+        }
     }
 
 
     public function close($file)
     {
-      return is_resource($file) ? fclose($file) :false;
+        return is_resource($file) ? fclose($file) :false;
     }
 
 
     public function dirIsEmpty($dir)
     {
-      $iterator = new \FilesystemIterator($dir);
+        $iterator = new \FilesystemIterator($dir);
 
-      return !$iterator->valid();
+        return !$iterator->valid();
     }
 
 
@@ -71,14 +63,11 @@ class File
 
     public function isImage($file):Bool
     {
-      if (isset($file['tmp_name']))
-      {
-          return @getimagesize($file['tmp_name']) ? true : false;
-      }
-      else
-      {
-          return @getimagesize($file) ? true : false;
-      }
+        if (isset($file['tmp_name'])) {
+            return @getimagesize($file['tmp_name']) ? true : false;
+        } else {
+            return @getimagesize($file) ? true : false;
+        }
     }
 
 
@@ -98,8 +87,7 @@ class File
 
     public function deleteDirectory($pathname):Bool
     {
-        if (!$this->isDir($pathname))
-        {
+        if (!$this->isDir($pathname)) {
             return false;
         }
         return rmdir($pathname);
@@ -112,35 +100,29 @@ class File
 
     public function rmdir_r(String $directory)
     {
-       if(is_dir($directory))
-       {
-           $this->flashDir($directory);
+        if (is_dir($directory)) {
+            $this->flashDir($directory);
 
-           rmdir($directory);
-       }
+            rmdir($directory);
+        }
     }
 
 
     public function flashDir($directory)
     {
-        foreach (glob($directory."/*") as $file)
-        {
-            if(is_dir($file))
-            {
+        foreach (glob($directory."/*") as $file) {
+            if (is_dir($file)) {
                 $this->flashDir($file);
-            }
-            else
-            {
+            } else {
                 unlink($file);
             }
         }
     }
 
 
-    public function import($file,$once = true)
+    public function import($file, $once = true)
     {
-        if ($this->exists($file))
-        {
+        if ($this->exists($file)) {
             return $once ? require_once $file : require $file;
         }
 
@@ -150,8 +132,7 @@ class File
 
     public function importOnce($file)
     {
-        if ($this->exists($file))
-        {
+        if ($this->exists($file)) {
             return require_once $file;
         }
 
@@ -168,30 +149,25 @@ class File
 
     public function write($path, $contents, $lock = false)
     {
-        if(is_resource($path))
-        {
-          $return  = fwrite($path,$content);
+        if (is_resource($path)) {
+            $return  = fwrite($path, $content);
 
-          if($lock)
-          {
-            flock($path);
-          }
+            if ($lock) {
+                flock($path);
+            }
 
-          fclose($path);
+            fclose($path);
 
-          return $return;
-        }
-        else
-        {
-          return file_put_contents($path, $contents, $lock ? \LOCK_EX : 0);
+            return $return;
+        } else {
+            return file_put_contents($path, $contents, $lock ? \LOCK_EX : 0);
         }
     }
 
 
     public function get($path)
     {
-        if ($this->isFile($path))
-        {
+        if ($this->isFile($path)) {
             return file_get_contents($path);
         }
         throw new \Exception("File does not exist at path ".$path);
@@ -211,16 +187,15 @@ class File
     }
 
 
-    public function prepend ( String $file , $content )
+    public function prepend(String $file, $content)
     {
-        return file_put_contents ($file , $content . $this->get ( $file ));
+        return file_put_contents($file, $content . $this->get($file));
     }
 
 
     public function chmod($path, $mode = null)
     {
-        if (!is_null($mode))
-        {
+        if (!is_null($mode)) {
             return chmod($path, $mode);
         }
         return substr(fileperms($path), -4);
@@ -233,11 +208,9 @@ class File
 
         $error  = 0;
 
-        foreach ($_files as $file)
-        {
-            if (!@unlink($file))
-            {
-                 $error++;
+        foreach ($_files as $file) {
+            if (!@unlink($file)) {
+                $error++;
             }
         }
         return !($error > 0);
@@ -270,19 +243,17 @@ class File
 
     public function getName($path)
     {
-      return pathinfo($path ,PATHINFO_FILENAME);
+        return pathinfo($path, PATHINFO_FILENAME);
     }
 
 
     public function getExtension($path)
     {
-      return pathinfo($path ,PATHINFO_EXTENSION);
+        return pathinfo($path, PATHINFO_EXTENSION);
     }
 
     public function basename($path)
     {
-      return pathinfo($path ,PATHINFO_BASENAME);
+        return pathinfo($path, PATHINFO_BASENAME);
     }
-
-
 }

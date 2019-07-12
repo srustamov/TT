@@ -21,8 +21,7 @@ class Hash
     {
         $hash =  password_hash($value, PASSWORD_BCRYPT, ['cost' => $this->cons($option)]);
 
-        if ($hash === false)
-        {
+        if ($hash === false) {
             throw new RuntimeException('Bcrypt hashing not supported.');
         }
 
@@ -54,6 +53,4 @@ class Hash
     {
         return $option['round'] ?? $this->round;
     }
-
-
 }

@@ -1,6 +1,5 @@
 <?php namespace System\Engine;
 
-
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -10,44 +9,28 @@
 
 class Load implements \ArrayAccess
 {
-
-
     private static $classes = [];
 
 
-    public static function class( String $class,...$args)
+    public static function class(String $class, ...$args)
     {
-
-        if(isset(static::$classes[$class]))
-        {
+        if (isset(static::$classes[$class])) {
             return static::$classes[$class];
-        }
-        else
-        {
-
-            if (($instance = App::instance()->classes($class)))
-            {
-                if (method_exists($instance,'__construct'))
-                {
-                    $args = Reflections::classMethodParameters($instance,'__construct',$args);
+        } else {
+            if (($instance = App::instance()->classes($class))) {
+                if (method_exists($instance, '__construct')) {
+                    $args = Reflections::classMethodParameters($instance, '__construct', $args);
                 }
 
                 static::$classes[$class] = new $instance(...$args);
 
                 return static::$classes[$class];
-            }
-            else
-            {
-                if(strpos($class,'\\'))
-                {
-
-                    if(($instance = App::instance()->classes($class,true)))
-                    {
+            } else {
+                if (strpos($class, '\\')) {
+                    if (($instance = App::instance()->classes($class, true))) {
                         return static::class($instance,...$args);
-                    }
-                    else
-                    {
-                        $instance = new $class(...Reflections::classMethodParameters($class,'__construct', $args));
+                    } else {
+                        $instance = new $class(...Reflections::classMethodParameters($class, '__construct', $args));
 
                         static::$classes[$class] = $instance;
 
@@ -55,39 +38,36 @@ class Load implements \ArrayAccess
 
                         return static::$classes[$class];
                     }
-
                 }
             }
-
         }
         throw new \Exception('Class not found ['.$class.']');
     }
 
 
-    public static function register($className,$object)
+    public static function register($className, $object)
     {
-        if($object instanceof \Closure) {
-            static::register($className,call_user_func($object));
+        if ($object instanceof \Closure) {
+            static::register($className, call_user_func($object));
         } elseif (is_string($object)) {
             static::$classes[$className] = new $object();
         } elseif (is_object($object)) {
             static::$classes[$className] = $object;
         }
-
     }
 
 
-    public static function isInstance($object,$className)
+    public static function isInstance($object, $className)
     {
         $instance = static::class($className);
 
-        return ($object instanceOf $instance);
+        return ($object instanceof $instance);
     }
 
 
     public static function instance()
     {
-      return new static;
+        return new static;
     }
 
 
@@ -100,7 +80,7 @@ class Load implements \ArrayAccess
      * @return mixed Can return all value types.
      * @since 5.0.0
      */
-    public function offsetGet ( $offset )
+    public function offsetGet($offset)
     {
         return $this->class($offset);
     }
@@ -117,9 +97,9 @@ class Load implements \ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet ( $offset , $value )
+    public function offsetSet($offset, $value)
     {
-        $this->register($offset,$value);
+        $this->register($offset, $value);
     }
 
     /**
@@ -131,11 +111,11 @@ class Load implements \ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset ( $offset )
+    public function offsetUnset($offset)
     {
-      if(isset(static::$classes[$offset])) {
-        unset(static::$classes[$offset]);
-      }
+        if (isset(static::$classes[$offset])) {
+            unset(static::$classes[$offset]);
+        }
     }
 
     /**
@@ -150,10 +130,8 @@ class Load implements \ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists ( $offset )
+    public function offsetExists($offset)
     {
         return isset(static::$classes[$offset]);
     }
-
-
 }

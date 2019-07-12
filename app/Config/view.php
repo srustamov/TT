@@ -19,7 +19,7 @@ return array(
     |--------------------------------------------------------------------------
     |
     */
-    'cache_path'=> storage_dir('cache/views'),
+    'cache_path'=> storage_path('cache/views'),
 
 
     /*
