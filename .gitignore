@@ -1,9 +1,11 @@
 /storage/cache/views/*
 /storage/sessions/*
 /storage/system/*
+/storage/logs/*
 /vendor/
 /.idea/
 /.gitignore
+/.settings
 /composer.lock
 /node_modules/
 /public/js/app.js

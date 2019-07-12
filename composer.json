@@ -21,9 +21,7 @@
     "cboden/ratchet": "^0.4.1"
   },
   "config": {
-    "optimize-autoloader": true,
-    "preferred-install": "dist",
-    "sort-packages": true
+    "optimize-autoloader": true
   },
   "autoload": {
     "psr-4": {
