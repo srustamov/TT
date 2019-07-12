@@ -10,6 +10,7 @@
  * @link 		https://github.com/srustamov/TT
  *
  */
+
 header('X-Powered-By:TT Framework');
 //--------------------------------------------------
 // Defined application started time

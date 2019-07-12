@@ -59,9 +59,14 @@ class App implements ArrayAccess
 
         chdir($this->paths['base']);
 
-        static::$instance = &$this;
+        static::$instance = $this;
 
         return $this;
+    }
+
+    public function version()
+    {
+        return static::VERSION;
     }
 
     /**

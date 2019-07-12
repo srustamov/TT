@@ -19,7 +19,6 @@ use System\Facades\Config;
 use System\Facades\Hash;
 use System\Libraries\Arr;
 use System\Facades\DB;
-use stdClass;
 
 class Authentication
 {

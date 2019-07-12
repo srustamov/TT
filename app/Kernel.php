@@ -16,7 +16,7 @@ class Kernel extends AppKernel
     protected $routeMiddleware = [
         'auth'  => \App\Middleware\AuthMiddleware::class,
         'guest' => \App\Middleware\GuestMiddleware::class,
-        'api'   => \App\Middleware\ApiMiddleware::class,
-        'cors'  => \App\Middleware\CorsMiddleware::class,
+        //'api'   => \App\Middleware\ApiMiddleware::class,
+        //'cors'  => \App\Middleware\CorsMiddleware::class,
     ];
 }

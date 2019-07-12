@@ -1,5 +1,5 @@
 <?php
-
+/*
 
 $this->group(['prefix' => '/api','middleware' => ['api','cors'] ],function($api)
 {
@@ -9,3 +9,4 @@ $this->group(['prefix' => '/api','middleware' => ['api','cors'] ],function($api)
 });
 
 $this->post(['path' => '/api/user/create','middleware' => ['cors']],'Api/ApiController@create');
+*/

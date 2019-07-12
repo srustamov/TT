@@ -98,7 +98,7 @@ function path($path = '')
 
 function abort(Int $http_code, $message = null, $headers = [])
 {
-    if (file_exists(app_dir('Views/errors/'.$http_code.'.blade.php'))) {
+    if (file_exists(app_path('Views/errors/'.$http_code.'.blade.php'))) {
         $content =  view('errors.'.$http_code);
     }
 

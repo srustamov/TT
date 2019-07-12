@@ -13,7 +13,7 @@ class Load implements \ArrayAccess
 
 
     public static function class(String $class, ...$args)
-    {
+    {  
         if (isset(static::$classes[$class])) {
             return static::$classes[$class];
         } else {
