@@ -175,7 +175,7 @@ class App implements ArrayAccess
 
     public function settingsFile()
     {
-        return $this->path($this->paths['setting']);
+        return $this->path($this->paths['settingFile']);
     }
 
     public function publicPath($path = '')
