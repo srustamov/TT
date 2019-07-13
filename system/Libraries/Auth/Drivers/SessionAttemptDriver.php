@@ -12,7 +12,7 @@ class SessionAttemptDriver implements AttemptDriverInterface
         return false;
     }
 
-    public function addAttempt()
+    public function increment()
     {
         if ($this->getAttemptsCountOrFail()) {
             Session::set("AUTH_ATTEMPT_COUNT", function ($session) {

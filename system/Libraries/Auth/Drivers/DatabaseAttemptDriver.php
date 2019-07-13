@@ -10,7 +10,7 @@ class DatabaseAttemptDriver implements AttemptDriverInterface
         return DB::table('attempts')->where('ip', $this->ip())->first();
     }
 
-    public function addAttempt()
+    public function increment()
     {
         if ($this->getAttemptsCountOrFail()) {
             DB::pdo()->query("UPDATE attempts SET count = count+1 WHERE ip ='{$this->ip()}'");

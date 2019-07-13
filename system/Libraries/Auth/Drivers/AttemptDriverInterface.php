@@ -4,7 +4,7 @@ interface AttemptDriverInterface
 {
     public function getAttemptsCountOrFail();
 
-    public function addattempt();
+    public function increment();
 
     public function startLockTime($lockTime);
 

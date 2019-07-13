@@ -13,7 +13,7 @@ class RedisAttemptDriver implements AttemptDriverInterface
         return false;
     }
 
-    public function addAttempt()
+    public function increment()
     {
         $count = $this->getAttemptsCountOrFail();
 

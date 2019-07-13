@@ -136,7 +136,7 @@ class Authentication
             }
         }
 
-        $this->driver->addAttempt();
+        $this->driver->increment();
 
         $remaining =  $this->maxAttempts - $this->driver->getAttemptsCountOrFail()->count;
 
