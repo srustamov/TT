@@ -12,7 +12,7 @@ URL  = http://localhost:8000
 #DATABASE CONFIGURATION
 
 DB_HOST = localhost
-DB_NAME = tt
+DB_NAME = 
 DB_USER = root
 DB_PASS = 
 DB_CHARSET = utf8

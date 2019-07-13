@@ -1,9 +1,9 @@
-/vendor/
-/.idea/
-/.gitignore
-/.settings
-/composer.lock
-/node_modules/
+vendor/*
+.idea/*
+.gitignore
+.settings
+composer.lock
+node_modules/*
 /public/js/app.js
 /public/css/app.css
 
