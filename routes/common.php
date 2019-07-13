@@ -25,15 +25,6 @@ $this->get('/','HomeController@welcome');
  */
 
 
-/**
- * ~/$ npm install
- * ~/$ npm run watch
- *
-  $this->get('/vue-example-page', function(){
-      return view('vue');
-  });
-*/
-
 
 /*
   // Bad
