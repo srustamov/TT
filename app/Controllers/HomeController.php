@@ -36,12 +36,6 @@ class HomeController extends Controller
     }
 
 
-    public function vue()
-    {
-        return view('vue');
-    }
-
-
 
     /**
      * HomeController changeLanguage method.Change site content language
