@@ -99,7 +99,7 @@ class Create
             }
 
 
-            if (touch(app_dir("{$type}/{$manage[1]}.php"))) {
+            if (touch(app_path("{$type}/{$manage[1]}.php"))) {
                 try {
                     file_put_contents(app_path("{$type}/{$manage[1]}.php"), $write_data);
 

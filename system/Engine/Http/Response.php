@@ -326,6 +326,24 @@ class Response
         return Load::class('redirect')->to($url, $statusCode, $refresh);
     }
 
+
+    
+    /**
+     * @return Response
+     */
+    public function headersSend()
+    {
+        if (!headers_sent()) {
+            foreach ($this->headers as $name => $header) {
+                header($name . ":" . $header[ 'value' ], $header[ 'replace' ]);
+            }
+
+            header(sprintf("%s %d %s", $this->protocol(), (int)$this->statusCode, $this->statusMessage));
+        }
+
+        return $this;
+    }
+
     /**
      * @return Response
      */
@@ -377,20 +395,6 @@ class Response
         }
     }
 
-    /**
-     * @return Response
-     */
-    public function headersSend()
-    {
-        if (!headers_sent()) {
-            foreach ($this->headers as $name => $header) {
-                header($name . ":" . $header[ 'value' ], $header[ 'replace' ], $this->statusCode);
-            }
-            header(sprintf("%s %s %s", $this->protocol(), $this->statusCode, $this->statusMessage), true, $this->statusCode);
-        }
-
-        return $this;
-    }
 
     /**
      * @param String $protocol

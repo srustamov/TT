@@ -4,6 +4,7 @@ use System\Libraries\Arr;
 use System\Facades\Response;
 use System\Facades\Auth;
 use App\Models\User;
+use App;
 
 /*
 |-------------------------------------------
@@ -26,15 +27,15 @@ class ApiMiddleware
                 
                 return $next($request);
             } else {
-                Response::setStatusCode(401)->json([
-                            'error' => 'Authentication token incorrect !'
-                            ])->send();
-                exit;
+                Response::setStatusCode(401)->json(['error' => 'Authentication token incorrect !'])->send();
             }
         } else {
             Response::setStatusCode(401)->json(['error' => 'Authentication token required!'])->send();
             exit;
         }
+
+        App::end();
+
     }
 
 
@@ -43,10 +44,10 @@ class ApiMiddleware
     {
         $headers = getallheaders();
 
-        $token = Arr::get($headers, 'X-Auth-Token', false);
+        $token = $headers['X-Auth-Token'] ?? false;
 
         if (!$token) {
-            $token = $request->auth_token;
+            $token = $request->auth_token ?:$request->token?:false;
         }
 
         return $token;

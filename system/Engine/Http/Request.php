@@ -190,6 +190,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
                 $method = $xhmo;
             }
         }
+
         return $method ? : $default;
     }
 
@@ -209,9 +210,9 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     public function controller($method = null)
     {
         if (is_null($method)) {
-            return defined('CALLED_CONTROLLER') ? CALLED_CONTROLLER : false;
+            return defined('CONTROLLER') ? CONTROLLER : false;
         } else {
-            return defined('CALLED_CONTROLLER_METHOD') ? CALLED_CONTROLLER_METHOD : false;
+            return defined('ACTION') ? ACTION : false;
         }
     }
 

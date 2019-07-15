@@ -261,6 +261,9 @@ class Route
 
             $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method], $args);
 
+            if(Load::isInstance($content,'response')) {
+                return $content;
+            }
             return Load::class('response')->setContent($content);
         } else {
             throw new NotFoundException;
@@ -282,6 +285,11 @@ class Route
         $args    = Reflections::functionParameters($handler, $args);
 
         $content = call_user_func_array($handler, $args);
+
+        if (Load::isInstance($content, 'response')) {
+            return $content;
+        }
+
 
         return Load::class('response')->setContent($content);
     }
@@ -436,9 +444,9 @@ class Route
             }
 
             return $route;
-        } else {
-            throw new RouteException("Route name [{$name}] not found");
         }
+        throw new RouteException("Route name [{$name}] not found");
+        
     }
 
 
@@ -455,6 +463,6 @@ class Route
             }
         }
 
-        return !CONSOLE ? $this->run() : new Response;
+        return !CONSOLE ? $this->run() : Load::class('response');
     }
 }

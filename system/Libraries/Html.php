@@ -40,7 +40,7 @@ class Html
     public function css(String $file, $modified = false):String
     {
         if ($modified) {
-            $file = $file . '?v=' . @filemtime(public_dir($file));
+            $file = $file . '?v=' . @filemtime(public_path($file));
         }
 
         return '<link rel="stylesheet" type="text/css"  href="' . url($file) . '">';
@@ -51,7 +51,7 @@ class Html
     public function js(String $file, $modified = false):String
     {
         if ($modified) {
-            $file = $file . '?v=' . @filemtime(public_dir($file));
+            $file = $file . '?v=' . @filemtime(public_path($file));
         }
 
         return  '<script type="text/javascript" src="' . url($file) . '"></script>';

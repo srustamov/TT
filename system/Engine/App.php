@@ -17,7 +17,13 @@ class App implements ArrayAccess
 {
     const VERSION = '1.0.0';
 
-    protected $bootstrap = false;
+    private $important = [
+        \System\Engine\Http\Middleware\LoadSettingVariables::class ,
+        \System\Engine\Http\Middleware\PrepareConfigs::class ,
+        \System\Engine\Http\Middleware\RegisterExceptionHandler::class ,
+    ];
+
+    protected $bootstrapping = false;
 
     protected $middleware = [];
 
@@ -76,18 +82,21 @@ class App implements ArrayAccess
      */
     public function bootstrap()
     {
-        if (!$this->bootstrap) {
+        if (!$this->bootstrapping) {
+            
             $this->setPublicPath();
+
+            $this->registerMiddleware($this->important);
+
+            Load::register('app', $this);
+
+            $this->setAliases();
 
             $this->registerMiddleware($this->middleware);
 
             $this->setLocale();
 
-            $this->setAliases();
-
-            Load::register('app', $this);
-
-            $this->bootstrap = true;
+            $this->bootstrapping = true;
         }
 
         return $this;
@@ -106,7 +115,7 @@ class App implements ArrayAccess
     {
         $aliases = Config::get('aliases', []);
 
-        $aliases['app'] = get_class($this);
+        $aliases['App'] = get_class($this);
 
         foreach ($aliases as $key => $value) {
             class_alias('\\' . $value, $key);
