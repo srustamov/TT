@@ -9,6 +9,8 @@
 
 class UploadedFile extends \SplFileInfo
 {
+    private $files;
+
     private $name;
 
     private $size;
@@ -22,17 +24,33 @@ class UploadedFile extends \SplFileInfo
 
     public function __construct(array $files)
     {
-        $this->error = $files['error'] ? : UPLOAD_ERR_OK;
-
-        $this->setName($files['name']);
-
-        $this->size = $files['size'];
-
-        $this->mimeType = $files['type'];
-
-        parent::__construct($files['tmp_name']);
+        $this->files = $files;
     }
 
+
+    public function get($name)
+    {
+        if(isset($this->files[$name])) {
+
+            $file = $this->files[$name];
+
+            $this->error = $file['error'] ? : UPLOAD_ERR_OK;
+
+            $this->setName($file['name']);
+    
+            $this->size = $file['size'];
+    
+            $this->mimeType = $file['type'];
+    
+            parent::__construct($file['tmp_name']);
+
+            return $this;
+        }
+
+        return false;
+    }
+
+    
 
     public function isValid()
     {

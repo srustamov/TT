@@ -11,6 +11,7 @@ use System\Facades\Config;
 use System\Facades\Http;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
+use System\Engine\Http\Request;
 use System\Engine\Http\Response;
 
 class App implements ArrayAccess
@@ -89,6 +90,8 @@ class App implements ArrayAccess
             $this->registerMiddleware($this->important);
 
             Load::register('app', $this);
+
+            Load::register('request',new Request($this));
 
             $this->setAliases();
 

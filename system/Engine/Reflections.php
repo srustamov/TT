@@ -21,13 +21,7 @@ class Reflections
 
         foreach ($pParameters as $num => $param) {
             if ($param->getClass()) {
-                $class = $param->getClass()->name;
-
-                if (($instance = App::instance()->classes($class))) {
-                    $args[$num] = Load::class($instance);
-                } else {
-                    $args[$num] = new $class();
-                }
+                $args[$num] = Load::class($param->getClass()->name);
             }
         }
         return $args;
@@ -40,13 +34,7 @@ class Reflections
 
         foreach ($parameters as $num => $param) {
             if ($param->getClass()) {
-                $class = $param->getClass()->name;
-
-                if (App::instance()->classes($class, true)) {
-                    $args[$num] = Load::class($class);
-                } else {
-                    $args[$num] = new $class();
-                }
+                $args[$num] = Load::class($param->getClass()->name);                
             }
         }
         return $args;

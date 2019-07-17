@@ -210,9 +210,8 @@ class Route
 
                 $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
 
-                foreach ($_request_data as $key => $value) {
-                    $_REQUEST[$key] = $value;
-                }
+                Load::class('request')->setRouteParams($_request_data);
+                
             }
 
             if (is_string($handler) && strpos($handler, '@')) {
@@ -282,7 +281,7 @@ class Route
             }
         }
 
-        $args    = Reflections::functionParameters($handler, $args);
+        $args = Reflections::functionParameters($handler, $args);
 
         $content = call_user_func_array($handler, $args);
 

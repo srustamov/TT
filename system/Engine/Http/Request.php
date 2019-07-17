@@ -9,38 +9,75 @@ use ArrayAccess;
 use Countable;
 use Serializable;
 use JsonSerializable;
+use System\Engine\App;
 use System\Engine\Load;
 use System\Facades\Auth;
-use System\Libraries\Arr;
 use System\Facades\Redirect;
 use System\Facades\Response;
 use System\Facades\Validator;
 
 class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 {
-    private $request = [
-      'GET'     => [],
-      'POST'    => [],
-      'REQUEST' => []
-    ];
+    public $request = [];
 
-    private $method;
+    public $query = [];
+
+    public $files = [];
+
+    public $cookies = [];
+
+    public $server = [];
+
+    public $headers = [];
+
+    public $routeParams = [];
+
+    public $method;
+
+    private $application;
 
 
 
-    public function __construct()
+    public function __construct(App $application)
     {
-        $this->method = $this->server('request_method', 'GET');
+        $this->application = $application;
 
-        $this->request = array(
-          'GET'    => $this->trim($_GET),
-          'POST'   => $this->trim($_POST),
-          'REQUEST'=> $this->trim($_REQUEST),
-        );
+        $this->prepare();
     }
 
 
-    private function trim($data)
+    public function prepare()
+    {
+        $this->server  = new Parameters($_SERVER);
+
+        $this->headers = new Parameters(getallheaders());
+
+        $this->cookies = new Parameters($_COOKIE);
+
+        $this->files   = new UploadedFile($_FILES);
+        
+        $this->method  = $this->method('GET');
+
+        if (0 === strpos($this->headers->get('Content-Type'), 'application/x-www-form-urlencoded')
+            && \in_array(strtoupper($this->method), ['PUT', 'DELETE', 'PATCH'])
+        ) {
+            parse_str(\file_get_contents('php://input'), $data);
+
+            $this->request = new Parameters($this->trim($data));
+        }
+        else 
+        {
+            $this->query   = new Parameters($this->trim($_GET));
+
+            $this->request = new Parameters($this->trim($_POST));
+        }
+
+        return $this;
+
+    } 
+
+
+    protected function trim($data)
     {
         $data = array_map(function ($item) {
             if (is_array($item)) {
@@ -54,51 +91,23 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     }
 
 
-    public function set($key, $value)
+    public function setRouteParams($key,$value = null)
     {
-        $keys = is_array($key) ? $key : array($key=>$value);
-
-        foreach ($keys as $key => $value) {
-            $this->request[ $this->method ][ $key ] = $value;
+        if(is_array($key)) {
+            foreach($key as $name => $value)
+            {
+                $this->routeParams[$name] = $value;
+            }
+        } 
+        else 
+        {
+            $this->routeParams[$key] = $value;
         }
-
-        return $this;
     }
-
-
-    public function __get($key)
-    {
-        return $this->request[ $this->method ][ $key ] ?? false;
-    }
-
-
-    public function __set($key, $value)
-    {
-        $this->request[ $this->method ][ $key ] = $value;
-    }
-
-
-    public function all()
-    {
-        $data = $this->request[ $this->method ];
-
-        if (isset($data[ '_token' ])) {
-            unset($data[ '_token' ]);
-        }
-
-        return $data;
-    }
-
 
     public function params($key)
     {
-        return $this->request['REQUEST'][$key] ?? false;
-    }
-
-
-    public function route($key)
-    {
-        return $this->params($key);
+        return $this->routeParams[$key] ?? false;
     }
 
 
@@ -112,83 +121,56 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     }
 
 
-    public function cookie($key)
+    public function cookie($key = null)
     {
-        return Load::class('cookie')->get($key);
+        if($key === null) {
+            return $this->cookies;
+        } else {
+            return $this->cookies->get($key);
+        }
+        
     }
 
 
     public function user()
     {
-        return Auth::user();
+        return Load::class('auth')->user();
     }
 
 
-    public function server($key, $default = null)
+    public function server($key = null, $default = null)
     {
-        return $_SERVER[strtoupper($key)] ?? $default;
-    }
-
-
-    public function input($name = null)
-    {
-        if (!is_null($name)) {
-            return Load::class('input')->{$this->method()}($name);
-        } else {
-            return Load::class('input');
+        if($key === null) {
+            return $this->server;
         }
+        return $this->server->get(strtoupper($key),$default);
     }
 
 
     public function file($name)
     {
-        if (isset($_FILES[ $name ])) {
-            return new UploadedFile($_FILES[ $name ]);
-        }
-        return false;
+        $this->files->get($name);
     }
 
-
-    public function has($key)
-    {
-        return isset($this->request[ $this->method ][ $key ]);
-    }
-
-
-    public function post($name)
-    {
-        if (isset($this->request['POST'][$name])) {
-            if (!empty($this->request['POST'][$name])) {
-                return $this->request['POST'][$name];
-            }
-        }
-        return false;
-    }
-
-
-    public function get($name)
-    {
-        if (isset($this->request['GET'][$name])) {
-            if (!empty($this->request['GET'][$name])) {
-                return $this->request['GET'][$name];
-            }
-        }
-        return false;
-    }
 
 
     public function method($default = 'GET'): String
     {
-        $method = $this->server('request_method');
+        
+        if($this->method == null)
+        {
+            $method = $this->server('request_method');
+            
+            if ($method == 'POST') {
 
-        if ($method == 'POST') {
-            $headers = getallheaders();
+                $xhmo = $this->headers->get('X-HTTP-Method-Override');
 
-            $xhmo    = $headers[ 'X-HTTP-Method-Override' ] ?? false;
-
-            if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
-                $method = $xhmo;
+                if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
+                    $method = $xhmo;
+                }
             }
+        } else {
+            $method = $this->method;
         }
 
         return $method ? : $default;
@@ -217,39 +199,38 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     }
 
 
-    public function only(): array
-    {
-        if (func_num_args() == 0) {
-            return [];
-        } else {
-            $only = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-        }
-
-        return Arr::only($this->all(), $only);
-    }
-
-
-    public function except()
-    {
-        if (func_num_args() == 0) {
-            return $this->all();
-        } else {
-            $excepts = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-        }
-
-        return Arr::except($this->all(), $excepts);
-    }
-
 
     public function validate(array $roles)
     {
         $validation =  Validator::make($this->all(), $roles);
 
         if (!$validation->check()) {
+
             Redirect::back()->withErrors($validation->messages());
 
             Response::send();
         }
+    }
+
+    public function app()
+    {
+        return $this->application;
+    }
+
+    public function __get($name)
+    {
+        return $this->request->get($name);
+    }
+
+    public function __set($name,$value)
+    {
+        return $this->request->set($name,$value);
+    }
+
+
+    public function __call($method,$args)
+    {
+        return $this->request->{$method}(...$args);
     }
 
 
@@ -264,7 +245,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function offsetGet($offset)
     {
-        return $this->{$offset};
+        return $this->request[$offset];
     }
 
     /**
@@ -281,7 +262,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function offsetSet($offset, $value)
     {
-        $this->{$offset} = $value;
+        $this->request[$offset] = $value;
     }
 
     /**
@@ -295,9 +276,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function offsetUnset($offset)
     {
-        if (isset($this->request[ $this->method ][ $offset ])) {
-            unset($this->request[ $this->method ][ $offset ]);
-        }
+        $this->request->remove($offset);
     }
 
     /**
@@ -314,7 +293,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function offsetExists($offset)
     {
-        return isset($this->request[ $this->method ][ $offset ]);
+        return $this->request->has($offset);
     }
 
     /**
@@ -328,7 +307,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function count()
     {
-        return count($this->request[ $this->method ]);
+        return count($this->request);
     }
 
     /**
@@ -339,7 +318,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function serialize()
     {
-        return serialize($this->request[ $this->method ]);
+        return serialize($this->request->all());
     }
 
     /**
@@ -365,6 +344,6 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
      */
     public function jsonSerialize()
     {
-        return json_encode($this->request[ $this->method ]);
+        return json_encode($this->request->all());
     }
 }

@@ -108,7 +108,7 @@ class Response
     {
         $this->setContent($content);
 
-        $this->headers = $headers;
+        $this->headers = new Parameters($headers);
 
         $this->setStatusCode((int) $statusCode);
 
@@ -186,7 +186,7 @@ class Response
      */
     public function header($name, $value, $replace = true)
     {
-        $this->headers[ $name ] = array( 'value' => $value , 'replace' => $replace );
+        $this->headers->set($name,['value' => $value , 'replace' => $replace] );
 
         return $this;
     }
@@ -197,7 +197,6 @@ class Response
      */
     public function withHeaders(array $headers)
     {
-        $this->headers = [];
 
         foreach ($headers as $name => $value) {
             $this->header($name, $value);
@@ -224,7 +223,7 @@ class Response
     public function getHeader($name)
     {
         if ($this->hasHeader($name)) {
-            return $this->headers[ $name ];
+            return $this->headers->get($name);
         } else {
             $headers = headers_list();
 
@@ -238,7 +237,7 @@ class Response
      */
     public function hasHeader($name): Bool
     {
-        return array_key_exists($name, $this->headers);
+        return $this->headers->has($name);
     }
 
     /**
@@ -247,9 +246,8 @@ class Response
      */
     public function removeHeader($name)
     {
-        if ($this->hasHeader($name)) {
-            unset($this->headers[ $name ]);
-        }
+        $this->headers->remove($name);
+        
 
         return $this;
     }
@@ -334,7 +332,7 @@ class Response
     public function headersSend()
     {
         if (!headers_sent()) {
-            foreach ($this->headers as $name => $header) {
+            foreach ($this->headers->all() as $name => $header) {
                 header($name . ":" . $header[ 'value' ], $header[ 'replace' ]);
             }
 

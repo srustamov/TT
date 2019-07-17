@@ -51,7 +51,7 @@ class CsrfProtected
     protected function tokensMatch(Request $request)
     {
         $token = $this->getTokenRequest($request);
-
+        
         return is_string($request->session('_token')) &&
                is_string($token) &&
                hash_equals($request->session('_token'), $token);
@@ -61,9 +61,9 @@ class CsrfProtected
 
     protected function getTokenRequest(Request $request)
     {
-        $input    = $request->input('_token');
+        $input = $request->get('_token');
 
-        $response = $request->cookie('XSRF-TOKEN');
+        $response = Cookie::get('XSRF-TOKEN');
 
         if (
           !is_string($input) ||
