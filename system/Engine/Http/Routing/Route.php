@@ -18,8 +18,9 @@ use System\Exceptions\NotFoundException;
 
 class Route
 {
-    use RouteMethodsTrait;
-    use RouteGroupTrait;
+    use Traits\RouteMethods;
+    use Traits\RouteGroup;
+    use Traits\Parse;
 
     protected $routes = [
         'GET'     => [] ,
@@ -104,46 +105,16 @@ class Route
     {
         $this->methods = is_array($methods) ? $methods : [$methods];
 
-        $middleware = $this->middleware;
 
-        $pattern    = $this->pattern;
+        list($_path,$middleware,$pattern) = $this->parsePath($path);
 
-        $url        = $path;
-
-        if (is_array($path)) {
-            if (isset($path['path'])) {
-                $url  = (string) $path['path'];
-            } else {
-                throw new \InvalidArgumentException("Route argument path (url) required");
-            }
-
-            if (isset($path['middleware'])) {
-                $middleware = array_merge($middleware, (array) $path['middleware']);
-            }
-
-            if (isset($path['pattern'])) {
-                $pattern = array_merge($pattern, $path['pattern']);
-            }
-        }
-
-        $pattern = array_merge($this->patterns, $pattern);
-
-        $middleware_array = array_merge($this->group_middleware, $middleware);
-
-        $_path = rtrim($this->domain().'/'.trim($this->prefix.strtolower($url), '/'), '/');
-
-        if (isset($path['name'])) {
-            $this->routes['NAMES'][$this->group_name.$path['name']] = $_path;
-        } elseif (!is_null($this->name)) {
-            $this->routes['NAMES'][$this->group_name.$this->name] = $_path;
-        }
 
         foreach ($this->methods as $method) {
             $this->routes[ strtoupper($method) ][] =  [
                 'path' => $_path ,
                 'handler' => $handler ,
                 'ajax' => $this->ajax ,
-                'middleware' => $middleware_array,
+                'middleware' => $middleware,
                 'pattern' => $pattern
             ];
         }
@@ -181,7 +152,10 @@ class Route
 
         $ajax       = Load::class('http')->isAjax();
 
+       
+
         foreach ($this->routes[ $method ] as $resource) {
+
             if ($resource['ajax'] && !$ajax) {
                 continue;
             }
@@ -202,16 +176,7 @@ class Route
             }
 
             if (isset($uri)) {
-                preg_match_all('/{(.+?)}/', $uri, $_request_keys);
-
-                $_request_keys = array_map(function ($item) {
-                    return str_replace('?', '', $item);
-                }, $_request_keys[1]);
-
-                $_request_data = array_combine(array_slice($_request_keys, 0, count($args)), $args);
-
-                Load::class('request')->setRouteParams($_request_data);
-                
+                $this->parseRouteParams($uri,$args);
             }
 
             if (is_string($handler) && strpos($handler, '@')) {
@@ -302,42 +267,6 @@ class Route
         $method = Load::class('request')->method('GET');
 
         return ($method == 'HEAD') ?  'GET' : $method;
-    }
-
-
-    /**
-     * @param $requestUri
-     * @param $resource
-     * @param $patterns
-     * @return array
-     */
-    private function parseRoute($requestUri, $resource, $patterns): array
-    {
-        $callback = function ($matches) use ($patterns) {
-            $normalize = str_replace('?', '', $matches[1]);
-
-            if (in_array($normalize, array_keys($patterns))) {
-                if (strpos($matches[1], '?') !== false) {
-                    return '?(\/' . $patterns[ $normalize ] . ')?';
-                } else {
-                    return $patterns[ $normalize ];
-                }
-            } else {
-                if (strpos($matches[1], '?') !== false) {
-                    return '?(\/[a-zA-Z0-9_=\-\?]+)?';
-                } else {
-                    return '[a-zA-Z0-9_=\-\?]+';
-                }
-            }
-        };
-
-        $route  = preg_replace_callback('/{(.+?)}/', $callback, $resource);
-
-        $regUri = explode('/', str_replace('?}', '}', $resource));
-
-        $args   = array_diff(array_replace($regUri, explode('/', $requestUri)), $regUri);
-
-        return array( array_values($args) , $resource , $route);
     }
 
 

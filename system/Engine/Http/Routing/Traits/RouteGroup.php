@@ -1,4 +1,4 @@
-<?php namespace System\Engine\Http\Routing;
+<?php namespace System\Engine\Http\Routing\Traits;
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -7,7 +7,7 @@
 
 
 
-trait RouteGroupTrait
+trait RouteGroup
 {
 
 

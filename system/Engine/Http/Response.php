@@ -137,14 +137,18 @@ class Response
      * @param $data
      * @return Response
      */
-    public function json($data)
+    public function json($data = null)
     {
         $this->contentType('application/json');
 
-        $this->setContent(json_encode($data));
+        if ($data !== null) {
+            
+            $this->setContent(json_encode($data));
 
-        if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new \InvalidArgumentException(json_last_error_msg());
+            if (JSON_ERROR_NONE !== json_last_error()) {
+                throw new \InvalidArgumentException(json_last_error_msg());
+            }
+
         }
 
         return $this;
@@ -274,12 +278,13 @@ class Response
             $content = json_encode($content);
         }
 
-
         if (null !== $content && !is_string($content) && !is_numeric($content) && !is_callable(array( $content , '__toString' ))) {
             throw new \UnexpectedValueException(sprintf('The Response content must be a string or object implementing __toString(), "%s" given.', gettype($content)));
+        } elseif(is_object($content) && is_callable(array( $content , '__toString' ))) {
+            $content = $content->__toString();
         }
 
-        $this->content = (string) $content;
+        $this->content = $content;
 
         return $this;
     }
@@ -319,9 +324,16 @@ class Response
      * @param int $refresh
      * @return mixed
      */
-    public function redirect(String $url, $statusCode = 302, $refresh = 0)
+    public function redirect(String $url, $refresh = 0, $statusCode = 302)
     {
-        return Load::class('redirect')->to($url, $statusCode, $refresh);
+        $this->header('Location', $url, true);
+
+        $this->setStatusCode($statusCode);
+
+        $this->refresh($refresh);
+
+        return $this;
+
     }
 
 

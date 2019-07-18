@@ -42,12 +42,11 @@ class ApiMiddleware
 
     protected function getAuthToken($request)
     {
-        $headers = getallheaders();
 
-        $token = $headers['X-Auth-Token'] ?? false;
+        $token = $request->headers->get('X-Auth-Token');
 
         if (!$token) {
-            $token = $request->auth_token ?:$request->token?:false;
+            $token = $request->get('auth_token') ?:$request->get('token');
         }
 
         return $token;

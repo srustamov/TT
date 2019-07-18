@@ -54,6 +54,8 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
         $this->cookies = new Parameters($_COOKIE);
 
+        $this->query   = new Parameters($this->query);
+
         $this->files   = new UploadedFile($_FILES);
         
         $this->method  = $this->method('GET');
@@ -108,6 +110,21 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     public function params($key)
     {
         return $this->routeParams[$key] ?? false;
+    }
+
+
+    public function get($key, $default = null)
+    {
+
+        if ($this !== $result = $this->query->get($key, $this)) {
+            return $result;
+        }
+
+        if ($this !== $result = $this->request->get($key, $this)) {
+            return $result;
+        }
+
+        return $default;
     }
 
 

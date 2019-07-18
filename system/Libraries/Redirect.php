@@ -51,11 +51,7 @@ class Redirect
     {
         $url = $this->prepareUrl($url);
 
-        $response = Load::class('response')->header('Location', $url, true);
-
-        $response->setStatusCode($http_response_code);
-
-        $response->refresh($refresh);
+        Load::class('response')->redirect($url,$refresh,$http_response_code);
 
         return $this;
     }
@@ -118,17 +114,11 @@ class Redirect
         return $this;
     }
 
-
-
-
-    public function __toString()
-    {
-        return Load::class('response')->send();
-    }
-
-
     public function instance()
     {
         return $this;
     }
+
+    public function __toString(){}
+
 }
