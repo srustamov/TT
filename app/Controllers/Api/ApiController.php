@@ -49,7 +49,7 @@ class ApiController extends Controller
             ]);
 
             if ($create) {
-                return Response::json([
+                return Response::setStatusCode(201)->json([
                     'message' =>'User create successfully',
                     'created' => true,
                     'auth_token' => $token

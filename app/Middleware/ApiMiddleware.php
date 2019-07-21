@@ -31,7 +31,6 @@ class ApiMiddleware
             }
         } else {
             Response::setStatusCode(401)->json(['error' => 'Authentication token required!'])->send();
-            exit;
         }
 
         App::end();

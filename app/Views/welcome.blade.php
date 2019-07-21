@@ -46,9 +46,8 @@
 <body>
 <div id="container">
     <span id="welcome">{{ setting('APP_NAME') }}</span><br>
-    <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span><br>
     <span><a href="{{url('/home')}}">HOME</a></span> |
-    <span><a href="{{url('/vue-example-page')}}" style="color:#0f6674">EXAMPLE VUE PAGE</a></span>
+    <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
 </div>
 
 @if ($errors->has('auth')))
