@@ -13,7 +13,7 @@ use System\Engine\Load;
 
 class OpenSsl
 {
-    private $method = 'AES-128-CBC';
+    private $method = 'AES-256-CBC';
 
 
     private $key;
@@ -34,7 +34,7 @@ class OpenSsl
         $key = Load::class('config')->get('app.key', false);
 
         if (!$key && !CONSOLE) {
-            throw new EncryptException("<b>Application Down</b> ! Application Encryption key not found!");
+            throw new EncryptException("Application Down! Application Encryption key not found!");
         }
 
         $this->key = $key;
