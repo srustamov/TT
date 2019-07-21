@@ -4,7 +4,7 @@ PHP simple and fastest mini mvc framework
 
 * Goto Command Line
 ```
-   $ composer create-project  --stability dev --prefer-dist srustamov/tt
+   $ composer create-project  --prefer-dist srustamov/tt
 ```
 
 
