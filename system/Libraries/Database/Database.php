@@ -40,32 +40,21 @@ class Database extends Connection
     /**
      * @return object|null
      * @param string $sql
-     * @param bool $first
-     * @param array|bool $data
+     * @param array $data
      */
     
-    public function raw(string $sql,$data = [],bool $first = false)
+    public function raw(string $sql,array $data = [])
     {
-
-        if(is_bool($data)) {
-
-            $first = $data;
-
-            $data  = [];
-        }
-
         if (empty($data)) {
-            $result = $this->pdo()->query($sql);
+            $stmt = $this->pdo()->query($sql);
         } else {
+            
             $stmt = $this->pdo()->prepare($sql);
 
-            $result = $stmt->execute($data);
+            $stmt->execute($data);
         }
 
-        if ($result->rowCount() > 0) {
-            return $first ? $result->fetch() : $result->fetchAll();
-        }
-        return null;
+        return ($stmt->rowCount() > 0) ? $stmt : null;
     }
     
     
