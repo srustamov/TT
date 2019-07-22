@@ -33,7 +33,42 @@ class Database extends Connection
 
     private $bindValues = [];
 
+    
+    
+    
+    
+    /**
+     * @return object|null
+     * @param string $sql
+     * @param bool $first
+     * @param array|bool $data
+     */
+    
+    public function raw(string $sql,$data = [],bool $first = false)
+    {
 
+        if(is_bool($data)) {
+
+            $first = $data;
+
+            $data  = [];
+        }
+
+        if (empty($data)) {
+            $result = $this->pdo()->query($sql);
+        } else {
+            $stmt = $this->pdo()->prepare($sql);
+
+            $result = $stmt->execute($data);
+        }
+
+        if ($result->rowCount() > 0) {
+            return $first ? $result->fetch() : $result->fetchAll();
+        }
+        return null;
+    }
+    
+    
     /**
      * @return object|null
      * @throws DatabaseException
