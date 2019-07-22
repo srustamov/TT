@@ -14,7 +14,7 @@ use System\Engine\Reflections;
 use System\Engine\Http\Middleware;
 use System\Engine\Http\Response;
 use System\Exceptions\RouteException;
-use System\Exceptions\NotFoundException;
+use App\Exceptions\NotFoundException;
 
 class Route
 {
