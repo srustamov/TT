@@ -151,7 +151,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
     public function user()
     {
-        return Load::class('auth')->user();
+        return Auth::user();
     }
 
 

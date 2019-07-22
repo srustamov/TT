@@ -45,7 +45,15 @@ class ApiMiddleware
         $token = $request->headers->get('X-Auth-Token');
 
         if (!$token) {
-            $token = $request->get('auth_token') ?:$request->get('token');
+
+            if($request->headers->has('Authorization')) {
+
+                $authorization = $request->headers->get('Authorization');
+
+                if (preg_match('/Bearer\s(\S+)/', $authorization, $matches)) {
+                    $token =  $matches[1];
+                }
+            } 
         }
 
         return $token;

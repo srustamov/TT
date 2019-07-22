@@ -137,9 +137,13 @@ class Response
      * @param $data
      * @return Response
      */
-    public function json($data = null)
+    public function json($data = null,$statusCode = null)
     {
         $this->contentType('application/json');
+
+        if($statusCode !== null && is_integer($statusCode)) {
+            $this->setStatusCode($statusCode);
+        }
 
         if ($data !== null) {
             

@@ -17,7 +17,9 @@ class ApiController extends Controller
 {
     public function user(Request $request)
     {
-        return Response::json($request->user());
+        return Response::json(
+            $this->transform($request->user())
+        );
     }
 
 
@@ -34,7 +36,7 @@ class ApiController extends Controller
 
 
         if (!$validation->check()) {
-            return Response::json([
+            return Response::setStatusCode(400)->json([
                 'message' => Validator::messages(),
                 'created' => fasle
                 ]);
@@ -58,8 +60,19 @@ class ApiController extends Controller
                 return Response::json([
                     'message'=>'User register error occurred.Please try again',
                     'created' => false
-                    ]);
+                ],417);
             }
         }
+    }
+
+
+    public function transform($user)
+    {
+        return [
+            'name' => $user->name,
+            'email' => $user->email,
+            'status' => $user->status ? 'active' : 'inactive',
+            'created_at' => $user->created_at
+        ];
     }
 }
