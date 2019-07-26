@@ -5,13 +5,18 @@
  * @link    https://github.com/srustamov/TT
  */
 
+use Exception;
+use InvalidArgumentException;
 use System\Engine\Load;
 use System\Facades\File;
+use UnexpectedValueException;
 
 class Response
 {
     private $content;
 
+    /**
+    */
     private $headers = [];
 
     private $statusCode = 200;
@@ -104,7 +109,7 @@ class Response
      * @param array $headers
      * @return $this
      */
-    public function make($content, $statusCode = 200, array $headers = [])
+    public function make($content, $statusCode = 200, array $headers = []): self
     {
         $this->setContent($content);
 
@@ -120,9 +125,9 @@ class Response
      * @param null $message
      * @return $this
      */
-    public function setStatusCode(Int $code, $message = null)
+    public function setStatusCode(Int $code, $message = null): self
     {
-        if (is_null($message)) {
+        if ($message === null) {
             $message = $this->messages[ $code ] ?? '';
         }
 
@@ -135,22 +140,23 @@ class Response
 
     /**
      * @param $data
+     * @param null $statusCode
      * @return Response
      */
-    public function json($data = null,$statusCode = null)
+    public function json($data = null,$statusCode = null): Response
     {
         $this->contentType('application/json');
 
-        if($statusCode !== null && is_integer($statusCode)) {
+        if($statusCode !== null && is_int($statusCode)) {
             $this->setStatusCode($statusCode);
         }
 
         if ($data !== null) {
-            
+
             $this->setContent(json_encode($data));
 
             if (JSON_ERROR_NONE !== json_last_error()) {
-                throw new \InvalidArgumentException(json_last_error_msg());
+                throw new InvalidArgumentException(json_last_error_msg());
             }
 
         }
@@ -162,11 +168,12 @@ class Response
     /**
      * @param String $path
      * @param String $fileName
+     * @param string $disposition
      * @return Response
      */
-    public function download(String $path, String $fileName = null, $disposition = 'attachment')
+    public function download(String $path, String $fileName = null, $disposition = 'attachment'): Response
     {
-        $this->header('Content-Disposition', $disposition.';filename='.(!is_null($fileName) ? $fileName : urlencode($fileName)));
+        $this->header('Content-Disposition', $disposition.';filename='.($fileName !== null ? $fileName : urlencode($fileName)));
         $this->header('Content-Type', 'application/force-download');
         $this->header('Content-Type', 'application/octet-stream');
         $this->header('Content-Type', 'application/download');
@@ -181,7 +188,7 @@ class Response
      * @param $contentType
      * @return Response
      */
-    public function contentType($contentType)
+    public function contentType($contentType): Response
     {
         return $this->header('Content-Type', $contentType);
     }
@@ -192,7 +199,7 @@ class Response
      * @param bool $replace
      * @return Response
      */
-    public function header($name, $value, $replace = true)
+    public function header($name, $value, $replace = true): Response
     {
         $this->headers->set($name,['value' => $value , 'replace' => $replace] );
 
@@ -200,12 +207,11 @@ class Response
     }
 
     /**
-     * @param Array $headers
+     * @param array $headers
      * @return $this
      */
-    public function withHeaders(array $headers)
+    public function withHeaders(array $headers): self
     {
-
         foreach ($headers as $name => $value) {
             $this->header($name, $value);
         }
@@ -217,7 +223,7 @@ class Response
      * @param String $charset
      * @return $this
      */
-    public function charset(String $charset)
+    public function charset(String $charset): self
     {
         $this->charset = $charset;
 
@@ -232,11 +238,11 @@ class Response
     {
         if ($this->hasHeader($name)) {
             return $this->headers->get($name);
-        } else {
-            $headers = headers_list();
-
-            return $headers[ $name ] ?? false;
         }
+
+        $headers = headers_list();
+
+        return $headers[ $name ] ?? false;
     }
 
     /**
@@ -252,10 +258,10 @@ class Response
      * @param $name
      * @return Response
      */
-    public function removeHeader($name)
+    public function removeHeader($name): Response
     {
         $this->headers->remove($name);
-        
+
 
         return $this;
     }
@@ -272,7 +278,7 @@ class Response
      * @param $content
      * @return $this
      */
-    public function setContent($content)
+    public function setContent($content): self
     {
         if ($content instanceof $this) {
             return $this;
@@ -283,8 +289,10 @@ class Response
         }
 
         if (null !== $content && !is_string($content) && !is_numeric($content) && !is_callable(array( $content , '__toString' ))) {
-            throw new \UnexpectedValueException(sprintf('The Response content must be a string or object implementing __toString(), "%s" given.', gettype($content)));
-        } elseif(is_object($content) && is_callable(array( $content , '__toString' ))) {
+            throw new UnexpectedValueException(sprintf('The Response content must be a string or object implementing __toString(), "%s" given.', gettype($content)));
+        }
+
+        if (is_object($content) && is_callable(array( $content , '__toString' ))) {
             $content = $content->__toString();
         }
 
@@ -297,7 +305,7 @@ class Response
      * @param $content
      * @return Response
      */
-    public function appendContent($content)
+    public function appendContent($content): Response
     {
         return $this->setContent($this->getContent().$content);
     }
@@ -306,7 +314,7 @@ class Response
      * @param $content
      * @return Response
      */
-    public function prependContent($content)
+    public function prependContent($content): Response
     {
         return $this->setContent($content.$this->getContent());
     }
@@ -315,7 +323,7 @@ class Response
      * @param Int $refresh
      * @return $this
      */
-    public function refresh(Int $refresh)
+    public function refresh(Int $refresh): self
     {
         $this->refresh = $refresh;
 
@@ -341,25 +349,26 @@ class Response
     }
 
 
-    
+
     /**
      * @return Response
      */
-    public function headersSend()
+    public function headersSend(): Response
     {
         if (!headers_sent()) {
             foreach ($this->headers->all() as $name => $header) {
-                header($name . ":" . $header[ 'value' ], $header[ 'replace' ]);
+                header($name . ':' . $header[ 'value' ], $header[ 'replace' ]);
             }
 
-            header(sprintf("%s %d %s", $this->protocol(), (int)$this->statusCode, $this->statusMessage));
+            header(sprintf('%s %d %s', $this->protocol(), $this->statusCode, $this->statusMessage));
         }
 
         return $this;
     }
 
     /**
-     * @return Response
+     * @return void
+     * @throws Exception
      */
     public function send()
     {
@@ -383,13 +392,11 @@ class Response
 
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
-        } else {
-            if (!CONSOLE) {
-                static::closeOutputBuffers();
-            }
+        } else if (!CONSOLE) {
+            static::closeOutputBuffers();
         }
 
-        return $this;
+
     }
 
 
@@ -416,19 +423,19 @@ class Response
      */
     public function protocol(String $protocol = null)
     {
-        if (!is_null($protocol)) {
+        if ($protocol !== null) {
             $this->protocol = $protocol;
 
             return $this;
-        } else {
-            return $_SERVER[ 'SERVER_PROTOCOL' ] ?? $this->protocol;
         }
+
+        return $_SERVER[ 'SERVER_PROTOCOL' ] ?? $this->protocol;
     }
 
     /**
      * @return Response
      */
-    public function sendContent()
+    public function sendContent(): Response
     {
         echo $this->content;
 
@@ -436,8 +443,22 @@ class Response
     }
 
 
+    /**
+     *
+     * @throws Exception
+     */
     public function __toString()
     {
         $this->send();
+    }
+
+    /**
+     * @param mixed $headers
+     * @return Response
+     */
+    public function setHeaders($headers): Response
+    {
+        $this->headers = $headers;
+        return $this;
     }
 }

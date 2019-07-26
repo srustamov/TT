@@ -6,6 +6,10 @@
  */
 
 use ArrayAccess;
+use Exception;
+use System\Engine\Http\Middleware\LoadSettingVariables;
+use System\Engine\Http\Middleware\PrepareConfigs;
+use System\Engine\Http\Middleware\RegisterExceptionHandler;
 use System\Facades\Route;
 use System\Facades\Config;
 use System\Facades\Http;
@@ -19,9 +23,9 @@ class App implements ArrayAccess
     const VERSION = '1.0.0';
 
     private $important = [
-        \System\Engine\Http\Middleware\LoadSettingVariables::class ,
-        \System\Engine\Http\Middleware\PrepareConfigs::class ,
-        \System\Engine\Http\Middleware\RegisterExceptionHandler::class ,
+        LoadSettingVariables::class ,
+        PrepareConfigs::class ,
+        RegisterExceptionHandler::class ,
     ];
 
     protected $bootstrapping = false;
@@ -30,7 +34,7 @@ class App implements ArrayAccess
 
     protected $routeMiddleware = [];
 
-    protected $paths = [
+    public $paths = [
         'base' => 'app',
         'public' => 'public',
         'storage' => 'storage',
@@ -55,11 +59,11 @@ class App implements ArrayAccess
     public function __construct($basePath = null)
     {
         if (!defined('CONSOLE')) {
-            define('CONSOLE', (php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg'));
+            define('CONSOLE', PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
         }
 
-        if (is_null($basePath)) {
-            $this->paths['base'] = dirname(dirname(__DIR__));
+        if ($basePath === null) {
+            $this->paths['base'] = dirname(__DIR__, 2);
         } else {
             $this->paths['base'] = rtrim($basePath, DIRECTORY_SEPARATOR);
         }
@@ -67,11 +71,9 @@ class App implements ArrayAccess
         chdir($this->paths['base']);
 
         static::$instance = $this;
-
-        return $this;
     }
 
-    public function version()
+    public function version(): string
     {
         return static::VERSION;
     }
@@ -80,11 +82,12 @@ class App implements ArrayAccess
      * Application bootstrapping
      *
      * @return $this
+     * @throws Exception
      */
-    public function bootstrap()
+    public function bootstrap(): self
     {
         if (!$this->bootstrapping) {
-            
+
             $this->setPublicPath();
 
             $this->registerMiddleware($this->important);
@@ -106,7 +109,10 @@ class App implements ArrayAccess
     }
 
 
-
+    /**
+     * @param array $middleware_array
+     * @throws Exception
+     */
     protected function registerMiddleware(array $middleware_array)
     {
         foreach ($middleware_array as $middleware) {
@@ -148,18 +154,16 @@ class App implements ArrayAccess
 
     public function setPublicPath(String $path = null)
     {
-        if (!is_null($path)) {
+        if ($path !== null) {
             $this->paths['public'] = $path;
+        } else if (isset($_SERVER[ 'SCRIPT_FILENAME' ]) && !empty($_SERVER[ 'SCRIPT_FILENAME' ])) {
+            $parts = explode('/', $_SERVER[ 'SCRIPT_FILENAME' ]);
+
+            array_pop($parts);
+
+            $this->paths['public'] = implode('/', $parts);
         } else {
-            if (isset($_SERVER[ 'SCRIPT_FILENAME' ]) && !empty($_SERVER[ 'SCRIPT_FILENAME' ])) {
-                $parts = explode('/', $_SERVER[ 'SCRIPT_FILENAME' ]);
-
-                array_pop($parts);
-
-                $this->paths['public'] = implode('/', $parts);
-            } else {
-                $this->paths['public'] = $this->paths['base'] . DIRECTORY_SEPARATOR . 'public';
-            }
+            $this->paths['public'] = $this->paths['base'] . DIRECTORY_SEPARATOR . 'public';
         }
     }
 
@@ -183,32 +187,32 @@ class App implements ArrayAccess
         $this->paths['setting'] = $file;
     }
 
-    public function settingsFile()
+    public function settingsFile(): string
     {
         return $this->path($this->paths['settingFile']);
     }
 
-    public function publicPath($path = '')
+    public function publicPath($path = ''): string
     {
-        return $this->paths['public'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)) ;
+        return $this->paths['public'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR);
     }
 
-    public function path($path = '')
+    public function path($path = ''): string
     {
-        return $this->paths['base'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR));
+        return $this->paths['base'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR);
     }
 
-    public function storagePath($path = '')
+    public function storagePath($path = ''): string
     {
-        return $this->path($this->paths['storage'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)));
+        return $this->path($this->paths['storage'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
     }
 
-    public function configsPath($path = '')
+    public function configsPath($path = ''): string
     {
-        return $this->path($this->paths['configs'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)));
+        return $this->path($this->paths['configs'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
     }
 
-    public function appPath($path = '')
+    public function appPath($path = ''): string
     {
         return $this->paths['base']
             .DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR
@@ -216,14 +220,14 @@ class App implements ArrayAccess
     }
 
 
-    public function langPath($path = '')
+    public function langPath($path = ''): string
     {
-        return $this->path($this->paths['lang'].DIRECTORY_SEPARATOR.(ltrim($path, DIRECTORY_SEPARATOR)));
+        return $this->path($this->paths['lang'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
     }
 
     public function configsCacheFile(String $file = null)
     {
-        if (!is_null($file)) {
+        if ($file !== null) {
             $this->paths['configsCacheFile'] = $file;
         } else {
             return $this->path($this->paths['configsCacheFile']);
@@ -232,7 +236,7 @@ class App implements ArrayAccess
 
     public function routesCacheFile(String $file = null)
     {
-        if (!is_null($file)) {
+        if ($file !== null) {
             $this->paths['routesCacheFile'] = $file;
         } else {
             return $this->path($this->paths['routesCacheFile']);
@@ -241,7 +245,7 @@ class App implements ArrayAccess
 
     public function settingCacheFile(String $file = null)
     {
-        if (!is_null($file)) {
+        if ($file !== null) {
             $this->paths['settingCacheFile'] = $file;
         } else {
             return $this->path($this->paths['settingCacheFile']);
@@ -282,20 +286,23 @@ class App implements ArrayAccess
           'view' => 'System\Libraries\View\View',
       );
 
-        if (is_null($name)) {
+        if ($name === null) {
             return $classes;
         }
 
         if (!$isValue) {
             return $classes[strtolower($name)] ?? false;
-        } else {
-            return array_search($name, $classes);
         }
+
+        return array_search($name, $classes, true);
     }
 
+    /**
+     * @return mixed
+     */
     public static function instance()
     {
-        return static::$instance;
+        return self::$instance;
     }
 
 
@@ -309,7 +316,6 @@ class App implements ArrayAccess
     }
 
 
-
     /**
      * Offset to retrieve
      * @link http://php.net/manual/en/arrayaccess.offsetget.php
@@ -318,6 +324,7 @@ class App implements ArrayAccess
      * </p>
      * @return mixed Can return all value types.
      * @since 5.0.0
+     * @throws Exception
      */
     public function offsetGet($offset)
     {
@@ -369,8 +376,16 @@ class App implements ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return array_key_exists($offset, Load::instance());
+    }
+
+    /**
+     * @return array
+     */
+    public function getPaths(): array
+    {
+        return $this->paths;
     }
 }

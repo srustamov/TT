@@ -1,13 +1,19 @@
 <?php  namespace App\Middleware;
 
+use Closure;
 use System\Engine\Http\Request;
 use System\Facades\Response;
 use System\Facades\Config;
-use App;
+
 
 class CorsMiddleware
 {
-    public function handle(Request $request, \Closure $next)
+    /**
+     * @param Request $request
+     * @param Closure $next
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next)
     {
         Config::set('app.debug',false);
 
@@ -23,8 +29,8 @@ class CorsMiddleware
         {
             Response::send();
 
-            App::end();
-        } 
+            $request->app()->end();
+        }
 
 
         return $next($request);

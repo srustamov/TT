@@ -8,6 +8,7 @@ class Kernel extends AppKernel
         \System\Engine\Http\Middleware\StartSession::class ,
         \App\Middleware\CsrfProtected::class,
         //\App\Middleware\CorsMiddleware::class,
+        //\App\Middleware\MaintenanceMode::class,
     ];
 
 

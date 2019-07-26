@@ -8,6 +8,7 @@
  * @category    OpenSSL
  */
 
+use Exception;
 use System\Exceptions\EncryptException;
 use System\Engine\Load;
 
@@ -28,13 +29,14 @@ class OpenSsl
     /**
      * OpenSsl constructor.
      * @throws EncryptException
+     * @throws Exception
      */
     public function __construct()
     {
         $key = Load::class('config')->get('app.key', false);
 
         if (!$key && !CONSOLE) {
-            throw new EncryptException("Application Down! Application Encryption key not found!");
+            throw new EncryptException('Application Down! Application Encryption key not found!');
         }
 
         $this->key = $key;
@@ -45,9 +47,9 @@ class OpenSsl
      * @param $method
      * @return $this
      */
-    public function method($method)
+    public function method($method): self
     {
-        if (in_array(strtoupper($method), openssl_get_cipher_methods())) {
+        if (in_array(strtoupper($method), openssl_get_cipher_methods(), true)) {
             $this->method = $method;
         }
         return $this;
@@ -57,7 +59,7 @@ class OpenSsl
      * @param $key
      * @return $this
      */
-    public function key($key)
+    public function key($key): self
     {
         $this->key = $key;
         return $this;
@@ -68,7 +70,7 @@ class OpenSsl
      * @param $iv
      * @return $this
      */
-    public function iv($iv)
+    public function iv($iv): self
     {
         $this->iv = $iv;
         return $this;
@@ -79,7 +81,7 @@ class OpenSsl
      * @param $option
      * @return $this
      */
-    public function option($option)
+    public function option($option): self
     {
         $this->option = $option;
         return $this;
@@ -125,7 +127,7 @@ class OpenSsl
      * @param Int $length
      * @return string
      */
-    public function random(Int $length)
+    public function random(Int $length): string
     {
         return openssl_random_pseudo_bytes($length);
     }

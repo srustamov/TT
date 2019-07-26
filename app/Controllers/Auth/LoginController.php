@@ -42,7 +42,7 @@ class LoginController extends Authentication
     */
     public function login(Request $request)
     {
-        
+
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email',
                 'password' => 'required|min:6'
@@ -50,13 +50,13 @@ class LoginController extends Authentication
 
         if (!$validation->check()) {
             return Redirect::to('/auth/login')->withErrors($validation->messages());
-        } else {
-            if ($this->attempt($request->only('email', 'password'), $request->remember)) {
-                return Redirect::to('/home');
-            } else {
-                return Redirect::to('/auth/login')->withErrors('login', $this->getMessage());
-            }
         }
+
+        if ($this->attempt($request->only('email', 'password'), $request->remember)) {
+            return Redirect::to('/home');
+        }
+
+        return Redirect::to('/auth/login')->withErrors('login', $this->getMessage());
     }
 
 

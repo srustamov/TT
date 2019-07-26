@@ -9,7 +9,7 @@ use System\Libraries\Arr;
 
 class Parameters implements ArrayAccess, Countable
 {
-    private $parameters = [];
+    private $parameters;
 
 
     public function __construct(array $parameters)
@@ -27,16 +27,16 @@ class Parameters implements ArrayAccess, Countable
     {
         if(is_array($key)) {
 
-            foreach($key as $name => $value)
+            foreach($key as $name => $_value)
             {
-                $this->parameters[$key] = $value;
+                $this->parameters[$name] = $_value;
             }
         }
-        else 
+        else
         {
             $this->parameters[$key] = $value;
         }
-        
+
     }
 
 
@@ -69,11 +69,11 @@ class Parameters implements ArrayAccess, Countable
 
     public function only()
     {
-        if (func_num_args() == 0) {
+        if (func_num_args() === 0) {
             return [];
-        } else {
-            $only = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
         }
+
+        $only = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
         return Arr::only($this->all(), $only);
     }
@@ -81,11 +81,11 @@ class Parameters implements ArrayAccess, Countable
 
     public function except()
     {
-        if (func_num_args() == 0) {
+        if (func_num_args() === 0) {
             return $this->all();
-        } else {
-            $excepts = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
         }
+
+        $excepts = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
 
         return Arr::except($this->all(), $excepts);
     }
@@ -117,6 +117,12 @@ class Parameters implements ArrayAccess, Countable
     public function __get($key)
     {
         return $this->get($key);
+    }
+
+
+    public function __isset($name)
+    {
+        return $this->has($name);
     }
 
     public function __set($key,$value)

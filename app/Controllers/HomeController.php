@@ -12,9 +12,10 @@
 
 namespace App\Controllers;
 
-use System\Engine\Http\Request;
+//use System\Engine\Http\Request;
 use System\Facades\Language;
 use System\Facades\Redirect;
+use System\Libraries\View\View;
 
 class HomeController extends Controller
 {
@@ -24,26 +25,29 @@ class HomeController extends Controller
     /**
      * HomeController welcome method.Show Home page
      *
-     * @return \System\Libraries\View\View
+     * @return View
      */
-    public function welcome()
+    public function welcome(): View
     {
         return view('welcome');
     }
 
-    public function home()
+    /**
+     * @return View
+     */
+    public function home(): View
     {
         return view('home');
     }
 
 
-
     /**
      * HomeController changeLanguage method.Change site content language
      *
+     * @param $lang
      * @return \System\Libraries\Redirect
      */
-    public function language($lang)
+    public function language($lang): \System\Libraries\Redirect
     {
         if (in_array($lang, array('az','en','tr'))) {
             Language::locale($lang);

@@ -1,7 +1,7 @@
 <?php return [
-   "many_attempts" =>  [
+   'many_attempts' =>  [
 
-     'text' => "Çox giriş cəhdi. :time sonra yenidən cəhd edin.",
+     'text' => 'Çox giriş cəhdi. :time sonra yenidən cəhd edin.',
 
      'minutes' => 'dəqiqə',
 
@@ -12,5 +12,5 @@
      'second' => 'saniyə',
    ],
 
-   "incorrect"     =>  "Email və ya şifrə yalnışdır! :remaining cəhdiniz qaldı !"
+   'incorrect' => 'Email və ya şifrə yalnışdır! :remaining cəhdiniz qaldı !'
 ];

@@ -46,6 +46,11 @@ class Validator
     }
 
 
+    /**
+     * @param array $data
+     * @param array $rules
+     * @return Validator
+     */
     public function make(array $data, array $rules):Validator
     {
         $this->messages = [];
@@ -57,38 +62,34 @@ class Validator
 
             if (isset($data[$key]) && $data[$key] && !empty(trim($data[$key]))) {
                 foreach ($fields as $field) {
-                    if (($position = array_search($field, array_keys($this->fields))) !== false) {
+                    if (($position = array_search($field, array_keys($this->fields), true)) !== false) {
                         $function = array_values($this->fields)[$position];
 
-                        if (!call_user_func_array([$this,$function], [$data[$key]])) {
+                        if (!$this->$function($data[$key])) {
                             $this->translation($field, $key, ['field' => $key]);
                         }
                     } else {
                         $parts = explode(':', $field, 2);
 
-                        if (count($parts) > 1) {
-                            if (($position = array_search($parts[0], $this->sub_fields)) !==false) {
-                                $function = $this->sub_fields[$position];
+                        if ((count($parts) > 1) && ($position = array_search($parts[0], $this->sub_fields, true)) !== false) {
+                            $function = $this->sub_fields[$position];
 
-                                if ($function != 'unique') {
-                                    if (!call_user_func_array([$this,$function], [$data[$key],$parts[1]])) {
-                                        $this->translation($function, $key, ['field' => $key,$function => $parts[1]]);
-                                    }
-                                } else {
-                                    $control = $control = DB::table($parts[1])->where($key, $data[$key])->first();
+                            if ($function !== 'unique') {
+                                if (!$this->$function($data[$key], $parts[1])) {
+                                    $this->translation($function, $key, ['field' => $key,$function => $parts[1]]);
+                                }
+                            } else {
+                                $control = $control = DB::table($parts[1])->where($key, $data[$key])->first();
 
-                                    if ($control) {
-                                        $this->translation('unique', $key, ['field' => $key]);
-                                    }
+                                if ($control) {
+                                    $this->translation('unique', $key, ['field' => $key]);
                                 }
                             }
                         }
                     }
                 }
-            } else {
-                if (in_array('required', $fields)) {
-                    $this->translation('required', $key, ['field' => $key]);
-                }
+            } else if (in_array('required', $fields, true)) {
+                $this->translation('required', $key, ['field' => $key]);
             }
         }
 
@@ -104,8 +105,8 @@ class Validator
     {
         $keys = is_array($key) ? $key : [$key => $value];
 
-        foreach ($keys as $key => $value) {
-            Arr::set($this->custom_messages, $key, $value);
+        foreach ($keys as $k => $v) {
+            Arr::set($this->custom_messages, $k, $v);
         }
 
         return $this;
@@ -124,24 +125,22 @@ class Validator
 
     private function translation($field, $key, $replace = [])
     {
-        if (($custom_message = Arr::get($this->custom_messages, $key.'.'.$field))) {
+        if ($custom_message = Arr::get($this->custom_messages, $key.'.'.$field)) {
             $this->messages[$key][] = $custom_message;
         } elseif (isset($this->translator['custom_messages']) && ($custom_message = Arr::get($this->translator['custom_messages'], $key.'.'.$field))) {
             $this->messages[$key][] = $custom_message;
-        } else {
-            if (isset($this->translator[$field])) {
-                if (!empty($replace)) {
-                    $keys = array_map(
-                        function ($item) {
-                            return ":".$item;
-                        },
-                        array_keys($replace)
-                    );
+        } else if (isset($this->translator[$field])) {
+            if (!empty($replace)) {
+                $keys = array_map(
+                    static function ($item) {
+                        return ':'.$item;
+                    },
+                    array_keys($replace)
+                );
 
-                    $this->messages[$key][] = str_replace($keys, array_values($replace), $this->translator[$field]);
-                } else {
-                    $this->messages[$key][] = $this->translator[$field] ?? '';
-                }
+                $this->messages[$key][] = str_replace($keys, array_values($replace), $this->translator[$field]);
+            } else {
+                $this->messages[$key][] = $this->translator[$field] ?? '';
             }
         }
     }
@@ -168,13 +167,13 @@ class Validator
     }
 
 
-    public function is_integer($value)
+    public function is_integer($value): bool
     {
-        return is_integer($value);
+        return is_int($value);
     }
 
 
-    public function is_numeric($value)
+    public function is_numeric($value): bool
     {
         return is_numeric($value);
     }
@@ -184,9 +183,9 @@ class Validator
     {
         if (isset($value['tmp_name'])) {
             return @getimagesize($value['tmp_name']) ? true : false;
-        } else {
-            return @getimagesize($value) ? true : false;
         }
+
+        return @getimagesize($value) ? true : false;
     }
 
 
@@ -194,9 +193,9 @@ class Validator
     {
         if (isset($value['tmp_name'])) {
             return is_file($value['tmp_name']);
-        } else {
-            return is_file($value);
         }
+
+        return is_file($value);
     }
 
 
@@ -218,27 +217,31 @@ class Validator
     }
 
 
-    public function max($value, $max)
+    public function max($value, $max): bool
     {
         return (mb_strlen($value) <= (int) $max);
     }
 
-    public function min($value, $min)
+    public function min($value, $min): bool
     {
         return (mb_strlen($value) >= (int) $min);
     }
 
-    public function regex($value, $pattern)
+    public function regex($value, $pattern): bool
     {
         return !preg_match("#^$pattern$#", $value);
     }
 
-    public function confirm($value1, $value2)
+    public function confirm($value1, $value2): bool
     {
-        return ($value1 == $value2);
+        return ($value1 === $value2);
     }
 
 
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
     public function __get($key)
     {
         return $this->messages[$key] ?? false;

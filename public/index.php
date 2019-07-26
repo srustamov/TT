@@ -29,7 +29,7 @@ require __DIR__.'/../vendor/autoload.php';
 // Application Bootstrapping and Routing
 //------------------------------------------
 
-$TT = new App\Kernel(realpath('../'));
+$TT = new App\Kernel(dirname(__DIR__));
 
 
 $response = $TT->bootstrap()->routing();

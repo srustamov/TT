@@ -1,10 +1,12 @@
 <?php  namespace App\Middleware;
 
-use System\Libraries\Arr;
+
+use Closure;
+use System\Engine\Http\Request;
 use System\Facades\Response;
 use System\Facades\Auth;
 use App\Models\User;
-use App;
+
 
 /*
 |-------------------------------------------
@@ -15,45 +17,48 @@ use App;
 
 class ApiMiddleware
 {
-    public function handle($request, \Closure $next)
+    /**
+     * @param Request $request
+     * @param Closure $next
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next)
     {
         $token = $this->getAuthToken($request);
-        
+
         if ($token) {
             $user = User::where(['api_token' => $token])->first();
 
             if ($user) {
                 Auth::user($user);
-                
                 return $next($request);
-            } else {
-                Response::setStatusCode(401)->json(['error' => 'Authentication token incorrect !'])->send();
             }
+            Response::setStatusCode(401)->json(['error' => 'Authentication token incorrect !'])->send();
         } else {
             Response::setStatusCode(401)->json(['error' => 'Authentication token required!'])->send();
         }
 
-        App::end();
+        $request->app()->end();
 
     }
 
 
-
-    protected function getAuthToken($request)
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    protected function getAuthToken(Request $request)
     {
 
         $token = $request->headers->get('X-Auth-Token');
 
-        if (!$token) {
+        if (!$token && $request->headers->has('Authorization')) {
 
-            if($request->headers->has('Authorization')) {
+            $authorization = $request->headers->get('Authorization');
 
-                $authorization = $request->headers->get('Authorization');
-
-                if (preg_match('/Bearer\s(\S+)/', $authorization, $matches)) {
-                    $token =  $matches[1];
-                }
-            } 
+            if (preg_match('/Bearer\s(\S+)/', $authorization, $matches)) {
+                $token =  $matches[1];
+            }
         }
 
         return $token;

@@ -1,5 +1,6 @@
 <?php namespace System\Engine\Http;
 
+
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -10,7 +11,8 @@
 // Base Controller Class
 //-------------------------------------------------------------
 
-use System\Facades\View;
+use System\Engine\Load;
+
 
 abstract class Controller
 {
@@ -20,15 +22,17 @@ abstract class Controller
      * @param String $file
      * @param array $data
      * @return \System\Libraries\View\View
+     * @throws \Exception
      */
     protected function view(String $file, array $data = [])
     {
-        return View::render($file, $data);
+        return Load::class('view')->render($file, $data);
     }
 
 
-
-
+    /**
+     * @throws \Exception
+     */
     protected function middleware()
     {
         if (func_num_args()  > 0) {
@@ -50,8 +54,8 @@ abstract class Controller
             $controller = '\\'.$namespace.'\\'.str_replace('/', '\\', $controller);
 
             return call_user_func_array([new $controller,$method], $args);
-        } else {
-            return call_user_func_array([$this,$action], $args);
         }
+
+        return call_user_func_array([$this,$action], $args);
     }
 }

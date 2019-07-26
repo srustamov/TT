@@ -8,6 +8,9 @@
  * @category  Authentication
  */
 
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 use System\Libraries\Auth\Drivers\SessionAttemptDriver;
 use System\Libraries\Auth\Drivers\DatabaseAttemptDriver;
 use System\Libraries\Auth\Drivers\RedisAttemptDriver;
@@ -66,12 +69,16 @@ class Authentication
     }
 
 
-    protected function afterLogin($user)
+    protected function afterLogin($user): bool
     {
         return true;
     }
 
 
+    /**
+     * @param bool $user
+     * @return object
+     */
     public function user($user = false)
     {
         if ($user && is_object($user)) {
@@ -79,32 +86,36 @@ class Authentication
         } else {
             if (!$this->user) {
                 $authId = Session::get('AuthId');
-    
+
                 if ($authId) {
                     $result = DB::table($this->table)->where(['id' => $authId])->first();
-    
+
                     $this->user = (object) Arr::except((array) $result, $this->hidden);
                 }
             }
         }
 
-        
+
         return $this->user;
     }
 
 
-
-    public function attempt(array $data, $remember = false)
+    /**
+     * @param array $data
+     * @param bool $remember
+     * @return bool
+     */
+    public function attempt(array $data, $remember = false): bool
     {
         $this->setAttemptDriver();
 
-        if (($attempts = $this->driver->getAttemptsCountOrFail())) {
-            if ($attempts->count >= $this->maxAttempts) {
-                if (($seconds =  $this->driver->getRemainingSecondsOrFail())) {
-                    $this->message = $this->getLockMessage($seconds);
-                    return false;
-                }
-            }
+        if (
+            ($attempts = $this->driver->getAttemptsCountOrFail()) &&
+             $attempts->count >= $this->maxAttempts &&
+            $seconds = $this->driver->getRemainingSecondsOrFail()
+        ) {
+            $this->message = $this->getLockMessage($seconds);
+            return false;
         }
 
         if (isset($data['password'])) {
@@ -112,11 +123,11 @@ class Authentication
 
             unset($data['password']);
         } else {
-            throw new \InvalidArgumentException("Auth password not found");
+            throw new InvalidArgumentException('Auth password not found');
         }
 
 
-        if (($result = DB::table($this->table)->where($data)->first())) {
+        if ($result = DB::table($this->table)->where($data)->first()) {
             if (Hash::check($password, $result->password)) {
                 $this->driver->deleteAttempt();
 
@@ -140,7 +151,7 @@ class Authentication
 
         $remaining =  $this->maxAttempts - $this->driver->getAttemptsCountOrFail()->count;
 
-        if ($remaining == 0) {
+        if ($remaining === 0) {
             $this->driver->startLockTime($this->lockTime);
         }
         $this->message = $this->getFailMessage($remaining);
@@ -149,7 +160,12 @@ class Authentication
     }
 
 
-    public function loginUser($user, $remember = false)
+    /**
+     * @param $user
+     * @param bool $remember
+     * @return bool
+     */
+    public function loginUser($user, $remember = false): bool
     {
         if (is_array($user) || is_object($user)) {
             try {
@@ -159,7 +175,7 @@ class Authentication
                     $this->setRemember($user);
                 }
                 return true;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return false;
             }
         }
@@ -167,38 +183,47 @@ class Authentication
     }
 
 
-    public function check()
+    /**
+     * @return bool
+     */
+    public function check():bool
     {
         if (Session::get('Login') === true) {
             if ($this->user() && is_object($this->user)) {
                 $authId = Session::get('AuthId');
 
-                
+
                 if ($authId && $this->user->id === $authId) {
                     return true;
                 }
             }
             return false;
-        } else {
-            if (($result = $this->remember())) {
-                $this->beforeLogin($result);
-
-                $this->setSession($result);
-
-                return $this->afterLogin($result);
-            }
-
-            return false;
         }
+
+        if ($result = $this->remember()) {
+            $this->beforeLogin($result);
+
+            $this->setSession($result);
+
+            return $this->afterLogin($result);
+        }
+
+        return false;
     }
 
 
-    public function guest()
+    /**
+     * @return bool
+     */
+    public function guest(): bool
     {
         return !$this->check();
     }
 
 
+    /**
+     * @return bool|Object
+     */
     public function remember()
     {
         if (Cookie::has('remember')) {
@@ -210,7 +235,11 @@ class Authentication
     }
 
 
-    public function setRemember($user)
+    /**
+     * @param $user
+     * @return $this
+     */
+    public function setRemember($user): self
     {
         if ($user->remember_token) {
             Cookie::set('remember', base64_encode($user->remember_token), 3600 * 24 * 30);
@@ -258,7 +287,7 @@ class Authentication
             if (Cookie::has('remember')) {
                 Cookie::forget('remember');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Session::destroy();
         }
 
@@ -295,34 +324,28 @@ class Authentication
     }
 
 
-    protected function convertTime($seconds)
+    /**
+     * @param $seconds
+     * @return string
+     */
+    protected function convertTime($seconds): string
     {
-        $minute = "";
+        $minute = '';
 
-        $second = "";
+        $second = '';
 
         if ($seconds >= 60) {
-            $minute = (int) ($seconds/60);
+            $m = (int) ($seconds/60);
 
-            if ($minute > 1) {
-                $minute = $minute." ".Language::translate('auth.many_attempts.minutes')." ";
-            } else {
-                $minute = $minute." ".Language::translate('auth.many_attempts.minute')." ";
-            }
+            $minute .= sprintf(' %s',Language::translate('auth.many_attempts.minute'.($m > 1 ? 's' : ''))) . ' ';
 
             if ($seconds%60 > 0) {
-                $second = ($seconds%60);
+                $s = ($seconds%60);
 
-                if ($second > 1) {
-                    $second = $second." ".Language::translate('auth.many_attempts.seconds')." ";
-                } else {
-                    $second = $second." ".Language::translate('auth.many_attempts.second')." ";
-                }
+                $second .= sprintf(' %s',Language::translate('auth.many_attempts.second'.($s > 1 ? 's' : ''))) . ' ';
             }
         } else {
-            $second = $seconds > 1
-            ? $seconds." ".Language::translate('auth.many_attempts.seconds')." "
-            : $seconds." ".Language::translate('auth.many_attempts.second')." ";
+            $second .= sprintf(' %s',Language::translate('auth.many_attempts.second'.($seconds > 1 ? 's' : ''))) . ' ';
         }
 
         return $minute.$second;
@@ -342,7 +365,7 @@ class Authentication
                 $this->driver = new RedisAttemptDriver();
                 break;
             default:
-                throw new \RuntimeException('Attempt Driver not found !');
+                throw new RuntimeException('Attempt Driver not found !');
                 break;
         }
     }
@@ -355,11 +378,15 @@ class Authentication
         return $user->{$key} ?? false;
     }
 
+    public function __isset($name)
+    {
+        return true;
+    }
 
     public function __set($key, $value)
     {
         $this->user->{$key} = $value;
-        
+
         return $this;
     }
 

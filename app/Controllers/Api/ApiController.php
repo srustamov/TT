@@ -15,6 +15,10 @@ use App\Models\User;
 
 class ApiController extends Controller
 {
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function user(Request $request)
     {
         return Response::json(
@@ -23,7 +27,10 @@ class ApiController extends Controller
     }
 
 
-
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function create(Request $request)
     {
         $validation =  Validator::make($request->all(), [
@@ -32,7 +39,7 @@ class ApiController extends Controller
           'name'     => 'required|min:5|unique:users',
         ]);
 
-      
+
 
 
         if (!$validation->check()) {
@@ -40,33 +47,37 @@ class ApiController extends Controller
                 'message' => Validator::messages(),
                 'created' => fasle
                 ]);
-        } else {
-            $token = bin2hex(OpenSsl::random(64));
-
-            $create = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'api_token' => $token
-            ]);
-
-            if ($create) {
-                return Response::setStatusCode(201)->json([
-                    'message' =>'User create successfully',
-                    'created' => true,
-                    'auth_token' => $token
-                ]);
-            } else {
-                return Response::json([
-                    'message'=>'User register error occurred.Please try again',
-                    'created' => false
-                ],417);
-            }
         }
+
+        $token = bin2hex(OpenSsl::random(64));
+
+        $create = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'api_token' => $token
+        ]);
+
+        if ($create) {
+            return Response::setStatusCode(201)->json([
+                'message' =>'User create successfully',
+                'created' => true,
+                'auth_token' => $token
+            ]);
+        }
+
+        return Response::json([
+            'message'=>'User register error occurred.Please try again',
+            'created' => false
+        ],417);
     }
 
 
-    public function transform($user)
+    /**
+     * @param $user
+     * @return array
+     */
+    public function transform($user): array
     {
         return [
             'name' => $user->name,

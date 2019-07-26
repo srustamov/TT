@@ -11,7 +11,7 @@ use System\Engine\Load;
  trait Parse
  {
 
-    public function parsePath($path)
+    public function parsePath($path): array
     {
 
         $middleware = $this->middleware;
@@ -20,7 +20,7 @@ use System\Engine\Load;
 
         $url = $path;
 
-        
+
         if (is_array($path)) {
 
             $parameters = new Parameters($path);
@@ -28,7 +28,7 @@ use System\Engine\Load;
             if ($parameters->has('path')) {
                 $url  = (string) $parameters->get('path');
             } else {
-                throw new \InvalidArgumentException("Route argument path (url) required");
+                throw new \InvalidArgumentException('Route argument path (url) required');
             }
 
             if ($parameters->has('middleware')) {
@@ -48,7 +48,7 @@ use System\Engine\Load;
 
         if (isset($parameters) && $parameters->has('name')) {
             $this->routes['NAMES'][$this->group_name.$parameters->get('name')] = $_path;
-        } elseif (!is_null($this->name)) {
+        } elseif ($this->name !== null) {
             $this->routes['NAMES'][$this->group_name.$this->name] = $_path;
         }
 
@@ -56,11 +56,16 @@ use System\Engine\Load;
     }
 
 
-    public function parseRouteParams($uri,$args)
+     /**
+      * @param $uri
+      * @param $args
+      * @throws \Exception
+      */
+     public function parseRouteParams($uri, $args)
     {
         preg_match_all('/{(.+?)}/', $uri, $keys);
 
-        $keys = array_map(function ($item) {
+        $keys = array_map(static function ($item) {
             return str_replace('?', '', $item);
         }, $keys[1]);
 
@@ -80,22 +85,22 @@ use System\Engine\Load;
      */
     public function parseRoute($requestUri, $resource, $patterns): array
     {
-        $callback = function ($matches) use ($patterns) {
+        $callback = static function ($matches) use ($patterns) {
             $normalize = str_replace('?', '', $matches[1]);
 
-            if (in_array($normalize, array_keys($patterns))) {
+            if (array_key_exists($normalize, $patterns)) {
                 if (strpos($matches[1], '?') !== false) {
                     return '?(\/' . $patterns[ $normalize ] . ')?';
-                } else {
-                    return $patterns[ $normalize ];
                 }
-            } else {
-                if (strpos($matches[1], '?') !== false) {
-                    return '?(\/[a-zA-Z0-9_=\-\?]+)?';
-                } else {
-                    return '[a-zA-Z0-9_=\-\?]+';
-                }
+
+                return $patterns[ $normalize ];
             }
+
+            if (strpos($matches[1], '?') !== false) {
+                return '?(\/[a-zA-Z0-9_=\-\?]+)?';
+            }
+
+            return '[a-zA-Z0-9_=\-\?]+';
         };
 
         $route  = preg_replace_callback('/{(.+?)}/', $callback, $resource);
@@ -106,6 +111,5 @@ use System\Engine\Load;
 
         return array( array_values($args) , $resource , $route);
     }
-     
+
  }
- 

@@ -52,18 +52,18 @@ class RegisterController extends Controller
 
         if (!$validation->check()) {
             return Redirect::to('/auth/register')->withErrors(Validator::messages());
-        } else {
-            $create = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password)
-            ]);
-
-            if ($create) {
-                return Redirect::to('auth/login')->with('register', 'Register successfully');
-            } else {
-                return Redirect::to('auth/register')->with('register', 'User register error occurred.Please try again');
-            }
         }
+
+        $create = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password)
+        ]);
+
+        if ($create) {
+            return Redirect::to('auth/login')->with('register', 'Register successfully');
+        }
+
+        return Redirect::to('auth/register')->with('register', 'User register error occurred.Please try again');
     }
 }

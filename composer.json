@@ -38,5 +38,8 @@
       "php -r \"file_exists('.settings') || copy('.settings.example', '.settings');\""
     ],
     "post-create-project-cmd": ["php manage key:generate"]
+  },
+  "require-dev": {
+    "symfony/var-dumper": "^4.3"
   }
 }

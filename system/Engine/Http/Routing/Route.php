@@ -6,8 +6,8 @@
  */
 
 
-
-
+use Closure;
+use Exception;
 use System\Engine\App;
 use System\Engine\Load;
 use System\Engine\Reflections;
@@ -22,7 +22,7 @@ class Route
     use Traits\RouteGroup;
     use Traits\Parse;
 
-    protected $routes = [
+    public $routes = [
         'GET'     => [] ,
         'POST'    => [] ,
         'PUT'     => [] ,
@@ -33,7 +33,7 @@ class Route
     ];
 
 
-    private $middleware_alias = [];
+    private $middlewareAliases = [];
 
     private $patterns = [];
 
@@ -77,7 +77,7 @@ class Route
 
     public function domain(String $domain = null)
     {
-        if (!is_null($domain)) {
+        if ($domain !== null) {
             if (preg_match('/^https?:\/\//', $domain)) {
                 $domain = str_replace(['https://','http://'], '', $domain);
             }
@@ -85,13 +85,13 @@ class Route
             $this->domain = Load::class('url')->scheme().'://'.$domain;
 
             return $this;
-        } else {
-            $domain =  !is_null($this->domain)
-                ? $this->domain
-                : Load::class('url')->base();
-
-            return rtrim($domain, '/');
         }
+
+        $domain =  $this->domain !== null
+            ? $this->domain
+            : Load::class('url')->base();
+
+        return rtrim($domain, '/');
     }
 
 
@@ -128,13 +128,13 @@ class Route
 
 
     /**
-     * @param \Closure $handler
+     * @param Closure $handler
      */
-    public function ajax(\Closure $handler)
+    public function ajax(Closure $handler)
     {
         $this->ajax = true;
 
-        call_user_func($handler);
+        $handler();
 
         $this->ajax = false;
     }
@@ -143,6 +143,8 @@ class Route
     /**
      * @return bool|int|mixed|void
      * @throws RouteException
+     * @throws NotFoundException
+     * @throws Exception
      */
     protected function run()
     {
@@ -152,11 +154,11 @@ class Route
 
         $ajax       = Load::class('http')->isAjax();
 
-       
+
 
         foreach ($this->routes[ $method ] as $resource) {
 
-            if ($resource['ajax'] && !$ajax) {
+            if (! $ajax && $resource['ajax']) {
                 continue;
             }
 
@@ -181,17 +183,25 @@ class Route
 
             if (is_string($handler) && strpos($handler, '@')) {
                 return $this->callAction($handler, $resource['middleware'], $args);
-            } elseif (is_callable($handler)) {
-                return $this->callHandler($handler, $resource['middleware'], $args);
-            } else {
-                throw new RouteException("Route Handler type undefined");
             }
+
+            if (is_callable($handler)) {
+                return $this->callHandler($handler, $resource['middleware'], $args);
+            }
+
+            throw new RouteException('Route Handler type undefined');
         }
         throw new NotFoundException;
     }
 
 
-
+    /**
+     * @param String $action
+     * @param $middleware_array
+     * @param $args
+     * @return mixed
+     * @throws NotFoundException|Exception
+     */
     protected function callAction(String $action, $middleware_array, $args)
     {
         list($controller, $method) = explode('@', $action);
@@ -235,7 +245,13 @@ class Route
     }
 
 
-
+    /**
+     * @param callable $handler
+     * @param $middleware_array
+     * @param $args
+     * @return mixed
+     * @throws Exception
+     */
     protected function callHandler(callable $handler, $middleware_array, $args)
     {
         if (!empty($middleware_array)) {
@@ -261,12 +277,13 @@ class Route
 
     /**
      * @return string
+     * @throws Exception
      */
-    private function getRequestMethod()
+    private function getRequestMethod(): string
     {
         $method = Load::class('request')->method('GET');
 
-        return ($method == 'HEAD') ?  'GET' : $method;
+        return ($method === 'HEAD') ?  'GET' : $method;
     }
 
 
@@ -274,7 +291,7 @@ class Route
      * @param $middleware
      * @return $this
      */
-    public function middleware($middleware)
+    public function middleware($middleware): self
     {
         if (!empty($this->methods)) {
             foreach ($this->methods as $method) {
@@ -293,9 +310,9 @@ class Route
     /**
      * @param array|string $name
      * @param null|string $value
-     * @return void
+     * @return Route
      */
-    public function pattern($name, $value = null)
+    public function pattern($name, $value = null): self
     {
         $pattern = is_array($name) ? $name : [$name => $value];
 
@@ -317,9 +334,9 @@ class Route
 
     /**
      * @param string $name
-     * @return void
+     * @return Route
      */
-    public function name(String $name)
+    public function name(String $name): self
     {
         if (!empty($this->methods)) {
             foreach ($this->methods as $method) {
@@ -338,12 +355,18 @@ class Route
 
 
 
-    public function getRoutes()
+    public function getRoutes(): array
     {
         return (array) $this->routes;
     }
 
 
+    /**
+     * @param $name
+     * @param array $parameters
+     * @return mixed|string|string[]|null
+     * @throws RouteException
+     */
     public function getName($name, array $parameters = [])
     {
         if (isset($this->routes['NAMES'][$name])) {
@@ -356,37 +379,44 @@ class Route
                     }
                 }
 
-                $callback = function ($match) {
+                $callback = static function ($match) {
                     if (strpos($match[0], '?') !== false) {
                         return '';
-                    } else {
-                        return $match[0];
                     }
+
+                    return $match[0];
                 };
 
                 $route = preg_replace_callback('/({.+?})/', $callback, $route);
 
                 if (strpos($route, '}') !== false) {
-                    throw new RouteException("Route url parameters required");
+                    throw new RouteException('Route url parameters required');
                 }
             }
 
             return $route;
         }
         throw new RouteException("Route name [{$name}] not found");
-        
+
     }
 
 
-
+    /**
+     * @param App $app
+     * @param $routeMiddleware
+     * @return Response
+     * @throws NotFoundException
+     * @throws RouteException
+     * @throws Exception
+     */
     public function execute(App $app, $routeMiddleware):Response
     {
         $this->middlewareAliases = $routeMiddleware;
 
         if (file_exists($file = $app->routesCacheFile())) {
-            $this->routes = require_once $file;
+            $this->routes = require $file;
         } else {
-            foreach (glob($app->path('routes')."/*") as $file) {
+            foreach (glob($app->path('routes').'/*') as $file) {
                 require_once $file;
             }
         }

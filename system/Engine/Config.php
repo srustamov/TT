@@ -1,5 +1,8 @@
 <?php namespace System\Engine;
 
+use ArrayAccess;
+use Countable;
+
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -7,9 +10,9 @@
 
 
 
-class Config implements \ArrayAccess, \Countable
+class Config implements ArrayAccess, Countable
 {
-    private $configurations = [];
+    private $configurations;
 
 
     public function __construct(array $configurations = [])
@@ -35,9 +38,9 @@ class Config implements \ArrayAccess, \Countable
                 }
             }
             return true;
-        } else {
-            return array_key_exists($key, $this->configurations);
         }
+        return array_key_exists($key, $this->configurations);
+
     }
 
 
@@ -70,8 +73,8 @@ class Config implements \ArrayAccess, \Countable
     {
         $keys = is_array($key) ? $key : [$key => $value];
 
-        foreach ($keys as $key => $value) {
-            static::setRecursive($this->configurations, $key, $value);
+        foreach ($keys as $k => $v) {
+            static::setRecursive($this->configurations, $k, $v);
         }
     }
 
@@ -80,10 +83,8 @@ class Config implements \ArrayAccess, \Countable
     {
         if (strpos($key, '.') !== false) {
             static::forgetRecursive($this->configurations, $key);
-        } else {
-            if ($this->has($key)) {
-                unset($this->configurations[$key]);
-            }
+        } else if ($this->has($key)) {
+            unset($this->configurations[$key]);
         }
     }
 
@@ -116,7 +117,7 @@ class Config implements \ArrayAccess, \Countable
 
     private static function setRecursive(&$configurations, $key, $value)
     {
-        if (is_null($key)) {
+        if ($key === null) {
             return $configurations = $value;
         }
 

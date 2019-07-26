@@ -6,6 +6,7 @@
  */
 
 
+use RuntimeException;
 use System\Engine\Load;
 
 class Middleware
@@ -28,7 +29,7 @@ class Middleware
             list($name, $excepts) = static::instance()->getExcepts($extension);
 
             foreach ($excepts as $action) {
-                if ($request->controller(true) == strtolower($action)) {
+                if ($request->controller(true) === strtolower($action)) {
                     return true;
                 }
             }
@@ -38,7 +39,7 @@ class Middleware
             $middleware = $extension;
         }
 
-        $next = function ($ClientRequest) {
+        $next = static function ($ClientRequest) {
             if (Load::isInstance($ClientRequest, 'request')) {
                 return Load::class('response');
             }
@@ -46,13 +47,13 @@ class Middleware
 
 
         if (class_exists($middleware)) {
-            $response = call_user_func_array([ new $middleware() , "handle" ], array($request ,$next));
+            $response = call_user_func([new $middleware(), 'handle'], $request, $next);
 
             if (!Load::isInstance($response, 'response')) {
                 Load::class('response')->setContent($response)->send();
             }
         } else {
-            throw new \Exception("Middleware {$middleware} class not found");
+            throw new RuntimeException("Middleware {$middleware} class not found");
         }
     }
 
@@ -61,7 +62,7 @@ class Middleware
      * @param $extension
      * @return array
      */
-    protected function getExcepts($extension)
+    protected function getExcepts($extension): array
     {
         $excepts = [];
 
@@ -81,7 +82,7 @@ class Middleware
 
     public static function instance()
     {
-        if (is_null(static::$instance)) {
+        if (static::$instance === null) {
             static::$instance = new static();
         }
         return static::$instance;

@@ -13,28 +13,35 @@ function app(String $class = null)
 {
     $app = App::instance();
 
-    if (is_null($class)) {
+    if ($class === null) {
         return $app;
-    } else {
-        return $app[$class];
     }
+
+    return $app[$class];
 }
 
+/**
+ * @param String|null $class
+ * @param mixed ...$args
+ * @return mixed|Load
+ * @throws Exception
+ */
 function load(String $class = null, ...$args)
 {
-    if (is_null($class)) {
+    if ($class === null) {
         return Load::instance();
-    } else {
-        return Load::class($class,...$args);
     }
+
+    return Load::class($class,...$args);
 }
 
 
 if (!function_exists('getallheaders')) {
+
     function getallheaders() {
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) == 'HTTP_') {
+            if (substr($name, 0, 5) === 'HTTP_') {
                 $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
             }
         }
@@ -43,12 +50,17 @@ if (!function_exists('getallheaders')) {
 }
 
 
+/**
+ * @param String|null $name
+ * @param null $default
+ * @return mixed
+ * @throws Exception
+ */
 function config(String $name = null, $default = null)
 {
-    if (is_null($name)) {
+    if ($name === null) {
         return Load::class('config');
     }
-
     return Load::class('config')->get($name, $default);
 }
 
@@ -59,12 +71,23 @@ function setting($key, $default = null)
 }
 
 
+/**
+ * @param String $file
+ * @param bool $once
+ * @return mixed
+ * @throws Exception
+ */
 function import(String $file, $once = true)
 {
     return load('file')->import($file, $once);
 }
 
 
+/**
+ * @param $directory
+ * @param bool $once
+ * @throws Exception
+ */
 function importFiles($directory, $once = true)
 {
     foreach (glob(rtrim($directory, DIRECTORY_SEPARATOR)."/*") as $file) {
@@ -108,7 +131,12 @@ function path($path = '')
 }
 
 
-
+/**
+ * @param Int $http_code
+ * @param null $message
+ * @param array $headers
+ * @throws Exception
+ */
 function abort(Int $http_code, $message = null, $headers = [])
 {
     if (file_exists(app_path('Views/errors/'.$http_code.'.blade.php'))) {
@@ -134,12 +162,15 @@ function inConsole()
 }
 
 
-
+/**
+ * @return String
+ * @throws Exception
+ */
 function csrf_token():String
 {
     static $token;
 
-    if (is_null($token)) {
+    if ($token === null) {
         $token = Load::class('session')->get('_token');
     }
 
@@ -154,6 +185,12 @@ function csrf_field():String
 }
 
 
+/**
+ * @param $name
+ * @param array $parameters
+ * @return mixed
+ * @throws Exception
+ */
 function route($name, array $parameters = [])
 {
     return Load::class('route')->getName($name, $parameters);
@@ -162,6 +199,11 @@ function route($name, array $parameters = [])
 
 
 if (!function_exists('flash')) {
+    /**
+     * @param $key
+     * @return mixed
+     * @throws Exception
+     */
     function flash($key)
     {
         return Load::class('session')->flash($key);
@@ -170,15 +212,23 @@ if (!function_exists('flash')) {
 
 
 if (!function_exists('is_base64')) {
+    /**
+     * @param String $string
+     * @return bool
+     */
     function is_base64(String $string):Bool
     {
-        return base64_encode(base64_decode($string)) == $string;
+        return base64_encode(base64_decode($string)) === $string;
     }
 }
 
 
 
 if (!function_exists('response')) {
+    /**
+     * @return mixed
+     * @throws Exception
+     */
     function response()
     {
         return Load::class('response',...func_get_args());
@@ -187,6 +237,11 @@ if (!function_exists('response')) {
 
 
 if (!function_exists('json')) {
+    /**
+     * @param $data
+     * @return mixed
+     * @throws Exception
+     */
     function json($data)
     {
         return Load::class('response')->json($data);
@@ -195,6 +250,13 @@ if (!function_exists('json')) {
 
 
 if (!function_exists('report')) {
+    /**
+     * @param String $subject
+     * @param String $message
+     * @param null $destination
+     * @return mixed
+     * @throws Exception
+     */
     function report(String $subject, String $message, $destination = null)
     {
         if (empty($destination)) {
@@ -206,7 +268,9 @@ if (!function_exists('report')) {
         $extension = '.report';
 
         if (!is_dir($logDir)) {
-            mkdir($logDir, 0755, true);
+            if (!mkdir($logDir, 0755, true) && !is_dir($logDir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $logDir));
+            }
         }
 
         $report = '----------------------------' . PHP_EOL .
@@ -224,17 +288,17 @@ if (!function_exists('report')) {
 
 
 if (!function_exists('env')) {
+    /**
+     * @param $name
+     * @return array|bool|false|mixed|string
+     */
     function env($name)
     {
-        if (function_exists('getenv')) {
-            if (getenv($name)) {
-                return getenv($name);
-            }
+        if (function_exists('getenv') && getenv($name)) {
+            return getenv($name);
         }
-        if (function_exists('apache_getenv')) {
-            if (apache_getenv($name)) {
-                return apache_getenv($name);
-            }
+        if (function_exists('apache_getenv') && apache_getenv($name)) {
+            return apache_getenv($name);
         }
 
         return $_ENV[ $name ] ?? $_SERVER[ $name ] ?? false;
@@ -243,48 +307,73 @@ if (!function_exists('env')) {
 
 
 if (!function_exists('cookie')) {
+    /**
+     * @return mixed
+     * @throws Exception
+     */
     function cookie()
     {
-        if (func_num_args() == 0) {
+        if (func_num_args() === 0) {
             return Load::class('cookie');
-        } elseif (func_num_args() == 1) {
-            return Load::class('cookie')->get(func_get_args(0));
-        } else {
-            return Load::class('cookie',...func_get_args());
         }
+
+        if (func_num_args() === 1) {
+            return Load::class('cookie')->get(func_get_args(0));
+        }
+
+        return Load::class('cookie',...func_get_args());
     }
 }
 
 
 if (!function_exists('cache')) {
+    /**
+     * @return mixed
+     * @throws Exception
+     */
     function cache()
     {
-        if (func_num_args() == 0) {
+        if (func_num_args() === 0) {
             return Load::class('cache');
-        } elseif (func_num_args() == 1) {
-            return Load::class('cache')->get(func_get_arg(0));
-        } else {
-            return Load::class('cache')->put(...func_get_args());
         }
+
+        if (func_num_args() === 1) {
+            return Load::class('cache')->get(func_get_arg(0));
+        }
+
+        return Load::class('cache')->put(...func_get_args());
     }
 }
 
 
 if (!function_exists('session')) {
+    /**
+     * @return mixed
+     * @throws Exception
+     */
     function session()
     {
-        if (func_num_args() == 0) {
+        if (func_num_args() === 0) {
             return Load::class('session');
-        } elseif (func_num_args() == 1) {
-            return Load::class('session')->get(func_get_arg(0));
-        } else {
-            return Load::class('session')->set(...func_get_args());
         }
+
+        if (func_num_args() === 1) {
+            return Load::class('session')->get(func_get_arg(0));
+        }
+
+        return Load::class('session')->set(...func_get_args());
     }
 }
 
 
 if (!function_exists('view')) {
+    /**
+     * @param String $file
+     * @param array $data
+     * @param bool $cache
+     * @return mixed
+     * @throws Exception
+     */
     function view(String $file, $data = [], $cache = false)
     {
         return Load::class('view')->render($file, $data, $cache);
@@ -293,38 +382,57 @@ if (!function_exists('view')) {
 
 
 if (!function_exists('redirect')) {
+    /**
+     * @param bool $link
+     * @param int $refresh
+     * @param int $http_response_code
+     * @return mixed
+     * @throws Exception
+     */
     function redirect($link = false, $refresh = 0, $http_response_code = 302)
     {
         if ($link) {
             return Load::class('redirect')->to($link, $refresh, $http_response_code);
-        } else {
-            return Load::class('redirect');
         }
+
+        return Load::class('redirect');
     }
 }
 
 
 
 if (!function_exists('lang')) {
+    /**
+     * @param null $word
+     * @param array $replace
+     * @return mixed
+     * @throws Exception
+     */
     function lang($word = null, $replace = [])
     {
-        if (!is_null($word)) {
+        if ($word !== null) {
             return Load::class('language')->translate($word, $replace);
-        } else {
-            return Load::class('language');
         }
+
+        return Load::class('language');
     }
 }
 
 
 if (!function_exists('validator')) {
+    /**
+     * @param null $data
+     * @param array $rules
+     * @return mixed
+     * @throws Exception
+     */
     function validator($data = null, $rules = [])
     {
-        if (!is_null($data)) {
+        if ($data !== null) {
             return Load::class('validator')->make($data, $rules);
-        } else {
-            return Load::class('validator');
         }
+
+        return Load::class('validator');
     }
 }
 
@@ -386,7 +494,10 @@ if (!function_exists('encode_php_tag')) {
 if (!function_exists('preg_replace_array')) {
     function preg_replace_array($pattern, array $replacements, $subject): String
     {
-        $callback = function () use (&$replacements) {
+        /**
+         * @return mixed
+         */
+        $callback = static function () use (&$replacements) {
             foreach ($replacements as $key => $value) {
                 return array_shift($replacements);
             }
@@ -467,11 +578,13 @@ if (!function_exists('len')) {
     {
         if (is_string($value)) {
             return mb_strlen($value, $encoding);
-        } elseif (is_array($value)) {
-            return count($value);
-        } else {
-            return 0;
         }
+
+        if (is_array($value)) {
+            return count($value);
+        }
+
+        return 0;
     }
 }
 
@@ -487,11 +600,11 @@ if (!function_exists('str_replace_array')) {
 if (!function_exists('url')) {
     function url($url = null, $parameters = [])
     {
-        if (is_null($url)) {
+        if ($url === null) {
             return Load::class('url');
-        } else {
-            return Load::class('url')->to(...func_get_args());
         }
+
+        return Load::class('url')->to(...func_get_args());
     }
 }
 
@@ -507,15 +620,13 @@ if (!function_exists('current_url')) {
 if (!function_exists('clean_url')) {
     function clean_url($url): String
     {
-        if ($url == '') {
+        if ($url === '') {
             return '';
         }
 
-        $url = str_replace("http://", "", strtolower($url));
+        $url = str_replace(array('http://', 'https://'), '', strtolower($url));
 
-        $url = str_replace("https://", "", $url);
-
-        if (substr($url, 0, 4) == 'www.') {
+        if (strpos($url, 'www.') === 0) {
             $url = substr($url, 4);
         }
         $url = explode('/', $url);
@@ -532,6 +643,11 @@ if (!function_exists('clean_url')) {
 
 
 if (!function_exists('segment')) {
+    /**
+     * @param Int $number
+     * @return mixed
+     * @throws Exception
+     */
     function segment(Int $number)
     {
         return Load::class('url')->segment($number);
@@ -540,6 +656,9 @@ if (!function_exists('segment')) {
 
 
 if (!function_exists('debug')) {
+    /**
+     * @param $data
+     */
     function debug($data)
     {
         ob_get_clean();
@@ -550,14 +669,21 @@ if (!function_exists('debug')) {
         } else {
             var_dump($data);
         }
-        echo "</pre>";
-        die(1);
+        echo '</pre>';
+        die();
     }
 }
 
 
 
+
+
 if (!function_exists('is_mail')) {
+    /**
+     * @param String $mail
+     * @return mixed
+     * @throws Exception
+     */
     function is_mail(String $mail)
     {
         return Load::class('validator')->is_mail($mail);

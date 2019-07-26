@@ -6,11 +6,17 @@
  */
 
 
+use Exception;
 
-class NotFoundException extends \Exception
+class NotFoundException extends Exception
 {
+    /**
+     * NotFoundException constructor.
+     */
     public function __construct()
     {
+        parent::__construct();
+
         abort(404);
     }
 }

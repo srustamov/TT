@@ -7,15 +7,19 @@
 
 use ArrayAccess;
 use Countable;
+use function file_get_contents;
+use function in_array;
 use Serializable;
 use JsonSerializable;
 use System\Engine\App;
 use System\Engine\Load;
-use System\Facades\Auth;
 use System\Facades\Redirect;
 use System\Facades\Response;
 use System\Facades\Validator;
 
+/**
+ * @method all()
+ */
 class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 {
     public $request = [];
@@ -57,17 +61,17 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
         $this->query   = new Parameters($this->query);
 
         $this->files   = new UploadedFile($_FILES);
-        
+
         $this->method  = $this->method('GET');
 
         if (0 === strpos($this->headers->get('Content-Type'), 'application/x-www-form-urlencoded')
-            && \in_array(strtoupper($this->method), ['PUT', 'DELETE', 'PATCH'])
+            && in_array(strtoupper($this->method), ['PUT', 'DELETE', 'PATCH'])
         ) {
-            parse_str(\file_get_contents('php://input'), $data);
+            parse_str(file_get_contents('php://input'), $data);
 
             $this->request = new Parameters($this->trim($data));
         }
-        else 
+        else
         {
             $this->query   = new Parameters($this->trim($_GET));
 
@@ -76,7 +80,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
         return $this;
 
-    } 
+    }
 
 
     protected function trim($data)
@@ -84,9 +88,8 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
         $data = array_map(function ($item) {
             if (is_array($item)) {
                 return $this->trim($item);
-            } else {
-                return trim($item);
             }
+            return trim($item);
         }, $data);
 
         return $data;
@@ -96,12 +99,12 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     public function setRouteParams($key,$value = null)
     {
         if(is_array($key)) {
-            foreach($key as $name => $value)
+            foreach($key as $name => $_value)
             {
-                $this->routeParams[$name] = $value;
+                $this->routeParams[$name] = $_value;
             }
-        } 
-        else 
+        }
+        else
         {
             $this->routeParams[$key] = $value;
         }
@@ -130,11 +133,11 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
     public function session($key = null)
     {
-        if (is_null($key)) {
+        if ($key === null) {
             return Load::class('session');
-        } else {
-            return Load::class('session')->get($key);
         }
+
+        return Load::class('session')->get($key);
     }
 
 
@@ -142,16 +145,16 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     {
         if($key === null) {
             return $this->cookies;
-        } else {
-            return $this->cookies->get($key);
         }
-        
+
+        return $this->cookies->get($key);
+
     }
 
 
     public function user()
     {
-        return Auth::user();
+        return Load::class('authentication')->user();
     }
 
 
@@ -173,12 +176,12 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
     public function method($default = 'GET'): String
     {
-        
-        if($this->method == null)
+
+        if($this->method === null)
         {
             $method = $this->server('request_method');
-            
-            if ($method == 'POST') {
+
+            if ($method === 'POST') {
 
                 $xhmo = $this->headers->get('X-HTTP-Method-Override');
 
@@ -205,14 +208,24 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
         return ($this->server('HTTP_X_REQUESTED_WITH')  === 'XMLHttpRequest');
     }
 
+    public function ip()
+    {
+        return Load::class('http')->ip();
+    }
+
+    public function url()
+    {
+        return Load::class('url')->request();
+    }
+
 
     public function controller($method = null)
     {
-        if (is_null($method)) {
+        if ($method === null) {
             return defined('CONTROLLER') ? CONTROLLER : false;
-        } else {
-            return defined('ACTION') ? ACTION : false;
         }
+
+        return defined('ACTION') ? ACTION : false;
     }
 
 
@@ -237,6 +250,11 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     public function __get($name)
     {
         return $this->request->get($name);
+    }
+
+    public function __isset($name)
+    {
+        return true;
     }
 
     public function __set($name,$value)
