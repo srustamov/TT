@@ -25,28 +25,28 @@ use System\Facades\DB;
 
 class Authentication
 {
-    private $message;
+    protected $message;
 
 
-    private $driver;
+    protected $driver;
 
 
-    private $table;
+    protected $table;
 
 
-    private $lockTime;
+    protected $lockTime;
 
 
-    private $maxAttempts;
+    protected $maxAttempts;
 
 
-    private $attemptDriver = 'session';
+    protected $attemptDriver = 'session';
 
 
-    private $hidden;
+    protected $hidden;
 
 
-    private $user;
+    protected $user;
 
 
 

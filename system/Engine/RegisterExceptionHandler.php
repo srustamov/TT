@@ -1,15 +1,18 @@
-<?php
+<?php namespace System\Engine;
 
-
-namespace System\Engine\Http\Middleware;
-
-use System\Engine\Http\Request;
 use System\Exceptions\TTException;
-use System\Engine\Load;
 
 class RegisterExceptionHandler
 {
-    public function handle(Request $request, \Closure $next)
+
+    private $app;
+
+    public function __construct(App $app)
+    {
+        $this->app = $app;
+    }
+
+    public function handle()
     {
         $isDev = Load::class('config')->get('app.debug');
 
@@ -25,6 +28,6 @@ class RegisterExceptionHandler
             $exception->register();
         }
 
-        return $next($request);
+        
     }
 }

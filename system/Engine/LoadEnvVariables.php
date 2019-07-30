@@ -1,15 +1,18 @@
-<?php namespace System\Engine\Http\Middleware;
+<?php namespace System\Engine;
 
-use System\Engine\App;
-use System\Engine\Http\Request;
 
-class LoadSettingVariables
+class LoadEnvVariables
 {
-    public function handle(Request $request, \Closure $next)
-    {
-        $this->settingVariables();
+    private $app;
 
-        return $next($request);
+    public function __construct(App $app)
+    {
+        $this->app = $app;
+    }
+
+    public function handle()
+    {
+        $this->prepareEnv();
     }
 
     private function setEnv($data)
@@ -21,10 +24,10 @@ class LoadSettingVariables
 
     private function isModified()
     {
-        $cacheFile = App::instance()->settingCacheFile();
+        $cacheFile = $this->app->envCacheFile();
 
         $modified =  (!file_exists($cacheFile) ||
-                filemtime($cacheFile) < filemtime(App::instance()->settingsFile()));
+                filemtime($cacheFile) < filemtime($this->app->envFile()));
 
         if (!$modified) {
             $data =  unserialize(file_get_contents($cacheFile));
@@ -41,7 +44,7 @@ class LoadSettingVariables
 
         ini_set('auto_detect_line_endings', 1);
 
-        $lines = file(path('.settings'), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = file($this->app->envFile(), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         ini_set('auto_detect_line_endings', $autoDetect);
 
@@ -64,7 +67,7 @@ class LoadSettingVariables
         return $value;
     }
 
-    public function settingVariables()
+    public function prepareEnv()
     {
         if ($this->isModified()) {
             $settings = [];
@@ -110,7 +113,7 @@ class LoadSettingVariables
 
             $this->setEnv($settings);
 
-            file_put_contents(App::instance()->settingCacheFile(), serialize($settings));
+            file_put_contents($this->app->envCacheFile(), serialize($settings));
         }
     }
 }

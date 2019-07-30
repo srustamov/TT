@@ -16,6 +16,4 @@ class :name extends Model
 
 	 protected $fillable;
 
-
-
 }

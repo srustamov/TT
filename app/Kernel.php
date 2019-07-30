@@ -1,11 +1,11 @@
 <?php namespace App;
 
-use System\Engine\App as AppKernel;
+use System\Engine\App;
 
-class Kernel extends AppKernel
+class Kernel extends App
 {
     protected $middleware = [
-        \System\Engine\Http\Middleware\StartSession::class ,
+        \App\Middleware\StartSession::class ,
         \App\Middleware\CsrfProtected::class,
         //\App\Middleware\CorsMiddleware::class,
         //\App\Middleware\MaintenanceMode::class,
@@ -17,4 +17,20 @@ class Kernel extends AppKernel
         'guest' => \App\Middleware\GuestMiddleware::class,
         'api'   => \App\Middleware\ApiMiddleware::class,
     ];
+
+
+    
+    /*
+    public function __construct(...$args)
+    {   
+        parent::__construct(...$args);
+
+        //before bootstrapping 
+
+        #code...
+
+        //example
+        $this->setEnvFile('.env');
+    }
+    */
 }

@@ -7,9 +7,6 @@
 
 use ArrayAccess;
 use Exception;
-use System\Engine\Http\Middleware\LoadSettingVariables;
-use System\Engine\Http\Middleware\PrepareConfigs;
-use System\Engine\Http\Middleware\RegisterExceptionHandler;
 use System\Facades\Route;
 use System\Facades\Config;
 use System\Facades\Http;
@@ -23,7 +20,7 @@ class App implements ArrayAccess
     const VERSION = '1.1.0';
 
     private $important = [
-        LoadSettingVariables::class ,
+        LoadEnvVariables::class ,
         PrepareConfigs::class ,
         RegisterExceptionHandler::class ,
     ];
@@ -40,8 +37,8 @@ class App implements ArrayAccess
         'storage' => 'storage',
         'lang' => 'lang',
         'configs' => 'app/Config',
-        'settingFile' => '.settings',
-        'settingCacheFile' => 'storage/system/settings',
+        'envFile' => '.config',
+        'envCacheFile' => 'storage/system/config',
         'configsCacheFile' => 'storage/system/configs.php',
         'routesCacheFile' => 'storage/system/routes.php',
     ];
@@ -57,7 +54,7 @@ class App implements ArrayAccess
      * @param null $basePath
      */
     public function __construct($basePath = null)
-    {
+    {   
         if (!defined('CONSOLE')) {
             define('CONSOLE', PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
         }
@@ -71,6 +68,7 @@ class App implements ArrayAccess
         chdir($this->paths['base']);
 
         static::$instance = $this;
+
     }
 
     public function version(): string
@@ -87,14 +85,16 @@ class App implements ArrayAccess
     public function bootstrap(): self
     {
         if (!$this->bootstrapping) {
-
+            
             $this->setPublicPath();
 
-            $this->registerMiddleware($this->important);
+            Load::register('request',new Request($this));
+            
+            foreach ($this->important as $class) {
+                (new $class($this))->handle();
+            }
 
             Load::register('app', $this);
-
-            Load::register('request',new Request($this));
 
             $this->setAliases();
 
@@ -182,14 +182,14 @@ class App implements ArrayAccess
         $this->paths['lang'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
-    public function setSettingsFile(String $file)
+    public function setEnvFile(String $file)
     {
-        $this->paths['setting'] = $file;
+        $this->paths['envFile'] = $file;
     }
 
-    public function settingsFile(): string
+    public function envFile(): string
     {
-        return $this->path($this->paths['settingFile']);
+        return $this->path($this->paths['envFile']);
     }
 
     public function publicPath($path = ''): string
@@ -243,12 +243,12 @@ class App implements ArrayAccess
         }
     }
 
-    public function settingCacheFile(String $file = null)
+    public function envCacheFile(String $file = null)
     {
         if ($file !== null) {
-            $this->paths['settingCacheFile'] = $file;
+            $this->paths['envCacheFile'] = $file;
         } else {
-            return $this->path($this->paths['settingCacheFile']);
+            return $this->path($this->paths['envCacheFile']);
         }
     }
 

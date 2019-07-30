@@ -35,7 +35,7 @@
   "prefer-stable": true,
   "scripts": {
     "post-root-package-install": [
-      "php -r \"file_exists('.settings') || copy('.settings.example', '.settings');\""
+      "php -r \"file_exists('.config') || copy('.config.example', '.config');\""
     ],
     "post-create-project-cmd": ["php manage key:generate"]
   },

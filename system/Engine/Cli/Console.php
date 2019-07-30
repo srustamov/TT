@@ -5,8 +5,9 @@
  * @link    https://github.com/srustamov/TT
  */
 
+use System\Engine\Load;
 use System\Engine\Cli\Route as CliRoute;
-use System\Engine\Http\Middleware\LoadSettingVariables;
+use System\Engine\LoadEnvVariables;
 
 class Console
 {
@@ -75,7 +76,7 @@ class Console
             case 'build':
                 self::appDebugFalse();
                 $instance->keyGenerate();
-                (new LoadSettingVariables())->settingVariables();
+                (new LoadEnvVariables(Load::class('app')))->handle();
                 self::command('config:cache --create');
                 self::command('route:cache --create');
                 new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL.PHP_EOL);
@@ -133,10 +134,12 @@ class Console
 
     protected function keyGenerate()
     {
-        $settings_file = path('.settings');
+        $app = Load::class('app');
+
+        $envFile = $app->envFile();
 
         try {
-            $file = fopen($settings_file, 'r+');
+            $file = fopen($envFile, 'r+');
 
             while (($line = fgets($file, 4096)) !== false) {
                 if (strpos(trim($line), 'APP_KEY') === 0) {
@@ -147,8 +150,7 @@ class Console
 
             fclose($file);
 
-
-            $content = \file_get_contents($settings_file);
+            $content = \file_get_contents($envFile);
 
             $key = base64_encode(openssl_random_pseudo_bytes(40));
 
@@ -156,10 +158,10 @@ class Console
 
             $new_content = \preg_replace("/{$replace}/", $key, $content);
 
-            file_put_contents(path('.settings'), $new_content);
+            file_put_contents($envFile, $new_content);
 
-            if (file_exists(path('storage/system/settings'))) {
-                unlink(path('storage/system/settings'));
+            if (file_exists($app->envCacheFile())) {
+                unlink($app->envCacheFile());
             }
 
             new PrintConsole('green', $key);
@@ -171,10 +173,12 @@ class Console
 
     private static function appDebugFalse()
     {
-        $settings_file = path('.settings');
+        $app = Load::class('app');
+
+        $envFile = $app->envFile();
 
         try {
-            $file = fopen($settings_file, 'r+');
+            $file = fopen($envFile, 'r+');
 
             while (($line = fgets($file, 4096)) !== false) {
                 if (strpos(trim($line), 'APP_DEBUG') === 0) {
@@ -186,14 +190,14 @@ class Console
             fclose($file);
 
 
-            $content = \file_get_contents($settings_file);
+            $content = \file_get_contents($envFile);
 
 
             $key = "APP_DEBUG = " . str_replace('=', '', 'FALSE') . "\n";
 
             $new_content = \preg_replace("/{$replace}/", $key, $content);
 
-            file_put_contents(path('.settings'), $new_content);
+            file_put_contents($envFile, $new_content);
         } catch (\Exception $e) {
             new PrintConsole('error', $e->getMessage() . "\n");
         }

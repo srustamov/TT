@@ -1,4 +1,4 @@
-<?php namespace System\Engine\Http\Middleware;
+<?php namespace App\Middleware;
 
 use System\Engine\Load;
 use System\Engine\Http\Request;

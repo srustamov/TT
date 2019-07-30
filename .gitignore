@@ -1,7 +1,7 @@
 vendor/*
 .idea/*
 .gitignore
-.settings
+.config
 composer.lock
 node_modules/*
 /public/js/app.js

@@ -11,9 +11,9 @@ use System\Engine\Http\Request;
 
 class :name
 {
-   public function handle(Request $request ,\Closure $next,$guard)
+   public function handle(Request $request ,\Closure $next)
    {
-      return true;
+      return $next($request);
    }
 
 }
