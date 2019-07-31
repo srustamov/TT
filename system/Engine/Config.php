@@ -62,9 +62,9 @@ class Config implements ArrayAccess, Countable
             }
 
             return $config ?: $default;
-        } else {
-            return $this->configurations[$extension] ?? $default;
         }
+
+        return $this->configurations[$extension] ?? $default;
     }
 
 
@@ -211,7 +211,7 @@ class Config implements ArrayAccess, Countable
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->has($offset);
     }
@@ -225,7 +225,7 @@ class Config implements ArrayAccess, Countable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count(): int
     {
         return count($this->configurations);
     }

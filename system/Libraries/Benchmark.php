@@ -17,10 +17,12 @@ class Benchmark
 
 
 
-    public function loadTime($finish = null, $start = APP_START)
+    public function loadTime($finish = null, $start = APP_START): float
     {
-        if($finish === null) $finish = microtime(true);
-        
+        if($finish === null) {
+            $finish = microtime(true);
+        }
+
         return round($finish - $start, 4);
     }
 
@@ -31,7 +33,7 @@ class Benchmark
     }
 
 
-    private function server($key)
+    private function server(string $key)
     {
         return $_SERVER[strtoupper($key)] ??  false;
     }
@@ -87,7 +89,7 @@ class Benchmark
 
     public static function getInstance()
     {
-        if (is_null(static::$instance)) {
+        if (static::$instance === null) {
             static::$instance = new static();
         }
 

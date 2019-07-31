@@ -5,15 +5,20 @@ use System\Engine\Http\Request;
 
 class StartSession
 {
+    /**
+     * @param Request $request
+     * @param \Closure $next
+     * @return mixed
+     * @throws \Exception
+     */
     public function handle(Request $request, \Closure $next)
     {
         if (!CONSOLE) {
             if (!Load::class('http')->isAjax()) {
-                register_shutdown_function(function () {
+                register_shutdown_function(static function () {
                     Load::class('session')->set('_prev_url', Load::class('url')->current());
                 });
             }
-
             Load::class('session')->start();
         }
 

@@ -14,7 +14,6 @@ use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use System\Facades\File;
 use System\Engine\Http\UploadedFile;
-use Exception;
 
 class Storage
 {
@@ -25,13 +24,17 @@ class Storage
     {
         if (is_string($content)) {
             return file_put_contents($this->fixPath($path), $content);
-        } elseif ($content instanceof UploadedFile) {
-            return $content->move($this->fixPath($path));
-        } elseif (is_file($content)) {
-            return @move_uploaded_file($this->fixPath($path), $content);
-        } else {
-            throw new Exception("File write content type wrong!");
         }
+
+        if ($content instanceof UploadedFile) {
+            return $content->move($this->fixPath($path));
+        }
+
+        if (is_file($content)) {
+            return @move_uploaded_file($this->fixPath($path), $content);
+        }
+
+        throw new \RuntimeException('File write content type wrong!');
     }
 
     public function prepend(String $file, $content)
@@ -42,16 +45,16 @@ class Storage
     public function get($file, callable $callback = null)
     {
         if ($this->exists($file)) {
-            if (!is_null($callback)) {
-                return call_user_func($callback, file_get_contents($this->fixPath($file)));
-            } else {
-                return file_get_contents($this->fixPath($file));
+            if ($callback !== null) {
+                return $callback(file_get_contents($this->fixPath($file)));
             }
+
+            return file_get_contents($this->fixPath($file));
         }
         return false;
     }
 
-    public function exists($file)
+    public function exists($file): bool
     {
         return file_exists($this->fixPath($file));
     }
@@ -61,7 +64,7 @@ class Storage
         return File::append($this->fixPath($file), $content);
     }
 
-    public function directories($path)
+    public function directories($path): array
     {
         $directories = [];
 
@@ -94,7 +97,7 @@ class Storage
 
                 $value = rtrim(array_pop($nameParts), '.');
 
-                if (array_search($value, $directories) === false) {
+                if (!in_array($value, $directories, true)) {
                     $directories[] = $value;
                 }
             }
@@ -103,7 +106,7 @@ class Storage
         return array_values(array_filter($directories));
     }
 
-    public function allFiles($path)
+    public function allFiles($path): array
     {
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->fixPath($path))
@@ -124,7 +127,7 @@ class Storage
         return $files;
     }
 
-    public function files($path)
+    public function files($path): array
     {
         $files = [];
 
@@ -146,9 +149,13 @@ class Storage
         return File::delete($this->fixPath($file));
     }
 
-    public function rmdir($directorie)
+    /**
+     * @param $directories
+     * @return mixed
+     */
+    public function rmdir($directories)
     {
-        return File::deleteDirectory($this->fixPath($directorie));
+        return File::deleteDirectory($this->fixPath($directories));
     }
 
     public function size($file)
@@ -193,7 +200,9 @@ class Storage
         $path =  path(trim($this->path, '/'). '/' . trim($path, '/'));
 
         if (is_dir($dir = pathinfo($path, PATHINFO_DIRNAME))) {
-            @mkdir($dir, 0755, true);
+            if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
+            }
         }
 
         return $path;

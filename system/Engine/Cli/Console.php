@@ -20,7 +20,7 @@ class Console
      */
     public static function command($command, $shell = false)
     {
-        if ($shell == true) {
+        if ($shell === true) {
             return shell_exec($command);
         }
 
@@ -49,7 +49,7 @@ class Console
         PrintConsole::output();
 
         switch (strtolower($manage[ 0 ])) {
-            case 'runserver':
+            case 'runserver' || 'serve' || 'start':
                 $instance->startPhpDevelopmentServer($manage);
                 break;
             case 'session:table':
@@ -83,13 +83,13 @@ class Console
                 break;
             default:
                 $create = array(
-                    "create:controller",
-                    "create:model",
-                    "create:middleware",
-                    "create:resource",
-                    "create:facade",
+                    'create:controller',
+                    'create:model',
+                    'create:middleware',
+                    'create:resource',
+                    'create:facade',
                 );
-                if (in_array($manage[ 0 ], $create)) {
+                if (in_array($manage[0], $create, true)) {
                     Create::execute($manage);
                 } else {
                     PrintConsole::commandList();
@@ -139,7 +139,7 @@ class Console
         $envFile = $app->envFile();
 
         try {
-            $file = fopen($envFile, 'r+');
+            $file = fopen($envFile, 'rb+');
 
             while (($line = fgets($file, 4096)) !== false) {
                 if (strpos(trim($line), 'APP_KEY') === 0) {
@@ -154,11 +154,16 @@ class Console
 
             $key = base64_encode(openssl_random_pseudo_bytes(40));
 
-            $key = "APP_KEY = " . str_replace('=', '', $key) . "\n";
+            $key = 'APP_KEY = ' . str_replace('=', '', $key) . "\n";
 
-            $new_content = \preg_replace("/{$replace}/", $key, $content);
+            if(isset($replace)) {
+                $new_content = \preg_replace("/{$replace}/", $key, $content);
+                file_put_contents($envFile, $new_content);
+            } else {
+                file_put_contents($envFile,$key.FILE_APPEND);
+            }
 
-            file_put_contents($envFile, $new_content);
+
 
             if (file_exists($app->envCacheFile())) {
                 unlink($app->envCacheFile());
@@ -178,7 +183,7 @@ class Console
         $envFile = $app->envFile();
 
         try {
-            $file = fopen($envFile, 'r+');
+            $file = fopen($envFile, 'rb+');
 
             while (($line = fgets($file, 4096)) !== false) {
                 if (strpos(trim($line), 'APP_DEBUG') === 0) {
@@ -193,11 +198,15 @@ class Console
             $content = \file_get_contents($envFile);
 
 
-            $key = "APP_DEBUG = " . str_replace('=', '', 'FALSE') . "\n";
+            $key = 'APP_DEBUG = ' . str_replace('=', '', 'FALSE') . "\n";
 
-            $new_content = \preg_replace("/{$replace}/", $key, $content);
+            if(isset($replace)) {
+                $new_content = \preg_replace("/{$replace}/", $key, $content);
+                file_put_contents($envFile, $new_content);
+            } else {
+                file_put_contents($envFile,$key.FILE_APPEND);
+            }
 
-            file_put_contents($envFile, $new_content);
         } catch (\Exception $e) {
             new PrintConsole('error', $e->getMessage() . "\n");
         }

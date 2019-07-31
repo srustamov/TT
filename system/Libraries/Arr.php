@@ -26,9 +26,9 @@ class Arr
 
 
     /**
-     * @param $array
+     * @param array $array
      * @param \Closure $callback
-     * @return array
+     * @return \Generator
      */
     public static function each(array &$array, \Closure $callback)
     {
@@ -57,15 +57,15 @@ class Arr
             }
 
             return $array ?: $default;
-        } else {
-            return $array[$key] ?? $default;
         }
+
+        return $array[$key] ?? $default;
     }
 
 
     public static function set(&$array, $key, $value)
     {
-        if (is_null($key)) {
+        if ($key === null) {
             return $array = $value;
         }
 
@@ -106,10 +106,8 @@ class Arr
             }
 
             unset($array[array_shift($keys)]);
-        } else {
-            if (array_key_exists($key, $array)) {
-                unset($array[$key]);
-            }
+        } else if (array_key_exists($key, $array)) {
+            unset($array[$key]);
         }
     }
 
@@ -131,30 +129,30 @@ class Arr
                 }
             }
             return true;
-        } else {
-            return array_key_exists($key, $array);
         }
+
+        return array_key_exists($key, $array);
     }
 
 
 
 
-    public static function only(array $array, array $only)
+    public static function only(array $array, array $only): array
     {
         return array_intersect_key($array, array_flip((array) $only));
     }
 
 
 
-    public static function except(array $array, array $except)
+    public static function except(array $array, array $except): array
     {
         if (static::isAssoc($array)) {
-            $array = array_filter($array, function ($key) use ($except) {
-                return !in_array($key, $except);
+            $array = array_filter($array, static function ($key) use ($except) {
+                return !in_array($key, $except, true);
             }, ARRAY_FILTER_USE_KEY);
         } else {
             foreach ($except as $value) {
-                if (($position = array_search($value, $array))) {
+                if ($position = array_search($value, $array, true)) {
                     unset($array[$position]);
                 }
             }

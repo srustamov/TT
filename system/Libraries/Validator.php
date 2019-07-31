@@ -237,13 +237,4 @@ class Validator
         return ($value1 === $value2);
     }
 
-
-    /**
-     * @param $key
-     * @return bool|mixed
-     */
-    public function __get($key)
-    {
-        return $this->messages[$key] ?? false;
-    }
 }

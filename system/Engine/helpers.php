@@ -9,7 +9,7 @@
 use System\Engine\App;
 use System\Engine\Load;
 
-function app(String $class = null)
+function app(string $class = null)
 {
     $app = App::instance();
 
@@ -26,7 +26,7 @@ function app(String $class = null)
  * @return mixed|Load
  * @throws Exception
  */
-function load(String $class = null, ...$args)
+function load(string $class = null, ...$args)
 {
     if ($class === null) {
         return Load::instance();
@@ -41,7 +41,7 @@ if (!function_exists('getallheaders')) {
     function getallheaders() {
         $headers = [];
         foreach ($_SERVER as $name => $value) {
-            if (substr($name, 0, 5) === 'HTTP_') {
+            if (strpos($name, 'HTTP_') === 0) {
                 $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
             }
         }
@@ -107,13 +107,6 @@ function storage_path($path = '')
 function app_path($path = '')
 {
     return App::instance()->appPath($path);
-}
-
-
-
-function system_path($path = '')
-{
-    return App::instance()->path('system'.DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR));
 }
 
 
@@ -267,10 +260,8 @@ if (!function_exists('report')) {
 
         $extension = '.report';
 
-        if (!is_dir($logDir)) {
-            if (!mkdir($logDir, 0755, true) && !is_dir($logDir)) {
-                throw new \RuntimeException(sprintf('Directory "%s" was not created', $logDir));
-            }
+        if (!is_dir($logDir) && !mkdir($logDir, 0755, true) && !is_dir($logDir)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $logDir));
         }
 
         $report = '----------------------------' . PHP_EOL .
@@ -456,13 +447,15 @@ if (!function_exists('post')) {
 if (!function_exists('request')) {
     function request()
     {
-        if (func_num_args() == 0) {
+        if (func_num_args() === 0) {
             return Load::class('request');
-        } elseif (func_num_args() == 1) {
-            return Load::class('request')->{func_get_arg(0)};
-        } else {
-            return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
         }
+
+        if (func_num_args() === 1) {
+            return Load::class('request')->{func_get_arg(0)};
+        }
+
+        return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
     }
 }
 
@@ -498,9 +491,7 @@ if (!function_exists('preg_replace_array')) {
          * @return mixed
          */
         $callback = static function () use (&$replacements) {
-            foreach ($replacements as $key => $value) {
                 return array_shift($replacements);
-            }
         };
 
         return preg_replace_callback($pattern, $callback, $subject);
@@ -558,7 +549,8 @@ if (!function_exists('lower')) {
 
 if (!function_exists('title')) {
     /**
-     * @param $str
+     * @param String $str
+     * @param string $encoding
      * @return string
      */
     function title(String $str, $encoding = 'UTF-8'): String

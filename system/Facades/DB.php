@@ -8,6 +8,7 @@
  * @method static where(): DB
  * @method static first()
  * @method static get()
+ * @method static exec(string $getSessionTableSql)
  */
 
 

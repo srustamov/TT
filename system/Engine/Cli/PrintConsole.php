@@ -22,9 +22,9 @@ class PrintConsole
      */
     public function __construct()
     {
-        if (count(func_get_args()) == 2) {
+        if (func_num_args() === 2) {
             $args = func_get_args();
-            
+
             echo static::_printData($args[0], $args[1]);
         }
     }
@@ -53,8 +53,8 @@ class PrintConsole
             'title' => "\033[34m" ,
            ];
 
-        if (is_null(static::$support)) {
-            if (DIRECTORY_SEPARATOR == '\\') {
+        if (static::$support === null) {
+            if (DIRECTORY_SEPARATOR === '\\') {
                 static::$support = false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI');
             } else {
                 static::$support = function_exists('posix_isatty') && posix_isatty(STDOUT);
@@ -68,7 +68,7 @@ class PrintConsole
 
     public static function commandList()
     {
-        echo static::_printData("yellow", file_get_contents(__DIR__.'/resource/commands.mask'));
+        echo static::_printData('yellow', file_get_contents(__DIR__.'/resource/commands.mask'));
     }
 
 

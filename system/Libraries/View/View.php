@@ -60,7 +60,7 @@ class View
 
     protected function withFlashData()
     {
-        if (($errors = Load::class('session')->flash('view-errors'))) {
+        if ($errors = Load::class('session')->flash('view-errors')) {
             $errors = new Errors($errors);
         }
 
@@ -81,8 +81,8 @@ class View
 
     protected function finishRender()
     {
-        if (is_null($this->file)) {
-            throw new ViewException("View File not found");
+        if ($this->file === null) {
+            throw new ViewException('View File not found');
         }
 
         $this->withFlashData();
@@ -105,7 +105,7 @@ class View
 
         $content = $edge->render($this->file, $this->data);
 
-        if (is_null($this->minify)) {
+        if ($this->minify === null) {
             $this->minify = Load::class('config')->get('view.minify');
         }
 
@@ -119,14 +119,22 @@ class View
     }
 
 
+    /**
+     * @return string|string[]|null
+     * @throws ViewException
+     */
     public function getContent()
     {
         return $this->finishRender();
     }
 
 
+    /**
+     * @return string
+     * @throws ViewException
+     */
     public function __toString()
     {
-        return $this->finishRender();
+         return (string) $this->finishRender();
     }
 }

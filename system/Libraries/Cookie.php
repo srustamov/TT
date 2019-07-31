@@ -17,13 +17,13 @@ use ArrayAccess;
 
 class Cookie implements ArrayAccess
 {
-    private $prefix = '';
+    private $prefix;
 
     private $http_only = true;
 
     private $secure = false;
 
-    private $path = '/';
+    private $path;
 
     private $domain;
 
@@ -50,7 +50,7 @@ class Cookie implements ArrayAccess
      * @param bool $http
      * @return $this|bool
      */
-    public function http_only(Bool $http = true)
+    public function http_only(Bool $http = true): Cookie
     {
         $this->http_only = $http;
 
@@ -60,12 +60,11 @@ class Cookie implements ArrayAccess
 
     /**
      * @param string $path
-     * @return bool|Cookie
+     * @return Cookie
      */
-    public function path(String $path)
+    public function path(String $path): Cookie
     {
         $this->path = $path;
-
         return $this;
     }
 
@@ -74,7 +73,7 @@ class Cookie implements ArrayAccess
      * @param bool $domain
      * @return $this|bool
      */
-    public function domain($domain)
+    public function domain($domain): Cookie
     {
         $this->domain = $domain;
 
@@ -86,7 +85,7 @@ class Cookie implements ArrayAccess
      * @param Bool $bool
      * @return Cookie
      */
-    public function secure(Bool $bool)
+    public function secure(Bool $bool): Cookie
     {
         $this->secure = $bool;
 
@@ -96,6 +95,7 @@ class Cookie implements ArrayAccess
 
     /**
      * Flush $_COOKIE variable
+     * @throws CookieException
      */
     public function flush()
     {
@@ -107,6 +107,7 @@ class Cookie implements ArrayAccess
 
     /**
      * @param $key
+     * @throws CookieException
      */
     public function forget($key)
     {
@@ -117,14 +118,14 @@ class Cookie implements ArrayAccess
     /**
      * @param $key
      * @param $value
-     * @param int|null $time
+     * @param float|int $time
      * @return mixed
      * @throws CookieException
      */
-    public function set($key, $value, $time = 3600 * 24)
+    public function set($key, $value, $time = 24 * 3600)
     {
         if ($value instanceof \Closure) {
-            return $this->set($key, call_user_func($value, $this), $time);
+            return $this->set($key, $value($this), $time);
         }
 
         if (!empty(trim($value))) {
@@ -142,7 +143,7 @@ class Cookie implements ArrayAccess
         ];
 
         if (!setcookie(...$data)) {
-            throw new CookieException("Could not set the cookie!");
+            throw new CookieException('Could not set the cookie!');
         }
 
         return $this;
@@ -153,32 +154,32 @@ class Cookie implements ArrayAccess
      * @param $key
      * @return bool
      */
-    public function has($key)
+    public function has($key): bool
     {
         return isset($_COOKIE[ $this->prefix . $key ]);
     }
 
     /**
      * @param $key
-     * @return bool
+     * @return bool|mixed
      */
     public function get($key)
     {
         if ($key instanceof \Closure) {
-            return $this->get(call_user_func($key, $this));
-        } else {
-            if (isset($_COOKIE[ $this->prefix . $key ])) {
-                return $this->decrypt($_COOKIE[ $this->prefix . $key ], $key);
-            }
-            return false;
+            return $this->get($key($this));
         }
+
+        if ($this->has($key)) {
+            return $this->decrypt($_COOKIE[ $this->prefix . $key ], $key);
+        }
+        return false;
     }
 
 
 
     private function encrypt($data, $key)
     {
-        if (in_array($this->prefix.$key, $this->encrypt_except_keys)) {
+        if (in_array($this->prefix . $key, $this->encrypt_except_keys, true)) {
             return $data;
         }
 
@@ -188,11 +189,11 @@ class Cookie implements ArrayAccess
 
     private function decrypt($data, $key)
     {
-        if (in_array($this->prefix.$key, $this->encrypt_except_keys)) {
+        if (in_array($this->prefix . $key, $this->encrypt_except_keys, true)) {
             return $data;
         }
 
-        return unserialize(OpenSsl::decrypt($data));
+        return unserialize(OpenSsl::decrypt($data),['allow_classes' => []]);
     }
 
 

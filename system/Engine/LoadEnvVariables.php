@@ -22,7 +22,7 @@ class LoadEnvVariables
         }
     }
 
-    private function isModified()
+    private function isModified(): bool
     {
         $cacheFile = $this->app->envCacheFile();
 
@@ -30,7 +30,7 @@ class LoadEnvVariables
                 filemtime($cacheFile) < filemtime($this->app->envFile()));
 
         if (!$modified) {
-            $data =  unserialize(file_get_contents($cacheFile));
+            $data =  unserialize(file_get_contents($cacheFile),['allowed_classes' => []]);
 
             $this->setEnv($data);
         }
@@ -51,16 +51,20 @@ class LoadEnvVariables
         return $lines;
     }
 
-    private function isComment($line)
+    private function isComment($line): bool
     {
         return (isset($line[ 0 ]) && $line[ 0 ] === '#');
     }
 
+    /**
+     * @param $value
+     * @return bool|mixed
+     */
     private function getBoolValueOrValue($value)
     {
-        if (strtolower($value) == 'true') {
+        if (strtolower($value) === 'true') {
             $value = true;
-        } elseif (strtolower($value) == 'false') {
+        } elseif (strtolower($value) === 'false') {
             $value = false;
         }
 
@@ -85,7 +89,7 @@ class LoadEnvVariables
                     $name = str_replace(['\'','"'], '', $name);
 
                     if (preg_match('/\s+/', $value) > 0) {
-                        throw new \RuntimeException("setting variable value containing spaces must be surrounded by quotes");
+                        throw new \RuntimeException('setting variable value containing spaces must be surrounded by quotes');
                     }
 
                     $value = $this->getBoolValueOrValue($value);
@@ -97,14 +101,9 @@ class LoadEnvVariables
 
             foreach ($settings as $key => $value) {
                 if (strpos($value, '$') !== false) {
-                    $settings[ $key ] = preg_replace_callback(
-                        '/\${([a-zA-Z0-9_]+)}/',
-                        function ($m) use ($settings) {
-                            if (isset($settings[ $m[ 1 ] ])) {
-                                return $settings[ $m[ 1 ] ];
-                            } else {
-                                return ${"$m[1]"} ?? '${' . $m[ 1 ] . '}';
-                            }
+                    $settings[ $key ] = preg_replace_callback('/\${([\w]+)}/',
+                        static function ($m) use ($settings) {
+                            return $settings[$m[1]] ?? ${(string)$m[1]} ?? '${' . $m[1] . '}';
                         },
                         $value
                     );

@@ -18,15 +18,17 @@ class Create
 {
     public static function execute($manage)
     {
-        $type= explode(':', $manage[ 0 ], 2)[1];
+        $type= strtolower(explode(':', $manage[ 0 ], 2)[1]);
 
-        if ($type == 'facade') {
-            return static::facade($manage[1]);
+        if ($type === 'facade') {
+            self::facade($manage[1]);
+
+            return;
         }
 
         $is_resource = false;
 
-        if ($type == 'resource') {
+        if ($type === 'resource') {
             $is_resource = true;
             $type = 'controller';
         }
@@ -36,13 +38,13 @@ class Create
         $_type = $type;
 
         if (!isset($manage[ 1 ])) {
-            new PrintConsole("error", "\nPlease enter {$type} name \n\n");
+            new PrintConsole('error', "\nPlease enter {$type} name \n\n");
             exit();
         }
 
         $name = $manage[ 1 ];
 
-        $namespace = $type == 'Middleware' ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
+        $namespace = ( $type === 'Middleware') ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
 
         if (strpos($name, '/')) {
             $_file = explode('/', $manage[ 1 ]);
@@ -73,7 +75,7 @@ class Create
                 $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/middleware.mask'));
                 break;
             default:
-                new PrintConsole("error", "\nCreate {$type} name undefained. Please use type ['controller,model,middleware']\n\n");
+                new PrintConsole('error', "\nCreate {$type} name undefined. Please use type ['controller,model,middleware']\n\n");
                 exit();
                 break;
         }
@@ -91,10 +93,12 @@ class Create
                     foreach ($_ as $dir) {
                         $path .= array_shift($__) . '/';
 
-                        mkdir(app_path($type . '/' . $path, 'app'));
+                        if (!mkdir($concurrentDirectory = app_path($type . '/' . $path)) && !is_dir($concurrentDirectory)) {
+                            throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+                        }
                     }
-                } else {
-                    mkdir(app_path($type . '/' . implode('/', $_), 'app'));
+                } else if (!mkdir($concurrentDirectory = app_path($type . '/' . implode('/', $_))) && !is_dir($concurrentDirectory)) {
+                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
                 }
             }
 
@@ -103,14 +107,14 @@ class Create
                 try {
                     file_put_contents(app_path("{$type}/{$manage[1]}.php"), $write_data);
 
-                    new PrintConsole("green", "\nCreate $name {$_type} successfully\n\n");
+                    new PrintConsole('green', "\nCreate $name {$_type} successfully\n\n");
                 } catch (\Exception $e) {
                 }
             } else {
-                new PrintConsole("error", "\nCreate file failed\n\n");
+                new PrintConsole('error', "\nCreate file failed\n\n");
             }
         } else {
-            new PrintConsole("error", "\nThe file was already created\n\n");
+            new PrintConsole('error', "\nThe file was already created\n\n");
         }
     }
 
@@ -127,12 +131,12 @@ class Create
             $create_and_put = file_put_contents($file, $content);
 
             if ($create_and_put) {
-                new PrintConsole("green", "\nCreate Facade successfully\n\n");
+                new PrintConsole('green', "\nCreate Facade successfully\n\n");
             } else {
-                new PrintConsole("error", "\nCreate Facade failed\n\n");
+                new PrintConsole('error', "\nCreate Facade failed\n\n");
             }
         } else {
-            new PrintConsole("error", "\nFacade already exists\n\n");
+            new PrintConsole('error', "\nFacade already exists\n\n");
         }
     }
 }

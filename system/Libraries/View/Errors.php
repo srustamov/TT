@@ -29,9 +29,9 @@ class Errors implements ArrayAccess, Countable
         if (isset($this->errors[$key])) {
             if (is_array($this->errors[$key])) {
                 return $this->errors[$key][0] ?? false;
-            } else {
-                return $this->errors[$key] ?? false;
             }
+
+            return $this->errors[$key] ?? false;
         }
         return false;
     }

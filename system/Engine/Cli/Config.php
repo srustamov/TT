@@ -28,7 +28,7 @@ class Config
     {
         $file = App::instance()->configsCacheFile();
 
-        if ($subCommand == '--create') {
+        if ($subCommand === '--create') {
 
             $configsArray = [];
 
@@ -36,13 +36,13 @@ class Config
                 $configsArray[ substr(basename($config), 0, -4) ] = require $config;
             }
 
-            
+
 
             file_put_contents($file, "<?php \n\n return array(\n\n");
 
             static::create($configsArray);
 
-            file_put_contents($file, ");", FILE_APPEND);
+            file_put_contents($file, ');', FILE_APPEND);
 
             new PrintConsole('green', "\n\nConfigs cached successfully \n\n");
         } else {
@@ -66,9 +66,8 @@ class Config
                 file_put_contents($file,"\t),\n\n",FILE_APPEND);
             } else {
                 if (is_bool($value)) {
-                    $value = $value ? "true" : "false";
-                } elseif (\is_integer($value)) {
-                } else {
+                    $value = $value ? 'true' : 'false';
+                } elseif (!\is_int($value)) {
                     $value = "'$value'";
                 }
 

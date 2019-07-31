@@ -7,9 +7,9 @@
 
 
 /**
-* @author  Samir Rustamov <rustemovv96@gmail.com>
-* @link    https://github.com/srustamov/TT
-*/
+ * @author  Samir Rustamov <rustemovv96@gmail.com>
+ * @link    https://github.com/srustamov/TT
+ */
 
 namespace System\Engine\Cli;
 
@@ -29,14 +29,14 @@ class Route
     {
         $file = App::instance()->routesCacheFile();
 
-        if ($subCommand == '--create') {
+        if ($subCommand === '--create') {
             $routesArray = BaseRoute::getRoutes();
 
             file_put_contents($file, "<?php \n\n return array(\n\n");
 
             static::create($routesArray);
 
-            file_put_contents($file, ");", FILE_APPEND);
+            file_put_contents($file, ');', FILE_APPEND);
 
             new PrintConsole('green', "\n\nRoutes cached successfully \n\n");
         } else {
@@ -66,8 +66,7 @@ class Route
             } else {
                 if (is_bool($value)) {
                     $value = $value ? "true" : "false";
-                } elseif (\is_integer($value)) {
-                } else {
+                } elseif (!\is_int($value)) {
                     $value = "'$value'";
                 }
 

@@ -26,7 +26,7 @@ class Html
     public function clean(String $data):String
     {
         return strip_tags(
-            htmlentities(trim(stripslashes($data)), ENT_NOQUOTES, "UTF-8")
+            htmlentities(trim(stripslashes($data)), ENT_NOQUOTES, 'UTF-8')
         );
     }
 
@@ -40,7 +40,7 @@ class Html
     public function css(String $file, $modified = false):String
     {
         if ($modified) {
-            $file = $file . '?v=' . @filemtime(public_path($file));
+            $file .= '?v=' . @filemtime(public_path($file));
         }
 
         return '<link rel="stylesheet" type="text/css"  href="' . url($file) . '">';
@@ -51,7 +51,7 @@ class Html
     public function js(String $file, $modified = false):String
     {
         if ($modified) {
-            $file = $file . '?v=' . @filemtime(public_path($file));
+            $file .= '?v=' . @filemtime(public_path($file));
         }
 
         return  '<script type="text/javascript" src="' . url($file) . '"></script>';
@@ -59,7 +59,7 @@ class Html
 
 
 
-    public function img(String $file, $attributes = []):String
+    public function img(string $file, $attributes = []): string
     {
         $img  = '<img src="'.url($file).'" ';
 
@@ -71,7 +71,7 @@ class Html
     }
 
 
-    public function link($content, $href, $attributes = [])
+    public function link($content, $href, $attributes = []): string
     {
         $link = '<a href="'.$href.'" ';
 
@@ -91,7 +91,7 @@ class Html
 
         $attributes = $arguments[1] ?? [];
 
-        if (in_array($method, $once)) {
+        if (in_array($method, $once, true)) {
             $attributes = $arguments[0] ?? [];
 
             $tag = "<{$method} ";
@@ -101,22 +101,22 @@ class Html
                     $tag .= $key.'="'.$value.'" ';
                 }
 
-                return $tag."/>";
-            } else {
-                return $tag.$attributes."/>";
+                return $tag. '/>';
             }
-        } else {
-            $tag = "<{$method} ";
 
-            if (is_array($attributes)) {
-                foreach ($attributes as $key => $value) {
-                    $tag .= $key.'="'.$value.'" ';
-                }
-
-                return $tag.">{$content}</{$method}>";
-            } else {
-                return $tag.$attributes.">{$content}<{$method}>";
-            }
+            return $tag.$attributes. '/>';
         }
+
+        $tag = "<{$method} ";
+
+        if (is_array($attributes)) {
+            foreach ($attributes as $key => $value) {
+                $tag .= $key.'="'.$value.'" ';
+            }
+
+            return $tag.">{$content}</{$method}>";
+        }
+
+        return $tag.$attributes.">{$content}<{$method}>";
     }
 }

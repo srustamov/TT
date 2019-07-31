@@ -1,5 +1,9 @@
 <?php namespace System\Libraries;
 
+use FilesystemIterator;
+use RuntimeException;
+use const LOCK_EX;
+
 /**
  * @package    TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -7,12 +11,9 @@
  * @subpackage    Library
  * @category    Files
  */
-
-
-
 class File
 {
-    public function create($path)
+    public function create($path): bool
     {
         return touch($path);
     }
@@ -23,27 +24,27 @@ class File
         if (strpos('|', $fileAndMode)) {
             list($file, $mode) = explode('|', $fileAndMode, 2);
         } else {
-            list($file, $mode) = array($fileAndMode,'r+');
+            list($file, $mode) = array($fileAndMode, 'r+');
         }
 
 
-        if (is_null($callback)) {
+        if ($callback === null) {
             return fopen($file, $mode);
-        } else {
-            return $callback(fopen($file, $mode), $this);
         }
+
+        return $callback(fopen($file, $mode), $this);
     }
 
 
-    public function close($file)
+    public function close($file): bool
     {
-        return is_resource($file) ? fclose($file) :false;
+        return is_resource($file) ? fclose($file) : false;
     }
 
 
-    public function dirIsEmpty($dir)
+    public function dirIsEmpty($dir): bool
     {
-        $iterator = new \FilesystemIterator($dir);
+        $iterator = new FilesystemIterator($dir);
 
         return !$iterator->valid();
     }
@@ -61,31 +62,22 @@ class File
     }
 
 
-    public function isImage($file):Bool
+    public function isImage($file): Bool
     {
         if (isset($file['tmp_name'])) {
             return @getimagesize($file['tmp_name']) ? true : false;
-        } else {
-            return @getimagesize($file) ? true : false;
         }
+
+        return @getimagesize($file) ? true : false;
     }
 
 
-    public function setDir($pathname, $mode = 0755, $recursive = false):Bool
+    public function setDir($pathname, $mode = 0755, $recursive = false): Bool
     {
         return mkdir($pathname, $mode, $recursive);
     }
 
-
-
-    public function isDir($pathname):Bool
-    {
-        return is_dir($pathname);
-    }
-
-
-
-    public function deleteDirectory($pathname):Bool
+    public function deleteDirectory($pathname): Bool
     {
         if (!$this->isDir($pathname)) {
             return false;
@@ -93,8 +85,13 @@ class File
         return rmdir($pathname);
     }
 
+    public function isDir($pathname): Bool
+    {
+        return is_dir($pathname);
+    }
+
     /**
-     *@param string $directory
+     * @param string $directory
      *
      */
 
@@ -110,7 +107,7 @@ class File
 
     public function flashDir($directory)
     {
-        foreach (glob($directory."/*") as $file) {
+        foreach (glob($directory . '/*') as $file) {
             if (is_dir($file)) {
                 $this->flashDir($file);
             } else {
@@ -123,34 +120,34 @@ class File
     public function import($file, $once = true)
     {
         if ($this->exists($file)) {
-            return $once ? require_once $file : require $file;
+            if ($once) {
+                return  (require_once $file);
+            }
+
+            return (require $file);
         }
 
-        throw new \Exception("File not found.Path: ({$file})");
+        throw new \RuntimeException("File not found.Path: ({$file})");
     }
 
-
-    public function importOnce($file)
-    {
-        if ($this->exists($file)) {
-            return require_once $file;
-        }
-
-        throw new \Exception("File not found.Path: ({$file})");
-    }
-
-
-    public function exists($filename):Bool
+    public function exists($filename): Bool
     {
         return file_exists($filename);
     }
 
+    public function importOnce($file)
+    {
+        if ($this->exists($file)) {
+            return (require_once $file);
+        }
 
+        throw new \RuntimeException("File not found.Path: ({$file})");
+    }
 
-    public function write($path, $contents, $lock = false)
+    public function write($path, $content, $lock = false)
     {
         if (is_resource($path)) {
-            $return  = fwrite($path, $content);
+            $return = fwrite($path, $content);
 
             if ($lock) {
                 flock($path);
@@ -159,54 +156,48 @@ class File
             fclose($path);
 
             return $return;
-        } else {
-            return file_put_contents($path, $contents, $lock ? \LOCK_EX : 0);
         }
+
+        return file_put_contents($path, $content, $lock ? LOCK_EX : 0);
     }
 
-
-    public function get($path)
-    {
-        if ($this->isFile($path)) {
-            return file_get_contents($path);
-        }
-        throw new \Exception("File does not exist at path ".$path);
-    }
-
-
-
-    public function is($path):Bool
+    public function is($path): Bool
     {
         return is_file($path);
     }
-
 
     public function append($file, $data)
     {
         return file_put_contents($file, $data, FILE_APPEND);
     }
 
-
     public function prepend(String $file, $content)
     {
         return file_put_contents($file, $content . $this->get($file));
     }
 
+    public function get($path)
+    {
+        if ($this->isFile($path)) {
+            return file_get_contents($path);
+        }
+        throw new \RuntimeException('File does not exist at path ' . $path);
+    }
 
     public function chmod($path, $mode = null)
     {
-        if (!is_null($mode)) {
+        if ($mode !== null) {
             return chmod($path, $mode);
         }
         return substr(fileperms($path), -4);
     }
 
 
-    public function delete($files):Bool
+    public function delete($files): Bool
     {
         $_files = is_array($files) ? $files : func_num_args();
 
-        $error  = 0;
+        $error = 0;
 
         foreach ($_files as $file) {
             if (!@unlink($file)) {
@@ -217,13 +208,13 @@ class File
     }
 
 
-    public function move($path, $target):Bool
+    public function move($path, $target): Bool
     {
         return rename($path, $target);
     }
 
 
-    public function copy($path, $target):Bool
+    public function copy($path, $target): Bool
     {
         return copy($path, $target);
     }

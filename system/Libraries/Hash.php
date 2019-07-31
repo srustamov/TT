@@ -32,7 +32,7 @@ class Hash
 
     public function check($value, $hash):Bool
     {
-        if (strlen($hash) == 0) {
+        if ($hash === '') {
             return false;
         }
         return password_verify($value, $hash);
@@ -41,7 +41,7 @@ class Hash
 
 
 
-    public function round($round):Hash
+    public function round($round): Hash
     {
         $this->round = $round;
         return $this;

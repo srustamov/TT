@@ -12,43 +12,49 @@ class Load implements \ArrayAccess
     private static $classes = [];
 
 
-    public static function class(String $class, ...$args)
-    {  
+    /**
+     * @param string $class
+     * @param mixed ...$args
+     * @return mixed
+     * @throws \RuntimeException
+     */
+    public static function class(string $class, ...$args)
+    {
         if (isset(static::$classes[$class])) {
             return static::$classes[$class];
-        } else {
-            if (($instance = App::instance()->classes($class))) {
-                if (method_exists($instance, '__construct')) {
-                    $args = Reflections::classMethodParameters($instance, '__construct', $args);
-                }
-
-                static::$classes[$class] = new $instance(...$args);
-
-                return static::$classes[$class];
-            } else {
-                if (strpos($class, '\\')) {
-                    if (($instance = App::instance()->classes($class, true))) {
-                        return static::class($instance,...$args);
-                    } else {
-                        $instance = new $class(...Reflections::classMethodParameters($class, '__construct', $args));
-
-                        static::$classes[$class] = $instance;
-
-                        unset($instance);
-
-                        return static::$classes[$class];
-                    }
-                }
-            }
         }
-        throw new \Exception('Class not found ['.$class.']');
+
+        if ($instance = App::instance()->classes($class)) {
+            if (method_exists($instance, '__construct')) {
+                $args = Reflections::classMethodParameters($instance, '__construct', $args);
+            }
+
+            static::$classes[$class] = new $instance(...$args);
+
+            return static::$classes[$class];
+        }
+
+        if (strpos($class, '\\')) {
+            if ($instance = App::instance()->classes($class, true)) {
+                return static::class($instance,...$args);
+            }
+
+            $instance = new $class(...Reflections::classMethodParameters($class, '__construct', $args));
+
+            static::$classes[$class] = $instance;
+
+            unset($instance);
+
+            return static::$classes[$class];
+        }
+        throw new \RuntimeException('Class not found ['.$class.']');
     }
 
 
     public static function register($className, $object)
     {
         if ($object instanceof \Closure) {
-            static::register($className, call_user_func($object));
+            static::register($className, $object());
         } elseif (is_string($object)) {
             static::$classes[$className] = new $object();
         } elseif (is_object($object)) {
@@ -57,7 +63,13 @@ class Load implements \ArrayAccess
     }
 
 
-    public static function isInstance($object, $className)
+    /**
+     * @param $object
+     * @param $className
+     * @return bool
+     * @throws \Exception
+     */
+    public static function isInstance($object, $className): bool
     {
         $instance = static::class($className);
 
@@ -79,10 +91,11 @@ class Load implements \ArrayAccess
      * </p>
      * @return mixed Can return all value types.
      * @since 5.0.0
+     * @throws \Exception
      */
     public function offsetGet($offset)
     {
-        return $this->class($offset);
+        return self::class($offset);
     }
 
     /**
@@ -99,7 +112,7 @@ class Load implements \ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
-        $this->register($offset, $value);
+        self::register($offset, $value);
     }
 
     /**
@@ -130,7 +143,7 @@ class Load implements \ArrayAccess
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset(static::$classes[$offset]);
     }

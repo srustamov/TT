@@ -13,7 +13,7 @@ use System\Facades\Route;
 
 class Url
 {
-    public function to($url = '', array $parameters = [])
+    public function to($url = '', array $parameters = []): string
     {
         return $this->scheme().'://'.$this->host().'/'.
             (
@@ -34,23 +34,23 @@ class Url
     /**
      * @return string
      */
-    public function request()
+    public function request(): string
     {
         $request = urldecode(
             parse_url($_SERVER[ 'REQUEST_URI' ] ?? '/', PHP_URL_PATH)
         );
         $request = str_replace(' ', '', $request);
 
-        return  ($request == '' || $request == '/') ? '/' : rtrim($request, '/');
+        return  ($request === '' || $request === '/') ? '/' : rtrim($request, '/');
     }
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function scheme()
+    public function scheme(): string
     {
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off') {
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  !== 'off') {
             return 'https';
         }
         return 'http';
@@ -58,11 +58,11 @@ class Url
 
 
     /**
-     * @return Bool
+     * @return bool
      */
-    public function secure():Bool
+    public function secure(): bool
     {
-        return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  != 'off');
+        return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']  !== 'off');
     }
 
 
@@ -77,16 +77,14 @@ class Url
             return trim($url, '/').(
                 !empty($parameters) ? '/?'.http_build_query($parameters) : '/'
                 );
-        } else {
-            $base_url = Load::class('config')->get('app.url');
+        }
 
-            if (!$base_url || empty($base_url)) {
-                $base_url  = $this->scheme().'://'.$this->host();
-            } else {
-                if (!preg_match('/^(https?:\/\/)/', $base_url)) {
-                    $base_url = $this->scheme().'://'.$base_url;
-                }
-            }
+        $base_url = Load::class('config')->get('app.url');
+
+        if (!$base_url || empty($base_url)) {
+            $base_url  = $this->scheme().'://'.$this->host();
+        } else if (!preg_match('/^(https?:\/\/)/', $base_url)) {
+            $base_url = $this->scheme().'://'.$base_url;
         }
 
 
@@ -109,7 +107,7 @@ class Url
     /**
      * @return string
      */
-    public function host()
+    public function host(): string
     {
         if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
             $host     = $_SERVER['HTTP_X_FORWARDED_HOST'];
@@ -137,9 +135,9 @@ class Url
 
 
     /**
-     * @return Array
+     * @return array
      */
-    public function segments():array
+    public function segments(): array
     {
         return array_filter(explode('/', $this->request()));
     }

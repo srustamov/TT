@@ -15,45 +15,45 @@ class Http
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function userAgent(): String
+    public function userAgent(): string
     {
         return $_SERVER[ 'HTTP_USER_AGENT' ]  ?? '';
     }
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function host(): String
+    public function host(): string
     {
         return $_SERVER[ 'HTTP_HOST' ] ?? '';
     }
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function name(): String
+    public function name(): string
     {
         return $_SERVER[ 'SERVER_NAME' ] ?? '';
     }
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function language(): String
+    public function language(): string
     {
         return substr($_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] ?? 'en', 0, 2);
     }
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function encoding(): String
+    public function encoding(): string
     {
         return $_SERVER[ 'HTTP_ACCEPT_ENCODING' ] ?? '';
     }
@@ -87,20 +87,20 @@ class Http
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function connection(): String
+    public function connection(): string
     {
         return $_SERVER[ 'HTTP_CONNECTION' ] ?? '';
     }
 
 
     /**
-     * @return bool|String
+     * @return bool|string
      */
     public function referer()
     {
-        if (!isset($_SERVER[ 'HTTP_REFERER' ]) || trim($_SERVER[ 'HTTP_REFERER' ]) == '') {
+        if (!isset($_SERVER[ 'HTTP_REFERER' ]) || trim($_SERVER[ 'HTTP_REFERER' ]) === '') {
             return false;
         }
         return trim($_SERVER[ 'HTTP_REFERER' ]);
@@ -108,9 +108,9 @@ class Http
 
 
     /**
-     * @return String
+     * @return string
      */
-    public function ip(): String
+    public function ip(): string
     {
         if (!empty($_SERVER[ 'HTTP_CLIENT_IP' ])) {
             $ip = $_SERVER[ 'HTTP_CLIENT_IP' ];

@@ -17,9 +17,9 @@ use System\Engine\Http\Response;
 
 class App implements ArrayAccess
 {
-    const VERSION = '1.1.0';
+    public const VERSION = '1.1.0';
 
-    private $important = [
+    protected $important = [
         LoadEnvVariables::class ,
         PrepareConfigs::class ,
         RegisterExceptionHandler::class ,
@@ -54,7 +54,7 @@ class App implements ArrayAccess
      * @param null $basePath
      */
     public function __construct($basePath = null)
-    {   
+    {
         if (!defined('CONSOLE')) {
             define('CONSOLE', PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
         }
@@ -85,11 +85,11 @@ class App implements ArrayAccess
     public function bootstrap(): self
     {
         if (!$this->bootstrapping) {
-            
+
             $this->setPublicPath();
 
             Load::register('request',new Request($this));
-            
+
             foreach ($this->important as $class) {
                 (new $class($this))->handle();
             }
@@ -113,14 +113,14 @@ class App implements ArrayAccess
      * @param array $middleware_array
      * @throws Exception
      */
-    protected function registerMiddleware(array $middleware_array)
+    protected function registerMiddleware(array $middleware_array): void
     {
         foreach ($middleware_array as $middleware) {
             Middleware::init($middleware, true);
         }
     }
 
-    protected function setAliases()
+    protected function setAliases(): void
     {
         $aliases = Config::get('aliases', []);
 
@@ -131,7 +131,7 @@ class App implements ArrayAccess
         }
     }
 
-    protected function setLocale()
+    protected function setLocale(): void
     {
         setlocale(LC_ALL, Config::get('datetime.setLocale'));
 
@@ -152,7 +152,7 @@ class App implements ArrayAccess
                 : Benchmark::table($finish);
     }
 
-    public function setPublicPath(String $path = null)
+    public function setPublicPath(String $path = null): void
     {
         if ($path !== null) {
             $this->paths['public'] = $path;
@@ -167,22 +167,22 @@ class App implements ArrayAccess
         }
     }
 
-    public function setStoragePath(String $path)
+    public function setStoragePath(String $path): void
     {
         $this->paths['storage'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
-    public function setConfigsPath(String $path)
+    public function setConfigsPath(String $path): void
     {
         $this->paths['configs'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
-    public function setLangPath(String $path)
+    public function setLangPath(String $path): void
     {
         $this->paths['lang'] = trim($path, DIRECTORY_SEPARATOR);
     }
 
-    public function setEnvFile(String $file)
+    public function setEnvFile(String $file): void
     {
         $this->paths['envFile'] = $file;
     }
@@ -225,31 +225,29 @@ class App implements ArrayAccess
         return $this->path($this->paths['lang'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
     }
 
-    public function configsCacheFile(String $file = null)
+    public function configsCacheFile(String $file = null): string
     {
         if ($file !== null) {
             $this->paths['configsCacheFile'] = $file;
-        } else {
-            return $this->path($this->paths['configsCacheFile']);
         }
+        return $this->path($this->paths['configsCacheFile']);
     }
 
-    public function routesCacheFile(String $file = null)
+    public function routesCacheFile(String $file = null): string
     {
         if ($file !== null) {
             $this->paths['routesCacheFile'] = $file;
-        } else {
-            return $this->path($this->paths['routesCacheFile']);
         }
+        return $this->path($this->paths['routesCacheFile']);
     }
 
-    public function envCacheFile(String $file = null)
+    public function envCacheFile(String $file = null): string
     {
         if ($file !== null) {
             $this->paths['envCacheFile'] = $file;
-        } else {
-            return $this->path($this->paths['envCacheFile']);
         }
+
+        return $this->path($this->paths['envCacheFile']);
     }
 
 
@@ -306,7 +304,8 @@ class App implements ArrayAccess
     }
 
 
-    public static function end()
+
+    public static function end(): void
     {
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
@@ -343,7 +342,7 @@ class App implements ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         Load::register($offset, $value);
     }
@@ -357,7 +356,7 @@ class App implements ArrayAccess
      * @return void
      * @since 5.0.0
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $load = Load::instance();
 
@@ -381,11 +380,4 @@ class App implements ArrayAccess
         return array_key_exists($offset, Load::instance());
     }
 
-    /**
-     * @return array
-     */
-    public function getPaths(): array
-    {
-        return $this->paths;
-    }
 }

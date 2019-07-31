@@ -83,15 +83,13 @@ class Authentication
     {
         if ($user && is_object($user)) {
             $this->user = (object) Arr::except((array) $user, $this->hidden);
-        } else {
-            if (!$this->user) {
-                $authId = Session::get('AuthId');
+        } else if (!$this->user) {
+            $authId = Session::get('AuthId');
 
-                if ($authId) {
-                    $result = DB::table($this->table)->where(['id' => $authId])->first();
+            if ($authId) {
+                $result = DB::table($this->table)->where(['id' => $authId])->first();
 
-                    $this->user = (object) Arr::except((array) $result, $this->hidden);
-                }
+                $this->user = (object) Arr::except((array) $result, $this->hidden);
             }
         }
 

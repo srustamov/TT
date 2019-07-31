@@ -5,8 +5,8 @@
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/tt
  *
- * @method static set()
- * @method static get()
+ * @method static set($key,$value = null)
+ * @method static get($key,$default = null)
  * @method static push()
  * @method static prepend()
  * @method static delete()
