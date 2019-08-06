@@ -5,11 +5,12 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use ArrayAccess;
-use Countable;
-use Symfony\Component\Validator\Constraints as Assert;
+
+
 use function file_get_contents;
 use function in_array;
+use Countable;
+use ArrayAccess;
 use Serializable;
 use System\Engine\App;
 use System\Facades\Redirect;
@@ -165,10 +166,10 @@ class Request implements ArrayAccess, Countable, Serializable
     public function session($key = null)
     {
         if ($key === null) {
-            return $this->application::get('session');
+            return $this->app('session');
         }
 
-        return $this->application::get('session')->get($key);
+        return $this->app('session')->get($key);
     }
 
 

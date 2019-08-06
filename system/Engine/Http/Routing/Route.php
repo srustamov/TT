@@ -404,13 +404,13 @@ class Route
 
     /**
      * @param App $app
-     * @param $routeMiddleware
+     * @param array $routeMiddleware
      * @return Response
      * @throws NotFoundException
      * @throws RouteException
      * @throws Exception
      */
-    public function execute(App $app, $routeMiddleware):Response
+    public function execute(App $app, $routeMiddleware = []):Response
     {
         $this->app = $app;
         $this->middlewareAliases = $routeMiddleware;
