@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace System\Engine;
 
@@ -21,7 +21,7 @@ use System\Engine\Http\Response;
 
 class App implements ArrayAccess
 {
-    public const VERSION = '1.2.0';
+    public const VERSION = '1.3.0';
 
     public static $classes = [];
 
