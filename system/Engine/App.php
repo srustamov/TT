@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpLanguageLevelInspection */
+<?php 
 
 namespace System\Engine;
 
