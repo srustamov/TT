@@ -12,7 +12,7 @@
 // Model Class
 //------------------------------------------------------
 
-
+use App\Exceptions\ModelNotFoundException;
 use System\Libraries\Arr;
 use System\Facades\DB;
 
@@ -98,6 +98,18 @@ abstract class Model
             ->select($select)
             ->whereIn($primaryKey, $find)
             ->get((count($find) == 1));
+    }
+
+
+    public static function findOrFail(...$args)
+    {
+        $find = self::find(...$args);
+
+        if($find) {
+          return $find;
+        }
+
+        throw new ModelNotFoundException;
     }
 
 
