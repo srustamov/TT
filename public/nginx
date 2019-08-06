@@ -1,7 +1,3 @@
-location /
-{
-    if (!-e $request_filename)
-    {
-        rewrite ^(.*)$ /index.php/$1;
-    }
+location /{
+    try_files $uri $uri/ /index.php?$query_string;
 }
