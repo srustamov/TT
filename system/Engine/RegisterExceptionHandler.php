@@ -14,7 +14,7 @@ class RegisterExceptionHandler
 
     public function handle()
     {
-        $isDev = Load::class('config')->get('app.debug');
+        $isDev = $this->app::get('config')->get('app.debug');
 
         if (!CONSOLE && $isDev) {
             $whoops = new \Whoops\Run;
@@ -28,6 +28,6 @@ class RegisterExceptionHandler
             $exception->register();
         }
 
-        
+
     }
 }

@@ -11,10 +11,16 @@
 
 use PDO;
 use PDOStatement;
+use System\Libraries\Arr;
 use System\Exceptions\DatabaseException;
 
 class Database extends Connection
 {
+    use Traits\InsertDeleteUpdate;
+    use Traits\Join;
+    use Traits\Where;
+    use Traits\Calculation;
+
     private $table;
 
     private $select = [];
@@ -33,22 +39,22 @@ class Database extends Connection
 
     private $bindValues = [];
 
-    
-    
-    
-    
+
+
+
+
     /**
      * @return object|null
      * @param string $sql
      * @param array $data
      */
-    
+
     public function raw(string $sql,array $data = [])
     {
         if (empty($data)) {
             $stmt = $this->pdo()->query($sql);
         } else {
-            
+
             $stmt = $this->pdo()->prepare($sql);
 
             $stmt->execute($data);
@@ -56,8 +62,8 @@ class Database extends Connection
 
         return ($stmt->rowCount() > 0) ? $stmt : null;
     }
-    
-    
+
+
     /**
      * @return object|null
      * @throws DatabaseException
@@ -102,8 +108,6 @@ class Database extends Connection
             throw new DatabaseException($e->getMessage(), $queryString);
         }
     }
-
-
 
 
     /**
@@ -191,127 +195,6 @@ class Database extends Connection
         return $this;
     }
 
-    public function orWhere($column, $value = false, $mark = null)
-    {
-        return $this->where($column, $value, $mark, ["WHERE", "OR"]);
-    }
-
-    public function where($column, $value = false, $mark = null, $logic = ["WHERE", "AND"])
-    {
-        if ($mark !== null) {
-            $this->where[] = (empty($this->where) ? $logic[0] : $logic[1]) . " {$column} {$value} ? ";
-
-            $this->bindValues[] = $mark;
-        } elseif ($value === false) {
-            if (is_array($column) && $this->array_is_assoc($column)) {
-                foreach ($column as $key => $value) {
-                    $this->where($key, $value);
-                }
-            } else {
-                $this->where[] = (empty($this->where) ? $logic[0] : $logic[1]) . " " . $column . " ";
-            }
-        } else {
-            $this->where[] = (empty($this->where) ? $logic[0] : $logic[1]) . " " . $column . " = ? ";
-            $this->bindValues[] = $value;
-        }
-
-        return $this;
-    }
-
-    private function array_is_assoc($array)
-    {
-        if (is_array($array)) {
-            $keys = array_keys($array);
-
-            return (array_keys($keys) !== $keys);
-        } else {
-            return false;
-        }
-    }
-
-    public function notWhere($column, $value = false, $mark = null)
-    {
-        return $this->where($column, $value, $mark, ["WHERE NOT", "AND NOT"]);
-    }
-
-    public function orNotWhere($column, $value = false, $mark = null)
-    {
-        return $this->where($column, $value, $mark, ["WHERE NOT", "OR NOT"]);
-    }
-
-    public function whereNotIn($column, $in)
-    {
-        return $this->whereIn($column, $in, "NOT");
-    }
-
-    public function whereIn($column, $in, $logic = "")
-    {
-        $in = is_array($in) ? $in : explode(',', $in);
-
-        $this->where[] = (empty($this->where) ? "WHERE " : " AND ") . $column . " {$logic} IN(" . rtrim(str_repeat('?,', count($in)), ',') . ")";
-
-        $this->bindValues = array_merge($this->bindValues, $in);
-
-        return $this;
-    }
-
-    public function orWhereNull($column)
-    {
-        return $this->whereNull($column, "OR");
-    }
-
-    public function whereNull($column, $logic = "AND")
-    {
-        $this->where[] = (!empty($this->where) ? $logic : "WHERE") . " {$column} IS NULL ";
-        return $this;
-    }
-
-    public function orWhereNotNull($column)
-    {
-        return $this->WhereNotNull($column, "OR");
-    }
-
-    public function whereNotNull($column, $logic = "AND")
-    {
-        $this->where[] = (!empty($this->where) ? $logic : "WHERE") . " {$column} IS NOT NULL ";
-        return $this;
-    }
-
-    public function notLike($column, $like)
-    {
-        return $this->like($column, $like, "NOT");
-    }
-
-    public function like($column, $like, $logic = "")
-    {
-        $this->where[] = (empty($this->where) ? "WHERE " : "AND ") . "{$column} {$logic} LIKE ? ";
-
-        $this->bindValues[] = $like;
-
-        return $this;
-    }
-
-    public function leftJoin(String $table, $opt)
-    {
-        return $this->join($table, $opt, 'LEFT');
-    }
-
-    public function join(String $table, $opt, $join = 'INNER')
-    {
-        $this->join[] = strtoupper($join) . ' JOIN ' . $this->config[$this->group]['prefix'] . $table . ' ON ' . $opt . ' ';
-        return $this;
-    }
-
-    public function rightJoin(String $table, $opt)
-    {
-        return $this->join($table, $opt, 'RIGHT');
-    }
-
-    public function fullJoin(String $table, $opt)
-    {
-        return $this->join($table, $opt, 'FULL');
-    }
-
     public function limit($limit, $offset = 0)
     {
         $this->limit[] = ' LIMIT ' . $offset . ',' . $limit;
@@ -336,54 +219,6 @@ class Database extends Connection
         return $this;
     }
 
-    public function between($where, $start, $stop, $mark = 'AND')
-    {
-        $this->where[] = empty($this->where) ? "WHERE " : "AND " . $where . " BETWEEN ? {$mark} ? ";
-
-        $this->bindValues = array_merge($this->bindValues, [$start, $stop]);
-
-        return $this;
-    }
-
-    public function count($column = false)
-    {
-        $column = $column ? $column : implode('', $this->select);
-
-        $this->select = array("COUNT({$column}) as count");
-
-        if ($result = $this->get(true)) {
-            return (int)$result->count;
-        } else {
-            return null;
-        }
-    }
-
-    public function avg($column = false)
-    {
-        $column = $column ? $column : implode('', $this->select);
-
-        $this->select = array("AVG({$column}) as avg");
-
-        if ($result = $this->get(true)) {
-            return $result->avg;
-        } else {
-            return null;
-        }
-    }
-
-    public function sum($column = false)
-    {
-        $column = $column ? $column : implode('', $this->select);
-
-        $this->select = array("SUM({$column}) as sum");
-
-        if ($result = $this->get(true)) {
-            return $result->sum;
-        } else {
-            return null;
-        }
-    }
-
 
     private function normalizeCrud($data)
     {
@@ -392,118 +227,6 @@ class Database extends Connection
         }, array_keys($data)));
     }
 
-    public function insert($insert, array $data = [], Bool $getId = false)
-    {
-        if (is_string($insert)) {
-            $query = $insert;
-
-            $this->bindValues = $data;
-        } else {
-            if (is_array($insert)) {
-                if ($this->array_is_assoc($insert)) {
-                    $query = "INSERT INTO {$this->table} SET " . $this->normalizeCrud($insert);
-
-                    $this->bindValues = array_values($insert);
-                }
-            }
-        }
-
-        $queryString = $this->normalizeQueryString($query);
-
-        try {
-            $statement = $this->pdo->prepare($query);
-
-            $this->bindValues($statement);
-
-            $statement->execute();
-
-            $this->reset();
-
-            return $getId ? $this->pdo->lastInsertId() : ($statement->rowCount() > 0);
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage(), $queryString);
-        }
-    }
-
-
-    public function insertGetId($insert, array $data = [])
-    {
-        return $this->insert($insert, $data, true);
-    }
-
-
-    public function update($update, array $data = [])
-    {
-        if (is_string($update)) {
-            $query = $update;
-
-            $this->bindValues = $data;
-        } else {
-            if (is_array($update)) {
-                if ($this->array_is_assoc($update)) {
-                    $query = "UPDATE {$this->table} SET " . $this->normalizeCrud($update);
-                    $query .= " " . preg_replace("/^SELECT.*FROM {$this->table}/", '', $this->getQueryString(), 1);
-
-                    $this->bindValues = array_merge(array_values($update), $this->bindValues);
-                }
-            }
-        }
-
-        $queryString = $this->normalizeQueryString($query);
-
-        try {
-            $statement = $this->pdo->prepare($query);
-
-            $this->bindValues($statement);
-
-            $statement->execute();
-
-            $this->reset();
-
-            return $statement->rowCount() > 0;
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage(), $queryString);
-        }
-    }
-
-    public function delete($delete = null, array $data = [])
-    {
-        if (is_string($delete)) {
-            $query = $delete;
-
-            $this->bindValues = $data;
-        } else {
-            if (is_array($delete)) {
-                if ($this->array_is_assoc($delete)) {
-                    $this->where($delete);
-                }
-            } else {
-                $query = "DELETE FROM {$this->table} " .
-                    preg_replace(
-                        "/SELECT.*FROM {$this->table}/",
-                        '',
-                        $this->getQueryString(),
-                        1
-                    );
-            }
-        }
-
-        $queryString = $this->normalizeQueryString($query);
-
-        try {
-            $statement = $this->pdo->prepare($query);
-
-            $this->bindValues($statement);
-
-            $statement->execute();
-
-            $this->reset();
-
-            return $statement->rowCount() > 0;
-        } catch (\PDOException $e) {
-            throw new DatabaseException($e->getMessage(), $queryString);
-        }
-    }
 
     /**
      * @param string $tables

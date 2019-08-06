@@ -1,6 +1,6 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\DB;
 
 class DatabaseStore implements CacheStore
@@ -16,7 +16,7 @@ class DatabaseStore implements CacheStore
 
     public function __construct()
     {
-        $this->table = Load::class('config')->get('cache.database', ['table' => 'cache'])['table'];
+        $this->table = App::get('config')->get('cache.database', ['table' => 'cache'])['table'];
 
         $this->gc();
     }

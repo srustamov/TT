@@ -14,16 +14,16 @@ class PrepareConfigs
     {
         $configurations = [];
 
-        $configs_cache_file = $this->app->configsCacheFile();
+        $cache_file = (string)$this->app->configsCacheFile();
 
-        if (file_exists($configs_cache_file)) {
-            $configurations = require $configs_cache_file;
+        if (file_exists($cache_file)) {
+            $configurations = require $cache_file;
         } else {
             foreach (glob($this->app->configsPath('*')) as $file) {
                 $configurations[pathinfo($file, PATHINFO_FILENAME)] = require $file;
             }
         }
 
-        Load::register('config', new Config($configurations));
+        $this->app::register('config', new Config($configurations));
     }
 }

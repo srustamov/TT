@@ -10,7 +10,7 @@
 
 
 use System\Facades\DB;
-use System\Engine\Load;
+use System\Engine\App;
 
 class Validator
 {
@@ -42,7 +42,7 @@ class Validator
 
     public function __construct()
     {
-        $this->translator = Load::class('language')->get('validator');
+        $this->translator = App::get('language')->get('validator');
     }
 
 

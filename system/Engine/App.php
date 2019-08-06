@@ -1,8 +1,12 @@
-<?php namespace System\Engine;
+<?php /** @noinspection PhpLanguageLevelInspection */
+
+namespace System\Engine;
 
 /**
- * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/srustamov/TT
+ * Application class
+ *
+ * @author Samir Rustamov <rustemovv96@gmail.com>
+ * @link   https://github.com/srustamov/tt
  */
 
 use ArrayAccess;
@@ -19,11 +23,7 @@ class App implements ArrayAccess
 {
     public const VERSION = '1.1.0';
 
-    protected $important = [
-        LoadEnvVariables::class ,
-        PrepareConfigs::class ,
-        RegisterExceptionHandler::class ,
-    ];
+    public static $classes = [];
 
     protected $bootstrapping = false;
 
@@ -68,7 +68,6 @@ class App implements ArrayAccess
         chdir($this->paths['base']);
 
         static::$instance = $this;
-
     }
 
     public function version(): string
@@ -85,16 +84,13 @@ class App implements ArrayAccess
     public function bootstrap(): self
     {
         if (!$this->bootstrapping) {
-
             $this->setPublicPath();
 
-            Load::register('request',new Request($this));
+            self::register('request', new Request($this));
 
-            foreach ($this->important as $class) {
-                (new $class($this))->handle();
-            }
+            $this->callImportantClasses();
 
-            Load::register('app', $this);
+            self::register('app', $this);
 
             $this->setAliases();
 
@@ -106,6 +102,13 @@ class App implements ArrayAccess
         }
 
         return $this;
+    }
+
+    protected function callImportantClasses()
+    {
+        (new LoadEnvVariables($this))->handle();
+        (new PrepareConfigs($this))->handle();
+        (new RegisterExceptionHandler($this))->handle();
     }
 
 
@@ -120,6 +123,9 @@ class App implements ArrayAccess
         }
     }
 
+    /**
+     *  Application aliases setting
+     */
     protected function setAliases(): void
     {
         $aliases = Config::get('aliases', []);
@@ -131,6 +137,11 @@ class App implements ArrayAccess
         }
     }
 
+    /**
+     * Set application locale and timezone
+     *
+     * @return void
+     */
     protected function setLocale(): void
     {
         setlocale(LC_ALL, Config::get('datetime.setLocale'));
@@ -139,25 +150,43 @@ class App implements ArrayAccess
     }
 
 
-    public function routing():Response
+    /**
+     * Application Routing
+     *
+     * @return Response
+     */
+    public function routing(): Response
     {
         return Route::execute($this, $this->routeMiddleware);
     }
 
 
-    public function benchmark($finish):String
+    /**
+     * Show Application Benchmark Panel in development mode
+     *
+     * @param $finish
+     * @return string|mixed
+     */
+    public function benchmark($finish)
     {
-        return  (CONSOLE || !Config::get('app.debug') || Http::isAjax())
-                ? ''
-                : Benchmark::table($finish);
+        if (!(CONSOLE || !Config::get('app.debug') || Http::isAjax())) {
+            $benchmark = new Benchmark($this);
+            self::register('benchmark', $benchmark);
+            return $benchmark->table($finish);
+        }
     }
 
+    /**
+     * Create application public path
+     *
+     * @param String|null $path
+     */
     public function setPublicPath(String $path = null): void
     {
         if ($path !== null) {
             $this->paths['public'] = $path;
-        } else if (isset($_SERVER[ 'SCRIPT_FILENAME' ]) && !empty($_SERVER[ 'SCRIPT_FILENAME' ])) {
-            $parts = explode('/', $_SERVER[ 'SCRIPT_FILENAME' ]);
+        } elseif (isset($_SERVER['SCRIPT_FILENAME']) && !empty($_SERVER['SCRIPT_FILENAME'])) {
+            $parts = explode('/', $_SERVER['SCRIPT_FILENAME']);
 
             array_pop($parts);
 
@@ -167,62 +196,57 @@ class App implements ArrayAccess
         }
     }
 
-    public function setStoragePath(String $path): void
-    {
-        $this->paths['storage'] = trim($path, DIRECTORY_SEPARATOR);
-    }
-
-    public function setConfigsPath(String $path): void
-    {
-        $this->paths['configs'] = trim($path, DIRECTORY_SEPARATOR);
-    }
-
-    public function setLangPath(String $path): void
-    {
-        $this->paths['lang'] = trim($path, DIRECTORY_SEPARATOR);
-    }
-
-    public function setEnvFile(String $file): void
-    {
-        $this->paths['envFile'] = $file;
-    }
-
+    /**
+     * @return string
+     */
     public function envFile(): string
     {
         return $this->path($this->paths['envFile']);
     }
 
+    /**
+     * @param string $path
+     * @return string
+     */
     public function publicPath($path = ''): string
     {
-        return $this->paths['public'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR);
+        return $this->paths['public'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
     }
 
+    /**
+     * @param string $path
+     * @return string
+     */
     public function path($path = ''): string
     {
-        return $this->paths['base'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR);
+        return $this->paths['base'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
     }
 
+    /**
+     * @param string $path
+     * @return string
+     */
     public function storagePath($path = ''): string
     {
-        return $this->path($this->paths['storage'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
+        return $this->path($this->paths['storage'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR));
     }
 
     public function configsPath($path = ''): string
     {
-        return $this->path($this->paths['configs'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
+        return $this->path($this->paths['configs'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR));
     }
 
     public function appPath($path = ''): string
     {
         return $this->paths['base']
-            .DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR
-            .ltrim($path, DIRECTORY_SEPARATOR);
+            . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR
+            . ltrim($path, DIRECTORY_SEPARATOR);
     }
 
 
     public function langPath($path = ''): string
     {
-        return $this->path($this->paths['lang'].DIRECTORY_SEPARATOR. ltrim($path, DIRECTORY_SEPARATOR));
+        return $this->path($this->paths['lang'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR));
     }
 
     public function configsCacheFile(String $file = null): string
@@ -254,35 +278,35 @@ class App implements ArrayAccess
     public function classes(String $name = null, Bool $isValue = false)
     {
         $classes = array(
-          'array' => 'System\Libraries\Arr',
-          'authentication' => 'System\Libraries\Auth\Authentication',
-          'cache' => 'System\Libraries\Cache\Cache',
-          'console' => 'System\Engine\Cli\Console',
-          'cookie' => 'System\Libraries\Cookie',
-          'database' => 'System\Libraries\Database\Database',
-          'email' => 'System\Libraries\Mail\Email',
-          'file' => 'System\Libraries\File',
-          'hash' => 'System\Libraries\Hash',
-          'html' => 'System\Libraries\Html',
-          'http' => 'System\Libraries\Http',
-          'input' => 'System\Libraries\Input',
-          'lang' => 'System\Libraries\Language',
-          'language' => 'System\Libraries\Language',
-          'middleware' => 'System\Engine\Http\Middleware',
-          'openssl' => 'System\Libraries\Encrypt\OpenSsl',
-          'redirect' => 'System\Libraries\Redirect',
-          'redis' => 'System\Libraries\Redis',
-          'request' => 'System\Engine\Http\Request',
-          'response' => 'System\Engine\Http\Response',
-          'route' => 'System\Engine\Http\Routing\Route',
-          'session' => 'System\Libraries\Session\Session',
-          'str' => 'System\Libraries\Str',
-          'string' => 'System\Libraries\Str',
-          'storage' => 'System\Libraries\Storage',
-          'url' => 'System\Libraries\Url',
-          'validator' => 'System\Libraries\Validator',
-          'view' => 'System\Libraries\View\View',
-      );
+            'array' => 'System\Libraries\Arr',
+            'authentication' => 'System\Libraries\Auth\Authentication',
+            'cache' => 'System\Libraries\Cache\Cache',
+            'console' => 'System\Engine\Cli\Console',
+            'cookie' => 'System\Libraries\Cookie',
+            'database' => 'System\Libraries\Database\Database',
+            'email' => 'System\Libraries\Mail\Email',
+            'file' => 'System\Libraries\File',
+            'hash' => 'System\Libraries\Hash',
+            'html' => 'System\Libraries\Html',
+            'http' => 'System\Libraries\Http',
+            'input' => 'System\Libraries\Input',
+            'lang' => 'System\Libraries\Language',
+            'language' => 'System\Libraries\Language',
+            'middleware' => 'System\Engine\Http\Middleware',
+            'openssl' => 'System\Libraries\Encrypt\OpenSsl',
+            'redirect' => 'System\Libraries\Redirect',
+            'redis' => 'System\Libraries\Redis',
+            'request' => 'System\Engine\Http\Request',
+            'response' => 'System\Engine\Http\Response',
+            'route' => 'System\Engine\Http\Routing\Route',
+            'session' => 'System\Libraries\Session\Session',
+            'str' => 'System\Libraries\Str',
+            'string' => 'System\Libraries\Str',
+            'storage' => 'System\Libraries\Storage',
+            'url' => 'System\Libraries\Url',
+            'validator' => 'System\Libraries\Validator',
+            'view' => 'System\Libraries\View\View',
+        );
 
         if ($name === null) {
             return $classes;
@@ -296,13 +320,76 @@ class App implements ArrayAccess
     }
 
     /**
+     * @param string $class
+     * @param mixed ...$args
+     * @return mixed
+     * @throws \RuntimeException
+     */
+    public static function get(string $class, ...$args)
+    {
+        if (isset(static::$classes[$class])) {
+            return static::$classes[$class];
+        }
+
+        if ($instance = self::instance()->classes($class)) {
+            if (method_exists($instance, '__construct')) {
+                $args = Reflections::classMethodParameters($instance, '__construct', $args);
+            }
+
+            static::$classes[$class] = new $instance(...$args);
+
+            return static::$classes[$class];
+        }
+
+        if (strpos($class, '\\')) {
+            if ($instance = self::instance()->classes($class, true)) {
+                return static::get($instance, ...$args);
+            }
+
+            $instance = new $class(...Reflections::classMethodParameters($class, '__construct', $args));
+
+            static::$classes[$class] = $instance;
+
+            unset($instance);
+
+            return static::$classes[$class];
+        }
+        throw new \RuntimeException('Class not found [' . $class . ']');
+    }
+
+
+    public static function register($className, $object)
+    {
+        if ($object instanceof \Closure) {
+            static::register($className, $object());
+        } elseif (is_string($object)) {
+            static::$classes[$className] = new $object();
+        } elseif (is_object($object)) {
+            static::$classes[$className] = $object;
+        }
+    }
+
+
+    /**
+     * @param $object
+     * @param $className
+     * @return bool
+     * @throws \Exception
+     */
+    public static function isInstance($object, $className): bool
+    {
+        $instance = static::get($className);
+
+        return ($object instanceof $instance);
+    }
+
+    /**
      * @return mixed
      */
     public static function instance()
     {
         return self::$instance;
     }
-
 
 
     public static function end(): void
@@ -327,7 +414,7 @@ class App implements ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return Load::class($offset);
+        return self::get($offset);
     }
 
     /**
@@ -344,7 +431,7 @@ class App implements ArrayAccess
      */
     public function offsetSet($offset, $value): void
     {
-        Load::register($offset, $value);
+        self::register($offset, $value);
     }
 
     /**
@@ -358,9 +445,7 @@ class App implements ArrayAccess
      */
     public function offsetUnset($offset): void
     {
-        $load = Load::instance();
-
-        unset($load[$offset]);
+        unset($this[$offset]);
     }
 
     /**
@@ -377,7 +462,6 @@ class App implements ArrayAccess
      */
     public function offsetExists($offset): bool
     {
-        return array_key_exists($offset, Load::instance());
+        return array_key_exists($offset, self::$classes);
     }
-
 }

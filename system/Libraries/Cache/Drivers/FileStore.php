@@ -1,6 +1,6 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-use System\Engine\Load;
+use System\Engine\App;
 
 class FileStore implements CacheStore
 {
@@ -17,7 +17,7 @@ class FileStore implements CacheStore
 
     public function __construct()
     {
-        $this->path = Load::class('config')->get('cache.file', ['path' => path('storage/cache/data')])['path'];
+        $this->path = App::get('config')->get('cache.file', ['path' => path('storage/cache/data')])['path'];
 
         $this->gc();
     }
@@ -115,10 +115,10 @@ class FileStore implements CacheStore
             unlink($paths->fullpath);
         }
 
-        if (Load::class('file')->dirIsEmpty($this->path.'/'.$paths->path1.'/'.$paths->path2)) {
+        if (App::get('file')->dirIsEmpty($this->path.'/'.$paths->path1.'/'.$paths->path2)) {
             rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2);
 
-            if (Load::class('file')->dirIsEmpty($this->path.'/'.$paths->path1)) {
+            if (App::get('file')->dirIsEmpty($this->path.'/'.$paths->path1)) {
                 rmdir($this->path.'/'.$paths->path1);
             }
         }
@@ -182,10 +182,10 @@ class FileStore implements CacheStore
             if ($mtime <= time() && $mtime > 0) {
                 unlink($paths->fullpath);
 
-                if (Load::class('file')->dirIsEmpty($this->path.'/'.$paths->path1.'/'.$paths->path2)) {
+                if (App::get('file')->dirIsEmpty($this->path.'/'.$paths->path1.'/'.$paths->path2)) {
                     rmdir($this->path.'/'.$paths->path1.'/'.$paths->path2);
 
-                    if (Load::class('file')->dirIsEmpty($this->path.'/'.$paths->path1)) {
+                    if (App::get('file')->dirIsEmpty($this->path.'/'.$paths->path1)) {
                         rmdir($this->path.'/'.$paths->path1);
                     }
                 }
@@ -241,7 +241,7 @@ class FileStore implements CacheStore
         }
 
         foreach ($directoryRead as $dir) {
-            if (is_dir($dir) && Load::class('file')->dirIsEmpty($dir)) {
+            if (is_dir($dir) && App::get('file')->dirIsEmpty($dir)) {
                 rmdir($dir);
             }
         }

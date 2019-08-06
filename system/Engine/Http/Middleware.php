@@ -7,7 +7,7 @@
 
 
 use RuntimeException;
-use System\Engine\Load;
+use System\Engine\App;
 
 class Middleware
 {
@@ -23,7 +23,7 @@ class Middleware
 
     public static function init(String $extension, Bool $isClassName = false)
     {
-        $request  = Load::class('request');
+        $request  = App::get('request');
 
         if (!$isClassName) {
             list($name, $excepts) = static::instance()->getExcepts($extension);
@@ -40,8 +40,8 @@ class Middleware
         }
 
         $next = static function ($ClientRequest) {
-            if (Load::isInstance($ClientRequest, 'request')) {
-                return Load::class('response');
+            if (App::isInstance($ClientRequest, 'request')) {
+                return App::get('response');
             }
         };
 
@@ -49,8 +49,8 @@ class Middleware
         if (class_exists($middleware)) {
             $response = call_user_func([new $middleware(), 'handle'], $request, $next);
 
-            if (!Load::isInstance($response, 'response')) {
-                Load::class('response')->setContent($response)->send();
+            if (!App::isInstance($response, 'response')) {
+                App::get('response')->setContent($response)->send();
             }
         } else {
             throw new RuntimeException("Middleware {$middleware} class not found");

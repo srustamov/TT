@@ -13,7 +13,7 @@ namespace System\Engine\Cli;
  * @author Samir Rustamov
  */
 
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\DB;
 
 class CreateTables
@@ -28,7 +28,7 @@ class CreateTables
             }
         }
         if (!$table) {
-            $table = Load::class('config')->get('session.table', 'sessions');
+            $table = App::get('config')->get('session.table', 'sessions');
         }
 
         try {

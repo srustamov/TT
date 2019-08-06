@@ -9,12 +9,18 @@
  */
 
 use System\Engine\Http\Response;
-use System\Engine\Load;
+use System\Engine\App;
 
 class Benchmark
 {
     private static $instance;
 
+    private $app;
+
+    public function __construct(App $app)
+    {
+        $this->app = $app;
+    }
 
 
     public function loadTime($finish = null, $start = APP_START): float
@@ -50,10 +56,10 @@ class Benchmark
           'Controller'       => defined('CONTROLLER') ? CONTROLLER : null,
           'Action'           => defined('ACTION') ? ACTION : null,
           'Request Method'   => $this->server('request_method'),
-          'Request Uri'      => Load::class('url')->request(),
-          'IP'               => Load::class('http')->ip(),
+          'Request Uri'      => $this->app::get('url')->request(),
+          'IP'               => $this->app::get('http')->ip(),
           'Document root'    => basename($this->server('document_root')),
-          'Locale'           => Load::class('language')->locale(),
+          'Locale'           => $this->app::get('language')->locale(),
           'Protocol'         => $this->server('server_protocol'),
           'Software'         => $this->server('server_software')
       );
@@ -79,20 +85,11 @@ class Benchmark
 
 
 
-    public static function table($finish, $start = APP_START)
+    public function table($finish, $start = APP_START)
     {
-        $data = static::getInstance()->getBenchMarkTableData($finish, $start);
+        $data = $this->getBenchMarkTableData($finish, $start);
 
-        return static::getInstance()->view($data);
+        return $this->view($data);
     }
 
-
-    public static function getInstance()
-    {
-        if (static::$instance === null) {
-            static::$instance = new static();
-        }
-
-        return static::$instance;
-    }
 }

@@ -11,7 +11,7 @@
 // Base Controller Class
 //-------------------------------------------------------------
 
-use System\Engine\Load;
+use System\Engine\App;
 
 
 abstract class Controller
@@ -26,7 +26,7 @@ abstract class Controller
      */
     protected function view(String $file, array $data = [])
     {
-        return Load::class('view')->render($file, $data);
+        return App::get('view')->render($file, $data);
     }
 
 

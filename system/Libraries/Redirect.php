@@ -10,7 +10,7 @@
 
 
 
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\Route;
 
 class Redirect
@@ -35,9 +35,9 @@ class Redirect
             $this->refresh = $refresh;
         }
 
-        if (($back = Load::class('http')->referer())) {
+        if ($back = App::get('http')->referer()) {
             $url = $back;
-        } elseif (($back = Load::class('session')->prevUrl())) {
+        } elseif (($back = App::get('session')->prevUrl())) {
             $url = $back;
         } else {
             $url = '';
@@ -47,23 +47,23 @@ class Redirect
     }
 
 
-    public function to(String $url, $refresh = 0, $http_response_code = 302)
+    public function to(String $url, $refresh = 0, $http_response_code = 302): self
     {
         $url = $this->prepareUrl($url);
 
-        Load::class('response')->redirect($url,$refresh,$http_response_code);
+        App::get('response')->redirect($url,$refresh,$http_response_code);
 
         return $this;
     }
 
 
 
-    public function with($key, $value = null)
+    public function with($key, $value = null): self
     {
         $data = is_array($key) ?:[$key => $value];
 
         foreach ($data as $key => $value) {
-            Load::class('session')->flash($key, $value);
+            App::get('session')->flash($key, $value);
         }
 
         return $this;
@@ -71,11 +71,11 @@ class Redirect
 
 
 
-    public function withErrors($key, $value = null)
+    public function withErrors($key, $value = null): self
     {
         $data = is_array($key) ? $key : [$key => $value];
 
-        Load::class('session')->flash('view-errors', $data);
+        App::get('session')->flash('view-errors', $data);
 
         return $this;
     }
@@ -89,7 +89,7 @@ class Redirect
 
 
         if (!preg_match('/^https?:\/\//', $url)) {
-            $url = Load::class('url')->to($url);
+            $url = App::get('url')->to($url);
         }
 
         return $url;
@@ -106,7 +106,7 @@ class Redirect
 
                 $args = is_array($args[0]) ? $args[0] : [$args[0] => $args[1] ?? null];
 
-                Load::class('session')->flash($var, $args[0]);
+                App::get('session')->flash($var, $args[0]);
             } else {
                 throw new \BadMethodCallException("Call to undefined method Redirect::{$method}()");
             }

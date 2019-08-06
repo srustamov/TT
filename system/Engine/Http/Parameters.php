@@ -12,9 +12,16 @@ class Parameters implements ArrayAccess, Countable
     private $parameters;
 
 
-    public function __construct(array $parameters)
+    public function __construct(array $parameters = [])
+    {
+        $this->make($parameters);
+    }
+
+    public function make(array $parameters)
     {
         $this->parameters = $parameters;
+
+        return $this;
     }
 
 

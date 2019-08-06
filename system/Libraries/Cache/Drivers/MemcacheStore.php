@@ -1,6 +1,6 @@
 <?php namespace System\Libraries\Cache\Drivers;
 
-use System\Engine\Load;
+use System\Engine\App;
 
 class MemcacheStore implements CacheStore
 {
@@ -15,7 +15,7 @@ class MemcacheStore implements CacheStore
 
     public function __construct()
     {
-        $config = Load::class('config')->get('cache.memcache');
+        $config = App::get('config')->get('cache.memcache');
 
         if (class_exists('\\Memcache')) {
             $this->memcache = new \Memcache;

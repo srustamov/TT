@@ -7,37 +7,52 @@
 
 use ArrayAccess;
 use Countable;
+use Symfony\Component\Validator\Constraints as Assert;
 use function file_get_contents;
 use function in_array;
 use Serializable;
-use JsonSerializable;
 use System\Engine\App;
-use System\Engine\Load;
 use System\Facades\Redirect;
 use System\Facades\Response;
 use System\Facades\Validator;
 
 /**
  * @method all()
+ * @method only(...$names)
+ * @method except()
+ * @method add()
+ * @method has()
+ * @method map($callback)
+ * @method filter($callback)
  */
-class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
+class Request implements ArrayAccess, Countable, Serializable
 {
+    /**@var Parameters*/
     public $request = [];
 
+    /**@var Parameters*/
     public $query = [];
 
+    /**@var Parameters*/
+    public $input = [];
+
+    /**@var Parameters*/
     public $files = [];
 
+    /**@var Parameters*/
     public $cookies = [];
 
+    /**@var Parameters*/
     public $server = [];
 
+    /**@var Parameters*/
     public $headers = [];
 
     public $routeParams = [];
 
     public $method;
 
+    /**@var App*/
     private $application;
 
 
@@ -58,7 +73,9 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
         $this->cookies = new Parameters($_COOKIE);
 
-        $this->query   = new Parameters($this->query);
+        $this->query   = new Parameters();
+
+        $this->input   = new Parameters($this->prepareInputData());
 
         $this->files   = new UploadedFile($_FILES);
 
@@ -67,9 +84,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
         if (0 === strpos($this->headers->get('Content-Type'), 'application/x-www-form-urlencoded')
             && in_array(strtoupper($this->method), ['PUT', 'DELETE', 'PATCH'])
         ) {
-            parse_str(file_get_contents('php://input'), $data);
-
-            $this->request = new Parameters($this->trim($data));
+            $this->request = new Parameters($this->prepareInputData());
         }
         else
         {
@@ -91,6 +106,13 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
             }
             return trim($item);
         }, $data);
+
+        return $data;
+    }
+
+    protected function prepareInputData()
+    {
+        parse_str(file_get_contents('php://input'),$data);
 
         return $data;
     }
@@ -131,13 +153,22 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
     }
 
 
+    public function input($name = null,$default = false)
+    {
+        if(!$name) {
+            return $this->input->get($name,$default);
+        }
+        return $this->input;
+    }
+
+
     public function session($key = null)
     {
         if ($key === null) {
-            return Load::class('session');
+            return $this->application::get('session');
         }
 
-        return Load::class('session')->get($key);
+        return $this->application::get('session')->get($key);
     }
 
 
@@ -154,7 +185,7 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
     public function user()
     {
-        return Load::class('authentication')->user();
+        return $this->app('authentication')->user();
     }
 
 
@@ -210,12 +241,12 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
     public function ip()
     {
-        return Load::class('http')->ip();
+        return $this->app('http')->ip();
     }
 
     public function url()
     {
-        return Load::class('url')->request();
+        return $this->app('url')->request();
     }
 
 
@@ -232,18 +263,21 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
 
     public function validate(array $roles)
     {
-        $validation =  Validator::make($this->all(), $roles);
+        $validation =  $this->app('validator')->make($this->all(), $roles);
 
         if (!$validation->check()) {
 
-            Redirect::back()->withErrors($validation->messages());
+            $this->app('redirect')->back()->withErrors($validation->messages());
 
-            Response::send();
+            $this->app('response')::send();
         }
     }
 
-    public function app()
+    public function app($class = null)
     {
+        if($class) {
+            return $this->application::get($class);
+        }
         return $this->application;
     }
 
@@ -370,15 +404,4 @@ class Request implements ArrayAccess, Countable, Serializable, JsonSerializable
         unserialize($serialized);
     }
 
-    /**
-     * Specify data which should be serialized to JSON
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
-     */
-    public function jsonSerialize()
-    {
-        return json_encode($this->request->all());
-    }
 }

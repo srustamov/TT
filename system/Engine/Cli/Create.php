@@ -16,12 +16,12 @@ namespace System\Engine\Cli;
 
 class Create
 {
-    public static function execute($manage)
+    public static function execute($argv)
     {
-        $type= strtolower(explode(':', $manage[ 0 ], 2)[1]);
+        $type= strtolower(explode(':', $argv[ 0 ], 2)[1]);
 
         if ($type === 'facade') {
-            self::facade($manage[1]);
+            self::facade($argv[1]);
 
             return;
         }
@@ -37,17 +37,17 @@ class Create
 
         $_type = $type;
 
-        if (!isset($manage[ 1 ])) {
+        if (!isset($argv[ 1 ])) {
             new PrintConsole('error', "\nPlease enter {$type} name \n\n");
             exit();
         }
 
-        $name = $manage[ 1 ];
+        $name = $argv[ 1 ];
 
         $namespace = ( $type === 'Middleware') ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
 
         if (strpos($name, '/')) {
-            $_file = explode('/', $manage[ 1 ]);
+            $_file = explode('/', $argv[ 1 ]);
 
             $name = array_pop($_file);
 
@@ -81,8 +81,8 @@ class Create
         }
 
 
-        if (!file_exists("app/{$type}/" . $manage[ 1 ] . '.php')) {
-            $_ = explode('/', $manage[ 1 ]);
+        if (!file_exists("app/{$type}/" . $argv[ 1 ] . '.php')) {
+            $_ = explode('/', $argv[ 1 ]);
 
             if (\count($_) > 1) {
                 array_pop($_);
@@ -103,9 +103,9 @@ class Create
             }
 
 
-            if (touch(app_path("{$type}/{$manage[1]}.php"))) {
+            if (touch(app_path("{$type}/{$argv[1]}.php"))) {
                 try {
-                    file_put_contents(app_path("{$type}/{$manage[1]}.php"), $write_data);
+                    file_put_contents(app_path("{$type}/{$argv[1]}.php"), $write_data);
 
                     new PrintConsole('green', "\nCreate $name {$_type} successfully\n\n");
                 } catch (\Exception $e) {

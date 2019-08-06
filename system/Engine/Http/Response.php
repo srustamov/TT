@@ -7,7 +7,7 @@
 
 use Exception;
 use InvalidArgumentException;
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\File;
 use UnexpectedValueException;
 
@@ -15,8 +15,6 @@ class Response
 {
     private $content;
 
-    /**
-    */
     private $headers = [];
 
     private $statusCode = 200;
@@ -171,7 +169,7 @@ class Response
      * @param string $disposition
      * @return Response
      */
-    public function download(String $path, String $fileName = null, $disposition = 'attachment'): Response
+    public function download(String $path, String $fileName = null, $disposition = 'attachment'): self
     {
         $this->header('Content-Disposition', $disposition.';filename='.($fileName !== null ? $fileName : urlencode($fileName)));
         $this->header('Content-Type', 'application/force-download');
@@ -188,7 +186,7 @@ class Response
      * @param $contentType
      * @return Response
      */
-    public function contentType($contentType): Response
+    public function contentType($contentType): self
     {
         return $this->header('Content-Type', $contentType);
     }
@@ -199,7 +197,7 @@ class Response
      * @param bool $replace
      * @return Response
      */
-    public function header($name, $value, $replace = true): Response
+    public function header($name, $value, $replace = true): self
     {
         $this->headers->set($name,['value' => $value , 'replace' => $replace] );
 
@@ -305,7 +303,7 @@ class Response
      * @param $content
      * @return Response
      */
-    public function appendContent($content): Response
+    public function appendContent($content): self
     {
         return $this->setContent($this->getContent().$content);
     }
@@ -336,7 +334,7 @@ class Response
      * @param int $refresh
      * @return mixed
      */
-    public function redirect(String $url, $refresh = 0, $statusCode = 302)
+    public function redirect(String $url, $refresh = 0, $statusCode = 302): self
     {
         $this->header('Location', $url, true);
 
@@ -353,7 +351,7 @@ class Response
     /**
      * @return Response
      */
-    public function headersSend(): Response
+    public function headersSend(): self
     {
         if (!headers_sent()) {
             foreach ($this->headers->all() as $name => $header) {
@@ -382,7 +380,7 @@ class Response
 
         $this->headersSend();
 
-        if (Load::class('request')->isMethod('HEAD')) {
+        if (App::get('request')->isMethod('HEAD')) {
             $this->setContent(null);
         }
 
@@ -447,16 +445,18 @@ class Response
      *
      * @throws Exception
      */
-    public function __toString()
+    public function __toString(): string
     {
         $this->send();
+
+        return '';
     }
 
     /**
      * @param mixed $headers
      * @return Response
      */
-    public function setHeaders($headers): Response
+    public function setHeaders($headers): self
     {
         $this->headers = $headers;
         return $this;

@@ -9,10 +9,9 @@
 use Closure;
 use Exception;
 use System\Engine\App;
-use System\Engine\Load;
 use System\Engine\Reflections;
-use System\Engine\Http\Middleware;
 use System\Engine\Http\Response;
+use System\Engine\Http\Middleware;
 use System\Exceptions\RouteException;
 use App\Exceptions\NotFoundException;
 
@@ -59,6 +58,8 @@ class Route
 
     private $ajax = false;
 
+    private $app;
+
 
     /**
      * @param String $namespace
@@ -82,14 +83,14 @@ class Route
                 $domain = str_replace(['https://','http://'], '', $domain);
             }
 
-            $this->domain = Load::class('url')->scheme().'://'.$domain;
+            $this->domain = $this->app::get('url')->scheme().'://'.$domain;
 
             return $this;
         }
 
         $domain =  $this->domain !== null
             ? $this->domain
-            : Load::class('url')->base();
+            : $this->app::get('url')->base();
 
         return rtrim($domain, '/');
     }
@@ -148,11 +149,11 @@ class Route
      */
     protected function run()
     {
-        $requestUri = trim(Load::class('url')->current(), '/');
+        $requestUri = trim($this->app::get('url')->current(), '/');
 
         $method     = $this->getRequestMethod();
 
-        $ajax       = Load::class('http')->isAjax();
+        $ajax       = $this->app::get('http')->isAjax();
 
 
 
@@ -235,10 +236,10 @@ class Route
 
             $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method], $args);
 
-            if(Load::isInstance($content,'response')) {
+            if($this->app::isInstance($content,'response')) {
                 return $content;
             }
-            return Load::class('response')->setContent($content);
+            return $this->app::get('response')->setContent($content);
         } else {
             throw new NotFoundException;
         }
@@ -271,7 +272,7 @@ class Route
         }
 
 
-        return Load::class('response')->setContent($content);
+        return $this->app::get('response')->setContent($content);
     }
 
 
@@ -281,7 +282,7 @@ class Route
      */
     private function getRequestMethod(): string
     {
-        $method = Load::class('request')->method('GET');
+        $method = $this->app::get('request')->method('GET');
 
         return ($method === 'HEAD') ?  'GET' : $method;
     }
@@ -411,6 +412,7 @@ class Route
      */
     public function execute(App $app, $routeMiddleware):Response
     {
+        $this->app = $app;
         $this->middlewareAliases = $routeMiddleware;
 
         if (file_exists($file = $app->routesCacheFile())) {
@@ -421,6 +423,6 @@ class Route
             }
         }
 
-        return !CONSOLE ? $this->run() : Load::class('response');
+        return !CONSOLE ? $this->run() : $this->app::get('response');
     }
 }

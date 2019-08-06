@@ -6,7 +6,6 @@
  */
 
 use System\Engine\Http\Parameters;
-use System\Engine\Load;
 
  trait Parse
  {
@@ -71,7 +70,7 @@ use System\Engine\Load;
 
         $routeParams = array_combine(array_slice($keys, 0, count($args)), $args);
 
-        Load::class('request')->setRouteParams($routeParams);
+        $this->app::get('request')->setRouteParams($routeParams);
 
     }
 

@@ -13,7 +13,7 @@ use Windwalker\Edge\Cache\EdgeFileCache;
 use Windwalker\Edge\Loader\EdgeFileLoader;
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
 use Windwalker\Edge\Edge;
-use System\Engine\Load;
+use System\Engine\App;
 
 class View
 {
@@ -60,7 +60,7 @@ class View
 
     protected function withFlashData()
     {
-        if ($errors = Load::class('session')->flash('view-errors')) {
+        if ($errors = App::get('session')->flash('view-errors')) {
             $errors = new Errors($errors);
         }
 
@@ -87,15 +87,15 @@ class View
 
         $this->withFlashData();
 
-        $loader = new EdgeFileLoader(Load::class('config')->get('view.files'));
+        $loader = new EdgeFileLoader(App::get('config')->get('view.files'));
 
-        foreach (Load::class('config')->get('view.file_extensions', []) as $file_extension) {
+        foreach (App::get('config')->get('view.file_extensions', []) as $file_extension) {
             $loader->addFileExtension($file_extension);
         }
 
-        $edge = new Edge($loader, null, new EdgeFileCache(Load::class('config')->get('view.cache_path')));
+        $edge = new Edge($loader, null, new EdgeFileCache(App::get('config')->get('view.cache_path')));
 
-        if ($extensions = Load::class('config')->get('view.extensions')) {
+        if ($extensions = App::get('config')->get('view.extensions')) {
             foreach ($extensions as $extension) {
                 if (new $extension instanceof EdgeExtensionInterface) {
                     $edge->addExtension(new $extension());
@@ -106,7 +106,7 @@ class View
         $content = $edge->render($this->file, $this->data);
 
         if ($this->minify === null) {
-            $this->minify = Load::class('config')->get('view.minify');
+            $this->minify = App::get('config')->get('view.minify');
         }
 
         if ($this->minify) {

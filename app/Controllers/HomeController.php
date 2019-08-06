@@ -14,18 +14,18 @@ namespace App\Controllers;
 
 //use System\Engine\Http\Request;
 use System\Facades\Language;
-use System\Facades\Redirect;
 use System\Libraries\View\View;
+use System\Libraries\Redirect;
 
 class HomeController extends Controller
 {
-
 
 
     /**
      * HomeController welcome method.Show Home page
      *
      * @return View
+     * @throws \Exception
      */
     public function welcome(): View
     {
@@ -34,6 +34,7 @@ class HomeController extends Controller
 
     /**
      * @return View
+     * @throws \Exception
      */
     public function home(): View
     {
@@ -45,14 +46,15 @@ class HomeController extends Controller
      * HomeController changeLanguage method.Change site content language
      *
      * @param $lang
-     * @return \System\Libraries\Redirect
+     * @param Redirect $redirect
+     * @return Redirect
      */
-    public function language($lang): \System\Libraries\Redirect
+    public function language($lang,Redirect $redirect):Redirect
     {
         if (in_array($lang, array('az','en','tr'))) {
             Language::locale($lang);
         }
 
-        return Redirect::back();
+        return $redirect->back();
     }
 }

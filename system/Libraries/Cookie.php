@@ -10,7 +10,7 @@
 
 
 
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\OpenSsl;
 use System\Exceptions\CookieException;
 use ArrayAccess;
@@ -33,7 +33,7 @@ class Cookie implements ArrayAccess
 
     public function __construct()
     {
-        $config = Load::class('config')->get('cookie');
+        $config = App::get('config')->get('cookie');
 
         $this->prefix    = $config['prefix'];
         $this->http_only = is_bool($config['http_only'])? $config['http_only'] : $this->http_only;
@@ -222,6 +222,7 @@ class Cookie implements ArrayAccess
      * </p>
      * @return void
      * @since 5.0.0
+     * @throws CookieException
      */
     public function offsetSet($offset, $value)
     {
@@ -236,6 +237,7 @@ class Cookie implements ArrayAccess
      * </p>
      * @return void
      * @since 5.0.0
+     * @throws CookieException
      */
     public function offsetUnset($offset)
     {

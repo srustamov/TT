@@ -1,6 +1,5 @@
 <?php namespace App\Middleware;
 
-use System\Engine\Load;
 use System\Engine\Http\Request;
 
 class StartSession
@@ -11,15 +10,16 @@ class StartSession
      * @return mixed
      * @throws \Exception
      */
+
     public function handle(Request $request, \Closure $next)
     {
         if (!CONSOLE) {
-            if (!Load::class('http')->isAjax()) {
-                register_shutdown_function(static function () {
-                    Load::class('session')->set('_prev_url', Load::class('url')->current());
+            if (!$request->app('http')->isAjax()) {
+                register_shutdown_function(static function () use ($request){
+                    $request->app('session')->set('_prev_url', $request->app('url')->current());
                 });
             }
-            Load::class('session')->start();
+            $request->app('session')->start();
         }
 
         return $next($request);

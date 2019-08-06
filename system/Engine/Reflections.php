@@ -21,7 +21,7 @@ class Reflections
 
         foreach ($pParameters as $num => $param) {
             if ($param->getClass()) {
-                $args[$num] = Load::class($param->getClass()->name);
+                $args[$num] = App::get($param->getClass()->name);
             }
         }
         return $args;
@@ -34,7 +34,7 @@ class Reflections
 
         foreach ($parameters as $num => $param) {
             if ($param->getClass()) {
-                $args[$num] = Load::class($param->getClass()->name);                
+                $args[$num] = App::get($param->getClass()->name);
             }
         }
         return $args;

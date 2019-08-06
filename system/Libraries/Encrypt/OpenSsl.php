@@ -10,7 +10,7 @@
 
 use Exception;
 use System\Exceptions\EncryptException;
-use System\Engine\Load;
+use System\Facades\Config;
 
 class OpenSsl
 {
@@ -33,7 +33,7 @@ class OpenSsl
      */
     public function __construct()
     {
-        $key = Load::class('config')->get('app.key', false);
+        $key = Config::get('app.key', false);
 
         if (!$key && !CONSOLE) {
             throw new EncryptException('Application Down! Application Encryption key not found!');

@@ -23,10 +23,11 @@ class RegisterController extends Controller
 {
 
 
-     /**
+    /**
      * RegisterController show method.Show register form page
      *
      * @return \System\Libraries\View\View
+     * @throws \Exception
      */
     public function show()
     {
@@ -34,14 +35,12 @@ class RegisterController extends Controller
     }
 
 
-
     /**
-    * RegisterController register method.Post data validate and Create user
-    *
-    * @param \System\Engine\Http\Request
-    *
-    * @return \System\Libraries\Redirect
-    */
+     * RegisterController register method.Post data validate and Create user
+     *
+     * @param Request $request
+     * @return \System\Libraries\Redirect
+     */
     public function register(Request $request)
     {
         $validation =  Validator::make($request->all(), [

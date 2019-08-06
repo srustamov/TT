@@ -23,10 +23,11 @@ class LoginController extends Authentication
 
 
     /**
-    * LoginController show method.Show login form page
-    *
-    * @return \System\Libraries\View\View
-    */
+     * LoginController show method.Show login form page
+     *
+     * @return \System\Libraries\View\View
+     * @throws \Exception
+     */
     public function show()
     {
         return view('auth.login');
@@ -34,12 +35,12 @@ class LoginController extends Authentication
 
 
     /**
-    * LoginController login method.
-    * Validate post data and Authentication attempt
-    *
-    * @param \System\Engine\Http\Request
-    * @return \System\Libraries\Redirect
-    */
+     * LoginController login method.
+     * Validate post data and Authentication attempt
+     *
+     * @param Request $request
+     * @return \System\Libraries\Redirect
+     */
     public function login(Request $request)
     {
 

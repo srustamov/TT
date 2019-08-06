@@ -32,7 +32,7 @@ class SessionFileHandler implements SessionHandlerInterface
     {
         if (!is_dir($save_path)) {
             if (!mkdir($save_path, 0700, true)) {
-                throw new \Exception("Session: Configured save path [{$save_path}] is not a directory, doesn't exist or cannot be created.");
+                throw new \RuntimeException("Session: Configured save path [{$save_path}] is not a directory, doesn't exist or cannot be created.");
             }
         }
 

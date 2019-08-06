@@ -2,13 +2,10 @@
 
 use Exception;
 use RuntimeException;
-use System\Engine\Load;
+use System\Engine\App;
 
 abstract class Facade
 {
-    /**
-     *
-     */
     protected static function getFacadeAccessor()
     {
         throw new RuntimeException('Facade does not implement getFacadeAccessor method.');
@@ -23,7 +20,7 @@ abstract class Facade
      */
     public static function __callStatic($method, $args)
     {
-        $instance = Load::class(static::getFacadeAccessor());
+        $instance = App::get(static::getFacadeAccessor());
 
         return $instance->$method(...$args);
     }

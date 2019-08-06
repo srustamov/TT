@@ -13,7 +13,7 @@ use Closure;
 use Countable;
 use Exception;
 use ArrayAccess;
-use System\Engine\Load;
+use System\Facades\Config;
 use Predis\Session\Handler;
 use System\Libraries\Redis;
 use System\Facades\OpenSsl;
@@ -31,7 +31,7 @@ class Session implements ArrayAccess, Countable
     public function start()
     {
         if (session_status() === PHP_SESSION_NONE) {
-            $this->config = Load::class('config')->get('session');
+            $this->config = Config::get('session');
 
             ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
             ini_set('session.use_only_cookies', $this->config['only_cookies']);
@@ -124,6 +124,7 @@ class Session implements ArrayAccess, Countable
 
     /**
      * @param $key
+     * @param bool $default
      * @return bool
      */
 

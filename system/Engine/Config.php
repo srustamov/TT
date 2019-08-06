@@ -40,7 +40,6 @@ class Config implements ArrayAccess, Countable
             return true;
         }
         return array_key_exists($key, $this->configurations);
-
     }
 
 
@@ -83,7 +82,7 @@ class Config implements ArrayAccess, Countable
     {
         if (strpos($key, '.') !== false) {
             static::forgetRecursive($this->configurations, $key);
-        } else if ($this->has($key)) {
+        } elseif ($this->has($key)) {
             unset($this->configurations[$key]);
         }
     }

@@ -9,7 +9,7 @@
  */
 
 use System\Exceptions\DatabaseException;
-use System\Engine\Load;
+use System\Facades\Config;
 use PDOException;
 use PDO;
 
@@ -33,7 +33,7 @@ abstract class Connection
     public function reconnect()
     {
         if (!isset($this->general[ $this->group ])) {
-            $this->config[ $this->group ] = Load::class('config')->get("database.$this->group");
+            $this->config[ $this->group ] = Config::get("database.$this->group");
 
             $config = $this->config[ $this->group ];
 
@@ -84,9 +84,9 @@ abstract class Connection
 
     /**
      * Database connection close;
-     * @param String|null $group
+     * @param string|null $group
      */
-    public function disconnect(String $group = null)
+    public function disconnect(string $group = null)
     {
         $connect = $group? :$this->group;
 

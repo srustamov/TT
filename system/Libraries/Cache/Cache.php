@@ -13,17 +13,18 @@ use System\Libraries\Cache\Drivers\FileStore;
 use System\Libraries\Cache\Drivers\DatabaseStore;
 use System\Libraries\Cache\Drivers\MemcacheStore;
 use System\Libraries\Cache\Drivers\RedisStore;
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\DB;
 
 class Cache
 {
+    /**@var Drivers\CacheStore*/
     private $driver;
 
 
     public function __construct()
     {
-        $driver = Load::class('config')->get('cache.driver', 'file');
+        $driver = App::get('config')->get('cache.driver', 'file');
 
         $this->driver($driver);
     }
@@ -36,9 +37,6 @@ class Cache
             $this->driver = $driver;
         } else {
             switch (strtolower($driver)) {
-                case 'file':
-                    $this->driver = new FileStore();
-                    break;
                 case 'database':
                     $this->driver = new DatabaseStore();
                     break;
@@ -60,7 +58,7 @@ class Cache
     public function createDatabaseTable()
     {
         try {
-            $table = Load::class('config')->get('cache.database', [])['table'] ?? 'cache';
+            $table = App::get('config')->get('cache.database', [])['table'] ?? 'cache';
 
             $create = DB::exec("CREATE TABLE IF NOT EXISTS $table(
                               `id` int(11) NOT NULL AUTO_INCREMENT,

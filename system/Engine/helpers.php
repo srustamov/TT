@@ -1,13 +1,14 @@
 <?php
 /**
- * @author  Samir Rustamov <rustemovv96@gmail.com>
- * @link    https://github.com/srustamov/TT
- * @category Helper functions
+ * Application helper Functions
+ *
+ * @category Helper_Functions
+ * @author   Samir Rustamov <rustemovv96@gmail.com>
+ * @link     https://github.com/srustamov/TT
  */
 
 
 use System\Engine\App;
-use System\Engine\Load;
 
 function app(string $class = null)
 {
@@ -20,25 +21,11 @@ function app(string $class = null)
     return $app[$class];
 }
 
-/**
- * @param String|null $class
- * @param mixed ...$args
- * @return mixed|Load
- * @throws Exception
- */
-function load(string $class = null, ...$args)
-{
-    if ($class === null) {
-        return Load::instance();
-    }
-
-    return Load::class($class,...$args);
-}
-
 
 if (!function_exists('getallheaders')) {
 
-    function getallheaders() {
+    function getallheaders()
+    {
         $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (strpos($name, 'HTTP_') === 0) {
@@ -59,9 +46,9 @@ if (!function_exists('getallheaders')) {
 function config(String $name = null, $default = null)
 {
     if ($name === null) {
-        return Load::class('config');
+        return App::get('config');
     }
-    return Load::class('config')->get($name, $default);
+    return App::get('config')->get($name, $default);
 }
 
 
@@ -79,7 +66,7 @@ function setting($key, $default = null)
  */
 function import(String $file, $once = true)
 {
-    return load('file')->import($file, $once);
+    return App::get('file')->import($file, $once);
 }
 
 
@@ -90,11 +77,10 @@ function import(String $file, $once = true)
  */
 function importFiles($directory, $once = true)
 {
-    foreach (glob(rtrim($directory, DIRECTORY_SEPARATOR)."/*") as $file) {
+    foreach (glob(rtrim($directory, DIRECTORY_SEPARATOR) . "/*") as $file) {
         import($file, $once);
     }
 }
-
 
 
 function storage_path($path = '')
@@ -103,19 +89,16 @@ function storage_path($path = '')
 }
 
 
-
 function app_path($path = '')
 {
     return App::instance()->appPath($path);
 }
 
 
-
 function public_path($path = '')
 {
     return App::instance()->publicPath($path);
 }
-
 
 
 function path($path = '')
@@ -132,11 +115,11 @@ function path($path = '')
  */
 function abort(Int $http_code, $message = null, $headers = [])
 {
-    if (file_exists(app_path('Views/errors/'.$http_code.'.blade.php'))) {
-        $content =  view('errors.'.$http_code);
+    if (file_exists(app_path('Views/errors/' . $http_code . '.blade.php'))) {
+        $content = view('errors.' . $http_code);
     }
 
-    $response = Load::class('response')->setStatusCode($http_code, $message);
+    $response = App::get('response')->setStatusCode($http_code, $message);
 
     $response->withHeaders($headers);
 
@@ -146,7 +129,6 @@ function abort(Int $http_code, $message = null, $headers = [])
 
     App::instance()->end();
 }
-
 
 
 function inConsole()
@@ -159,20 +141,19 @@ function inConsole()
  * @return String
  * @throws Exception
  */
-function csrf_token():String
+function csrf_token(): String
 {
     static $token;
 
     if ($token === null) {
-        $token = Load::class('session')->get('_token');
+        $token = App::get('session')->get('_token');
     }
 
     return $token;
 }
 
 
-
-function csrf_field():String
+function csrf_field(): String
 {
     return '<input type="hidden" name="_token" value="' . csrf_token() . '" />';
 }
@@ -186,9 +167,8 @@ function csrf_field():String
  */
 function route($name, array $parameters = [])
 {
-    return Load::class('route')->getName($name, $parameters);
+    return App::get('route')->getName($name, $parameters);
 }
-
 
 
 if (!function_exists('flash')) {
@@ -199,7 +179,7 @@ if (!function_exists('flash')) {
      */
     function flash($key)
     {
-        return Load::class('session')->flash($key);
+        return App::get('session')->flash($key);
     }
 }
 
@@ -209,12 +189,11 @@ if (!function_exists('is_base64')) {
      * @param String $string
      * @return bool
      */
-    function is_base64(String $string):Bool
+    function is_base64(String $string): Bool
     {
         return base64_encode(base64_decode($string)) === $string;
     }
 }
-
 
 
 if (!function_exists('response')) {
@@ -224,7 +203,7 @@ if (!function_exists('response')) {
      */
     function response()
     {
-        return Load::class('response',...func_get_args());
+        return App::get('response', ...func_get_args());
     }
 }
 
@@ -237,7 +216,7 @@ if (!function_exists('json')) {
      */
     function json($data)
     {
-        return Load::class('response')->json($data);
+        return App::get('response')->json($data);
     }
 }
 
@@ -261,19 +240,19 @@ if (!function_exists('report')) {
         $extension = '.report';
 
         if (!is_dir($logDir) && !mkdir($logDir, 0755, true) && !is_dir($logDir)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $logDir));
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $logDir));
         }
 
         $report = '----------------------------' . PHP_EOL .
-                  ' Report                     ' . PHP_EOL .
-                  '----------------------------' . PHP_EOL .
-                  '|IP: ' . Load::class('http')->ip() . PHP_EOL .
-                  '|Subject: ' . $subject . PHP_EOL .
-                  '|File: ' . debug_backtrace()[ 0 ][ 'file' ] ?? '' . PHP_EOL .
-                  '|Line: ' . debug_backtrace()[ 0 ][ 'line' ] ?? '' . PHP_EOL .
-                  '|Date: ' . strftime('%d %B %Y %H:%M:%S') . PHP_EOL .
-                  '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
-        return Load::class('file')->append($logDir . $destination . $extension, $report);
+            ' Report                     ' . PHP_EOL .
+            '----------------------------' . PHP_EOL .
+            '|IP: ' . App::get('http')->ip() . PHP_EOL .
+            '|Subject: ' . $subject . PHP_EOL .
+            '|File: ' . debug_backtrace()[0]['file'] ?? '' . PHP_EOL .
+            '|Line: ' . debug_backtrace()[0]['line'] ?? '' . PHP_EOL .
+            '|Date: ' . strftime('%d %B %Y %H:%M:%S') . PHP_EOL .
+            '|Message: ' . $message . PHP_EOL . PHP_EOL . PHP_EOL;
+        return App::get('file')->append($logDir . $destination . $extension, $report);
     }
 }
 
@@ -292,7 +271,7 @@ if (!function_exists('env')) {
             return apache_getenv($name);
         }
 
-        return $_ENV[ $name ] ?? $_SERVER[ $name ] ?? false;
+        return $_ENV[$name] ?? $_SERVER[$name] ?? false;
     }
 }
 
@@ -305,14 +284,14 @@ if (!function_exists('cookie')) {
     function cookie()
     {
         if (func_num_args() === 0) {
-            return Load::class('cookie');
+            return App::get('cookie');
         }
 
         if (func_num_args() === 1) {
-            return Load::class('cookie')->get(func_get_args(0));
+            return App::get('cookie')->get(func_get_args(0));
         }
 
-        return Load::class('cookie',...func_get_args());
+        return App::get('cookie', ...func_get_args());
     }
 }
 
@@ -325,14 +304,14 @@ if (!function_exists('cache')) {
     function cache()
     {
         if (func_num_args() === 0) {
-            return Load::class('cache');
+            return App::get('cache');
         }
 
         if (func_num_args() === 1) {
-            return Load::class('cache')->get(func_get_arg(0));
+            return App::get('cache')->get(func_get_arg(0));
         }
 
-        return Load::class('cache')->put(...func_get_args());
+        return App::get('cache')->put(...func_get_args());
     }
 }
 
@@ -345,14 +324,14 @@ if (!function_exists('session')) {
     function session()
     {
         if (func_num_args() === 0) {
-            return Load::class('session');
+            return App::get('session');
         }
 
         if (func_num_args() === 1) {
-            return Load::class('session')->get(func_get_arg(0));
+            return App::get('session')->get(func_get_arg(0));
         }
 
-        return Load::class('session')->set(...func_get_args());
+        return App::get('session')->set(...func_get_args());
     }
 }
 
@@ -367,7 +346,7 @@ if (!function_exists('view')) {
      */
     function view(String $file, $data = [], $cache = false)
     {
-        return Load::class('view')->render($file, $data, $cache);
+        return App::get('view')->render($file, $data, $cache);
     }
 }
 
@@ -383,13 +362,12 @@ if (!function_exists('redirect')) {
     function redirect($link = false, $refresh = 0, $http_response_code = 302)
     {
         if ($link) {
-            return Load::class('redirect')->to($link, $refresh, $http_response_code);
+            return App::get('redirect')->to($link, $refresh, $http_response_code);
         }
 
-        return Load::class('redirect');
+        return App::get('redirect');
     }
 }
-
 
 
 if (!function_exists('lang')) {
@@ -402,10 +380,10 @@ if (!function_exists('lang')) {
     function lang($word = null, $replace = [])
     {
         if ($word !== null) {
-            return Load::class('language')->translate($word, $replace);
+            return App::get('language')->translate($word, $replace);
         }
 
-        return Load::class('language');
+        return App::get('language');
     }
 }
 
@@ -420,10 +398,10 @@ if (!function_exists('validator')) {
     function validator($data = null, $rules = [])
     {
         if ($data !== null) {
-            return Load::class('validator')->make($data, $rules);
+            return App::get('validator')->make($data, $rules);
         }
 
-        return Load::class('validator');
+        return App::get('validator');
     }
 }
 
@@ -431,7 +409,7 @@ if (!function_exists('validator')) {
 if (!function_exists('get')) {
     function get($name = false)
     {
-        return Load::class('input')->get($name);
+        return App::get('input')->get($name);
     }
 }
 
@@ -439,7 +417,7 @@ if (!function_exists('get')) {
 if (!function_exists('post')) {
     function post($name = false)
     {
-        return Load::class('input')->post($name);
+        return App::get('input')->post($name);
     }
 }
 
@@ -448,14 +426,14 @@ if (!function_exists('request')) {
     function request()
     {
         if (func_num_args() === 0) {
-            return Load::class('request');
+            return App::get('request');
         }
 
         if (func_num_args() === 1) {
-            return Load::class('request')->{func_get_arg(0)};
+            return App::get('request')->{func_get_arg(0)};
         }
 
-        return Load::class('request')->{func_get_arg(0)} = func_get_arg(1);
+        return App::get('request')->{func_get_arg(0)} = func_get_arg(1);
     }
 }
 
@@ -463,7 +441,7 @@ if (!function_exists('request')) {
 if (!function_exists('xssClean')) {
     function xssClean($data)
     {
-        return Load::class('input')->xssClean($data);
+        return App::get('input')->xssClean($data);
     }
 }
 
@@ -479,7 +457,7 @@ if (!function_exists('fullTrim')) {
 if (!function_exists('encode_php_tag')) {
     function encode_php_tag($str): String
     {
-        return str_replace(array( '<?' , '?>' ), array( '&lt;?' , '?&gt;' ), $str);
+        return str_replace(array('<?', '?>'), array('&lt;?', '?&gt;'), $str);
     }
 }
 
@@ -491,7 +469,7 @@ if (!function_exists('preg_replace_array')) {
          * @return mixed
          */
         $callback = static function () use (&$replacements) {
-                return array_shift($replacements);
+            return array_shift($replacements);
         };
 
         return preg_replace_callback($pattern, $callback, $subject);
@@ -502,7 +480,7 @@ if (!function_exists('preg_replace_array')) {
 if (!function_exists('str_replace_first')) {
     function str_replace_first($search, $replace, $subject): String
     {
-        return Load::class('str')->replace_first($search, $replace, $subject);
+        return App::get('str')->replace_first($search, $replace, $subject);
     }
 }
 
@@ -510,7 +488,7 @@ if (!function_exists('str_replace_first')) {
 if (!function_exists('str_replace_last')) {
     function str_replace_last($search, $replace, $subject): String
     {
-        return Load::class('str')->replace_last($search, $replace, $subject);
+        return App::get('str')->replace_last($search, $replace, $subject);
     }
 }
 
@@ -518,7 +496,7 @@ if (!function_exists('str_replace_last')) {
 if (!function_exists('str_slug')) {
     function str_slug($str, $separator = '-'): String
     {
-        return Load::class('str')->slug($str, $separator);
+        return App::get('str')->slug($str, $separator);
     }
 }
 
@@ -526,7 +504,7 @@ if (!function_exists('str_slug')) {
 if (!function_exists('str_limit')) {
     function str_limit($str, $limit = 100, $end = '...'): String
     {
-        return Load::class('str')->limit($str, $limit, $end);
+        return App::get('str')->limit($str, $limit, $end);
     }
 }
 
@@ -584,7 +562,7 @@ if (!function_exists('len')) {
 if (!function_exists('str_replace_array')) {
     function str_replace_array($search, array $replace, $subject): String
     {
-        return Load::class('str')->replace_array($search, $replace, $subject);
+        return App::get('str')->replace_array($search, $replace, $subject);
     }
 }
 
@@ -593,10 +571,10 @@ if (!function_exists('url')) {
     function url($url = null, $parameters = [])
     {
         if ($url === null) {
-            return Load::class('url');
+            return App::get('url');
         }
 
-        return Load::class('url')->to(...func_get_args());
+        return App::get('url')->to(...func_get_args());
     }
 }
 
@@ -604,7 +582,7 @@ if (!function_exists('url')) {
 if (!function_exists('current_url')) {
     function current_url($url = ''): String
     {
-        return Load::class('url')->current($url);
+        return App::get('url')->current($url);
     }
 }
 
@@ -642,7 +620,7 @@ if (!function_exists('segment')) {
      */
     function segment(Int $number)
     {
-        return Load::class('url')->segment($number);
+        return App::get('url')->segment($number);
     }
 }
 
@@ -667,9 +645,6 @@ if (!function_exists('debug')) {
 }
 
 
-
-
-
 if (!function_exists('is_mail')) {
     /**
      * @param String $mail
@@ -678,7 +653,7 @@ if (!function_exists('is_mail')) {
      */
     function is_mail(String $mail)
     {
-        return Load::class('validator')->is_mail($mail);
+        return App::get('validator')->is_mail($mail);
     }
 }
 
@@ -686,7 +661,7 @@ if (!function_exists('is_mail')) {
 if (!function_exists('is_url')) {
     function is_url(String $url)
     {
-        return Load::class('validator')->is_url($url);
+        return App::get('validator')->is_url($url);
     }
 }
 
@@ -694,7 +669,7 @@ if (!function_exists('is_url')) {
 if (!function_exists('is_ip')) {
     function is_ip($ip)
     {
-        return Load::class('validator')->is_ip($ip);
+        return App::get('validator')->is_ip($ip);
     }
 }
 
@@ -702,7 +677,7 @@ if (!function_exists('is_ip')) {
 if (!function_exists('css')) {
     function css($file, $modifiedTime = false): String
     {
-        return Load::class('html')->css($file, $modifiedTime);
+        return App::get('html')->css($file, $modifiedTime);
     }
 }
 
@@ -710,7 +685,7 @@ if (!function_exists('css')) {
 if (!function_exists('js')) {
     function js($file, $modifiedTime = false): String
     {
-        return Load::class('html')->js($file, $modifiedTime);
+        return App::get('html')->js($file, $modifiedTime);
     }
 }
 
@@ -718,6 +693,6 @@ if (!function_exists('js')) {
 if (!function_exists('img')) {
     function img($file, $attributes = []): String
     {
-        return Load::class('html')->img($file, $attributes);
+        return App::get('html')->img($file, $attributes);
     }
 }

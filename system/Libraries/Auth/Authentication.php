@@ -9,25 +9,24 @@
  */
 
 use Exception;
-use InvalidArgumentException;
 use RuntimeException;
-use System\Libraries\Auth\Drivers\SessionAttemptDriver;
-use System\Libraries\Auth\Drivers\DatabaseAttemptDriver;
-use System\Libraries\Auth\Drivers\RedisAttemptDriver;
+use InvalidArgumentException;
 use System\Facades\Language;
 use System\Facades\Redirect;
 use System\Facades\Session;
 use System\Facades\Cookie;
 use System\Facades\Config;
-use System\Facades\Hash;
 use System\Libraries\Arr;
+use System\Facades\Hash;
 use System\Facades\DB;
+
 
 class Authentication
 {
     protected $message;
 
 
+    /**@var Drivers\AttemptDriverInterface*/
     protected $driver;
 
 
@@ -354,13 +353,13 @@ class Authentication
     {
         switch ($this->attemptDriver) {
             case 'session':
-                $this->driver = new SessionAttemptDriver();
+                $this->driver = new Drivers\SessionAttemptDriver();
                 break;
             case 'database':
-                $this->driver = new DatabaseAttemptDriver();
+                $this->driver = new Drivers\DatabaseAttemptDriver();
                 break;
             case 'redis':
-                $this->driver = new RedisAttemptDriver();
+                $this->driver = new Drivers\RedisAttemptDriver();
                 break;
             default:
                 throw new RuntimeException('Attempt Driver not found !');

@@ -8,7 +8,7 @@
  * @category   Url
  */
 
-use System\Engine\Load;
+use System\Engine\App;
 use System\Facades\Route;
 
 class Url
@@ -79,7 +79,7 @@ class Url
                 );
         }
 
-        $base_url = Load::class('config')->get('app.url');
+        $base_url = App::get('config')->get('app.url');
 
         if (!$base_url || empty($base_url)) {
             $base_url  = $this->scheme().'://'.$this->host();

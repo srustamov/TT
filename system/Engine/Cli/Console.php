@@ -5,7 +5,7 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use System\Engine\Load;
+use System\Engine\App;
 use System\Engine\Cli\Route as CliRoute;
 use System\Engine\LoadEnvVariables;
 
@@ -49,7 +49,10 @@ class Console
         PrintConsole::output();
 
         switch (strtolower($manage[ 0 ])) {
-            case 'runserver' || 'serve' || 'start':
+            case 'runserver':
+      	    case 'serve':
+      	    case 'start':
+      	    case 'run':
                 $instance->startPhpDevelopmentServer($manage);
                 break;
             case 'session:table':
@@ -74,9 +77,11 @@ class Console
                 $instance->keyGenerate();
                 break;
             case 'build':
+            case 'prod':
+            case 'production':
                 self::appDebugFalse();
                 $instance->keyGenerate();
-                (new LoadEnvVariables(Load::class('app')))->handle();
+                (new LoadEnvVariables(App::instance()))->handle();
                 self::command('config:cache --create');
                 self::command('route:cache --create');
                 new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL.PHP_EOL);
@@ -134,7 +139,7 @@ class Console
 
     protected function keyGenerate()
     {
-        $app = Load::class('app');
+        $app = App::get('app');
 
         $envFile = $app->envFile();
 
@@ -178,7 +183,7 @@ class Console
 
     private static function appDebugFalse()
     {
-        $app = Load::class('app');
+        $app = App::get('app');
 
         $envFile = $app->envFile();
 

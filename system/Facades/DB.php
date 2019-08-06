@@ -4,11 +4,11 @@
  * @package	TT
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link https://github.com/srustamov/TT
- * @method static table($table): DB
- * @method static where(): DB
+ * @method static table($table): self
+ * @method static where(): self
  * @method static first()
  * @method static get()
- * @method static exec(string $getSessionTableSql)
+ * @method static exec(string $query)
  */
 
 

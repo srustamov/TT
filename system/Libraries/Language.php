@@ -10,7 +10,6 @@
 
 
 use System\Engine\App;
-use System\Engine\Load;
 
 class Language implements \ArrayAccess
 {
@@ -95,17 +94,17 @@ class Language implements \ArrayAccess
     public function locale($locale = null):String
     {
         if (!is_null($locale)) {
-            Load::class('session')->set('_LOCALE', $locale);
+            App::get('session')->set('_LOCALE', $locale);
 
             return $locale;
         } else {
-            if ($locale = Load::class('session')->get('_LOCALE')) {
+            if ($locale = App::get('session')->get('_LOCALE')) {
                 return $locale;
             } else {
-                $locale  = Load::class('config')->get('app.locale', 'en');
+                $locale  = App::get('config')->get('app.locale', 'en');
 
-                Load::class('session')->set('_LOCALE', $locale);
-               
+                App::get('session')->set('_LOCALE', $locale);
+
                 return $locale;
             }
         }
