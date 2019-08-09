@@ -152,6 +152,9 @@ use Predis\Client as RedisDriver;
  * @method array georadius($key, $longitude, $latitude, $radius, $unit, array $options = null)
  * @method array georadiusbymember($key, $member, $radius, $unit, array $options = null)
  */
+
+ use System\Facades\Config;
+
 class Redis extends RedisDriver
 {
     private $redis;
@@ -162,7 +165,7 @@ class Redis extends RedisDriver
         if (!empty($option)) {
             $this->redis = parent::__construct($option);
         } else {
-            $config = Load::class('config')->get('cache.redis');
+            $config = Config::get('cache.redis');
             $this->redis = parent::__construct($config);
         }
 

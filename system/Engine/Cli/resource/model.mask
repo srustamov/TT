@@ -12,8 +12,14 @@ use System\Libraries\Database\Model;
 class :name extends Model
 {
 
-	 protected $table;
+   // default :names
+   protected $table;
 
-	 protected $fillable;
+   // default [*]
+   protected $select;
 
+   /*
+   * default Primary Key id
+   protected $primaryKey;
+   */
 }

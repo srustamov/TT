@@ -22,8 +22,6 @@ abstract class Model
 
     protected $table;
 
-    protected $fillable;
-
     protected $select  = ['*'];
 
     protected $primaryKey = 'id';
@@ -61,71 +59,70 @@ abstract class Model
      * @param array $data
      * @return bool
      */
-    public static function create($data = []):Bool
+    public static function create(array $data):Bool
     {
-        $fillable = (new static)->fillable;
-
-        if (!is_null($fillable)) {
-            $data = Arr::only($data, $fillable);
-
-            if (!Arr::isAssoc($data)) {
-                $data = array_combine($fillable, $data);
-            }
-        }
-
-
         return DB::table((new static)->getTable())->insert($data);
     }
 
 
     /**
      * @return mixed
-     * @internal param $primaryKey
+     * @param array|int $primaryKey
+     * @internal param $pk
      */
-    public static function find()
+    public static function find($primaryKey)
     {
-        $primaryKey = (new static)->primaryKey;
+        $pk = (new static)->primaryKey;
 
-        if (is_null($primaryKey)) {
+        if (is_null($pk)) {
             throw new Exception('No primary key defined on model.');
         }
 
-        $find  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
-
         $select = !is_null((new static)->select) ? (new static)->select : '*';
 
-        return DB::table((new static)->getTable())
-            ->select($select)
-            ->whereIn($primaryKey, $find)
-            ->get((count($find) == 1));
+        $query =  DB::table((new static)->getTable())->select($select);
+
+        $first = true;
+
+        if (is_array($primaryKey)) {
+            $query->whereIn($pk, $primaryKey);
+            if (count($primaryKey) > 1) {
+                $first = false;
+            }
+        } else {
+            $query->where($pk, $primaryKey);
+        }
+
+        return $query->get($first);
     }
 
 
     public static function findOrFail(...$args)
     {
-        $find = self::find(...$args);
-
-        if($find) {
-          return $find;
+        if ($result = self::find(...$args)) {
+            return $result;
         }
-
         throw new ModelNotFoundException;
     }
 
 
-    public static function destroy()
+    public static function destroy($primaryKey)
     {
-        $primaryKey = (new static)->primaryKey;
+        $pk = (new static)->primaryKey;
 
-        if (is_null($primaryKey)) {
+        if (is_null($pk)) {
             throw new Exception('No primary key defined on model.');
         }
 
-        $ids  = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+        $query = DB::table((new static)->getTable());
 
-        return   DB::table((new static)->getTable())
-                    ->whereIn($primaryKey, $ids)
-                    ->delete();
+        if (is_array($primaryKey)) {
+            $query->whereIn($pk, $primaryKey);
+        } else {
+            $query->where($pk, $primaryKey);
+        }
+
+        return $query->delete();
     }
 
 

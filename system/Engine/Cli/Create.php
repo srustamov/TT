@@ -7,109 +7,84 @@
 
 namespace System\Engine\Cli;
 
-/**
- * Description of Create
- *
- * @author Samir Rustamov
- */
-
 
 class Create
 {
     public static function execute($argv)
     {
-        $type= strtolower(explode(':', $argv[ 0 ], 2)[1]);
 
-        if ($type === 'facade') {
-            self::facade($argv[1]);
+        $subCommand = false;
 
-            return;
+        list($command,$name,&$subCommand) = $argv;
+
+        list($create,$type) = explode(':',$command,2);
+
+        if(strlen($type) === 1) {
+
+          $replace = [
+            'c' => 'controller',
+            'm' => 'model',
+            'f' => 'facade',
+            'r' => 'resource',
+          ];
+          $type = $replace[strtolower($type)];
         }
 
-        $is_resource = false;
-
-        if ($type === 'resource') {
-            $is_resource = true;
-            $type = 'controller';
-        }
-
-        $type = ucfirst($type);
-
-        $_type = $type;
-
-        if (!isset($argv[ 1 ])) {
+        if(!isset($argv[1])) {
             new PrintConsole('error', "\nPlease enter {$type} name \n\n");
             exit();
         }
 
-        $name = $argv[ 1 ];
+
+        if ($type === 'facade') {
+            self::facade($argv[1]);
+            return;
+        }
+
+        $type = ucfirst($type);
 
         $namespace = ( $type === 'Middleware') ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
 
         if (strpos($name, '/')) {
-            $_file = explode('/', $argv[ 1 ]);
-
-            $name = array_pop($_file);
-
-            if (count($_file) > 0) {
-                $namespace .= '\\' . implode('\\', $_file);
-            }
+            $part = explode('/', $name);
+            $name = array_pop($part);
+            $dir  = implode('/',$part);
+            $namespace .= '\\' . str_replace('/','\\',$dir);
         }
 
 
         switch ($type) {
             case 'Controller':
-                $type = 'Controllers';
-                if ($is_resource) {
-                    $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/resource.mask'));
-                } else {
-                    $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/controller.mask'));
-                }
-                break;
             case 'Model':
-                $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/model.mask'));
-                $type = 'Models';
-                break;
             case 'Middleware':
-                $type = 'Middleware';
-                $write_data = str_replace([ ':namespace' , ':name' ], [ $namespace , $name ], file_get_contents(__DIR__ . '/resource/middleware.mask'));
+                if ($subCommand && strtolower($subCommand) === '-r') {
+                    $content = str_replace(
+                       [ ':namespace' , ':name' ],
+                       [ $namespace , $name ],
+                       file_get_contents(__DIR__ . '/resource/resource.mask')
+                     );
+                } else {
+                    $content = str_replace(
+                      [ ':namespace' , ':name' ], [ $namespace , $name ],
+                      file_get_contents(__DIR__ . '/resource/'.\strtolower($type).'.mask')
+                    );
+                }
+                $type .= ($type == 'Middleware') ?'':'s';
                 break;
             default:
                 new PrintConsole('error', "\nCreate {$type} name undefined. Please use type ['controller,model,middleware']\n\n");
                 exit();
-                break;
         }
 
-
-        if (!file_exists("app/{$type}/" . $argv[ 1 ] . '.php')) {
-            $_ = explode('/', $argv[ 1 ]);
-
-            if (\count($_) > 1) {
-                array_pop($_);
-
-                if (\count($_) > 1) {
-                    $__ = $_;
-                    $path = '';
-                    foreach ($_ as $dir) {
-                        $path .= array_shift($__) . '/';
-
-                        if (!mkdir($concurrentDirectory = app_path($type . '/' . $path)) && !is_dir($concurrentDirectory)) {
-                            throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-                        }
-                    }
-                } else if (!mkdir($concurrentDirectory = app_path($type . '/' . implode('/', $_))) && !is_dir($concurrentDirectory)) {
-                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-                }
+        if (!file_exists("app/{$type}/{$argv[1]}.php")) {
+            if (isset($dir) && !is_dir(app_path($type.'/'.$dir))) {
+              if (!mkdir(\app_path($type.'/'.$dir),0777,true)) {
+                  throw new \RuntimeException(sprintf('Directory "%s" was not created', app_path($dir)));
+              }
             }
-
-
             if (touch(app_path("{$type}/{$argv[1]}.php"))) {
-                try {
-                    file_put_contents(app_path("{$type}/{$argv[1]}.php"), $write_data);
-
-                    new PrintConsole('green', "\nCreate $name {$_type} successfully\n\n");
-                } catch (\Exception $e) {
-                }
+                file_put_contents(app_path("{$type}/{$argv[1]}.php"), $content);
+                new PrintConsole('green', "\nCreate $name successfully\n\n");
             } else {
                 new PrintConsole('error', "\nCreate file failed\n\n");
             }

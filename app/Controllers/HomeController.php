@@ -43,7 +43,7 @@ class HomeController extends Controller
 
 
     /**
-     * HomeController changeLanguage method.Change site content language
+     * Change site content language
      *
      * @param $lang
      * @param Redirect $redirect

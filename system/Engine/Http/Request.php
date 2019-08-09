@@ -6,7 +6,6 @@
  */
 
 
-
 use function file_get_contents;
 use function in_array;
 use Countable;
@@ -28,34 +27,33 @@ use System\Facades\Validator;
  */
 class Request implements ArrayAccess, Countable, Serializable
 {
-    /**@var Parameters*/
+    /**@var Parameters */
     public $request = [];
 
-    /**@var Parameters*/
+    /**@var Parameters */
     public $query = [];
 
-    /**@var Parameters*/
+    /**@var Parameters */
     public $input = [];
 
-    /**@var Parameters*/
+    /**@var Parameters */
     public $files = [];
 
-    /**@var Parameters*/
+    /**@var Parameters */
     public $cookies = [];
 
-    /**@var Parameters*/
+    /**@var Parameters */
     public $server = [];
 
-    /**@var Parameters*/
+    /**@var Parameters */
     public $headers = [];
 
     public $routeParams = [];
 
     public $method;
 
-    /**@var App*/
+    /**@var App */
     private $application;
-
 
 
     public function __construct(App $application)
@@ -68,30 +66,26 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function prepare()
     {
-        $this->server  = new Parameters($_SERVER);
+        $this->server = new Parameters($_SERVER);
 
         $this->headers = new Parameters(getallheaders());
 
         $this->cookies = new Parameters($_COOKIE);
 
-        $this->query   = new Parameters();
+        $this->query = new Parameters($_GET);
 
-        $this->input   = new Parameters($this->prepareInputData());
+        $this->input = new Parameters($this->prepareInputData());
 
-        $this->files   = new UploadedFile($_FILES);
+        $this->files = new UploadedFile($_FILES);
 
-        $this->method  = $this->method('GET');
+        $this->method = $this->method('GET');
 
         if (0 === strpos($this->headers->get('Content-Type'), 'application/x-www-form-urlencoded')
             && in_array(strtoupper($this->method), ['PUT', 'DELETE', 'PATCH'])
         ) {
-            $this->request = new Parameters($this->prepareInputData());
-        }
-        else
-        {
-            $this->query   = new Parameters($this->trim($_GET));
-
-            $this->request = new Parameters($this->trim($_POST));
+            $this->request = $this->input;
+        } else {
+            $this->request = new Parameters($_POST);
         }
 
         return $this;
@@ -99,36 +93,21 @@ class Request implements ArrayAccess, Countable, Serializable
     }
 
 
-    protected function trim($data)
-    {
-        $data = array_map(function ($item) {
-            if (is_array($item)) {
-                return $this->trim($item);
-            }
-            return trim($item);
-        }, $data);
-
-        return $data;
-    }
-
     protected function prepareInputData()
     {
-        parse_str(file_get_contents('php://input'),$data);
+        parse_str(file_get_contents('php://input'), $data);
 
         return $data;
     }
 
 
-    public function setRouteParams($key,$value = null)
+    public function setRouteParams($key, $value = null)
     {
-        if(is_array($key)) {
-            foreach($key as $name => $_value)
-            {
+        if (is_array($key)) {
+            foreach ($key as $name => $_value) {
                 $this->routeParams[$name] = $_value;
             }
-        }
-        else
-        {
+        } else {
             $this->routeParams[$key] = $value;
         }
     }
@@ -154,10 +133,10 @@ class Request implements ArrayAccess, Countable, Serializable
     }
 
 
-    public function input($name = null,$default = false)
+    public function input($name = null, $default = false)
     {
-        if(!$name) {
-            return $this->input->get($name,$default);
+        if (!$name) {
+            return $this->input->get($name, $default);
         }
         return $this->input;
     }
@@ -175,7 +154,7 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function cookie($key = null)
     {
-        if($key === null) {
+        if ($key === null) {
             return $this->cookies;
         }
 
@@ -192,10 +171,10 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function server($key = null, $default = null)
     {
-        if($key === null) {
+        if ($key === null) {
             return $this->server;
         }
-        return $this->server->get(strtoupper($key),$default);
+        return $this->server->get(strtoupper($key), $default);
     }
 
 
@@ -205,19 +184,17 @@ class Request implements ArrayAccess, Countable, Serializable
     }
 
 
-
     public function method($default = 'GET'): String
     {
 
-        if($this->method === null)
-        {
+        if ($this->method === null) {
             $method = $this->server('request_method');
 
             if ($method === 'POST') {
 
                 $xhmo = $this->headers->get('X-HTTP-Method-Override');
 
-                if ($xhmo && in_array($xhmo, array( 'PUT' , 'DELETE' , 'PATCH' ))) {
+                if ($xhmo && in_array($xhmo, array('PUT', 'DELETE', 'PATCH'))) {
                     $method = $xhmo;
                 }
             }
@@ -225,7 +202,7 @@ class Request implements ArrayAccess, Countable, Serializable
             $method = $this->method;
         }
 
-        return $method ? : $default;
+        return $method ?: $default;
     }
 
 
@@ -237,7 +214,7 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function ajax(): Bool
     {
-        return ($this->server('HTTP_X_REQUESTED_WITH')  === 'XMLHttpRequest');
+        return ($this->server('HTTP_X_REQUESTED_WITH') === 'XMLHttpRequest');
     }
 
     public function ip()
@@ -261,10 +238,9 @@ class Request implements ArrayAccess, Countable, Serializable
     }
 
 
-
     public function validate(array $roles)
     {
-        $validation =  $this->app('validator')->make($this->all(), $roles);
+        $validation = $this->app('validator')->make($this->all(), $roles);
 
         if (!$validation->check()) {
 
@@ -276,7 +252,7 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function app($class = null)
     {
-        if($class) {
+        if ($class) {
             return $this->application::get($class);
         }
         return $this->application;
@@ -292,13 +268,13 @@ class Request implements ArrayAccess, Countable, Serializable
         return true;
     }
 
-    public function __set($name,$value)
+    public function __set($name, $value)
     {
-        return $this->request->set($name,$value);
+        return $this->request->set($name, $value);
     }
 
 
-    public function __call($method,$args)
+    public function __call($method, $args)
     {
         return $this->request->{$method}(...$args);
     }

@@ -6,11 +6,6 @@
  */
 
 
-/**
-* @author  Samir Rustamov <rustemovv96@gmail.com>
-* @link    https://github.com/srustamov/TT
-*/
-
 namespace System\Engine\Cli;
 
 /**
@@ -24,6 +19,9 @@ use System\Engine\App;
 
 class Config
 {
+    /**
+     * @param $subCommand
+     */
     public static function clearConfigsCacheOrCreate($subCommand)
     {
         $file = App::instance()->configsCacheFile();
@@ -35,8 +33,6 @@ class Config
             foreach (glob(path('app/Config/*.php')) as $config) {
                 $configsArray[ substr(basename($config), 0, -4) ] = require $config;
             }
-
-
 
             file_put_contents($file, "<?php \n\n return array(\n\n");
 
@@ -54,6 +50,9 @@ class Config
         }
     }
 
+    /**
+     * @param $configsArray
+     */
     protected static function create($configsArray)
     {
 

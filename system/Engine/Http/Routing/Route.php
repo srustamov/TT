@@ -165,14 +165,14 @@ class Route
 
             $args    = [];
 
-            $route   = $resource[ 'path' ];
+            $route   = rtrim($resource['path'],'/');
 
             $handler = $resource[ 'handler' ];
 
             if (preg_match('/({.+?})/', $route)) {
                 list($args, $uri, $route) = $this->parseRoute($requestUri, $route, $resource[ 'pattern' ] ?? []);
             }
-
+            
             if (!preg_match("#^$route$#", $requestUri)) {
                 unset($this->routes[ $method ]);
                 continue;

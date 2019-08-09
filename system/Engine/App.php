@@ -346,7 +346,10 @@ class App implements ArrayAccess
                 return static::get($instance, ...$args);
             }
 
-            $instance = new $class(...Reflections::classMethodParameters($class, '__construct', $args));
+            $instance = call_user_func_array(
+                [new $class,'__construct'],
+                Reflections::classMethodParameters($class, '__construct', $args)
+            );
 
             static::$classes[$class] = $instance;
 

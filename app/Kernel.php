@@ -5,6 +5,7 @@ use System\Engine\App;
 class Kernel extends App
 {
     protected $middleware = [
+        \App\Middleware\TrimString::class ,
         \App\Middleware\StartSession::class ,
         \App\Middleware\CsrfProtected::class,
         //\App\Middleware\CorsMiddleware::class,
@@ -19,13 +20,13 @@ class Kernel extends App
     ];
 
 
-    
+
     /*
     public function __construct(...$args)
-    {   
+    {
         parent::__construct(...$args);
 
-        //before bootstrapping 
+        //before bootstrapping
 
         #code...
 

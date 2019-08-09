@@ -7,11 +7,6 @@
 
 namespace System\Engine\Cli;
 
-/**
- * Description of CreateTables
- *
- * @author Samir Rustamov
- */
 
 use System\Engine\App;
 use System\Facades\DB;
@@ -91,6 +86,8 @@ class CreateTables
                     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (`id`),
                     UNIQUE KEY `api_token` (`api_token`),
-                    UNIQUE KEY `email` (`email`))';
+                    UNIQUE KEY `email` (`email`),
+                    UNIQUE KEY `remember_token` (`remember_token`)
+            )';
     }
 }

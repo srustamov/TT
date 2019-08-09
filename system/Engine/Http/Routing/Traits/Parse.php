@@ -19,7 +19,6 @@ use System\Engine\Http\Parameters;
 
         $url = $path;
 
-
         if (is_array($path)) {
 
             $parameters = new Parameters($path);
@@ -43,8 +42,8 @@ use System\Engine\Http\Parameters;
 
         $middleware_array = array_merge($this->group_middleware, $middleware);
 
-        $_path = rtrim($this->domain().'/'.trim($this->prefix.strtolower($url), '/'), '/');
-
+        $_path = rtrim($this->domain().'/'.ltrim($this->prefix.strtolower($url),'/'));
+        
         if (isset($parameters) && $parameters->has('name')) {
             $this->routes['NAMES'][$this->group_name.$parameters->get('name')] = $_path;
         } elseif ($this->name !== null) {

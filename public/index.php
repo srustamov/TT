@@ -10,7 +10,7 @@
  * @link 		https://github.com/srustamov/TT
  *
  */
-
+ini_set('display_errors',1);
 header('X-Powered-By:TT Framework');
 //--------------------------------------------------
 // Defined application started time

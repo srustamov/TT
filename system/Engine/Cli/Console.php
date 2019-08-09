@@ -86,20 +86,20 @@ class Console
                 self::command('route:cache --create');
                 new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL.PHP_EOL);
                 break;
+            case 'create:controller':
+            case 'create:model':
+            case 'create:middleware':
+            case 'create:resource':
+            case 'create:facade':
+            case 'c:middleware':
+            case 'c:c':
+            case 'c:m':
+            case 'c:r':
+            case 'c:f':
+                Create::execute($manage);
+                break;
             default:
-                $create = array(
-                    'create:controller',
-                    'create:model',
-                    'create:middleware',
-                    'create:resource',
-                    'create:facade',
-                );
-                if (in_array($manage[0], $create, true)) {
-                    Create::execute($manage);
-                } else {
-                    PrintConsole::commandList();
-                }
-
+                PrintConsole::commandList();
                 break;
         }
     }
