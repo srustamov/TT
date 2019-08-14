@@ -56,6 +56,6 @@ class ApiMiddleware
             }
         }
 
-        return $token;
+        return $token ?: $request->get('token');
     }
 }

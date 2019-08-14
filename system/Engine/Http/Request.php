@@ -130,7 +130,7 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function input($name = null, $default = false)
     {
-        if (!$name) {
+        if ($name) {
             return $this->input->get($name, $default);
         }
         return $this->input;
