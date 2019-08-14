@@ -13,7 +13,7 @@
 namespace App\Controllers;
 
 use System\Engine\Http\Request;
-use System\Facades\Language;
+use System\Libraries\Language;
 use System\Libraries\View\View;
 use System\Libraries\Redirect;
 
@@ -49,10 +49,12 @@ class HomeController extends Controller
      * @param Redirect $redirect
      * @return Redirect
      */
-    public function language($lang, Redirect $redirect):Redirect
+    public function language($lang, Redirect $redirect,Language $language):Redirect
     {
+        //$lang = request()->params('lang');
+
         if (in_array($lang, array('az','en','tr'))) {
-            Language::locale($lang);
+            $language->locale($lang);
         }
 
         return $redirect->back();

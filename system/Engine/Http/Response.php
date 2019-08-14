@@ -258,7 +258,6 @@ class Response
     {
         $this->headers->remove($name);
 
-
         return $this;
     }
 
