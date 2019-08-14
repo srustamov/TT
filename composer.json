@@ -1,6 +1,5 @@
 {
   "name": "srustamov/tt",
-  "version":"1.3.0",
   "description": "php simple and fastest mini mvc framework",
   "type": "project",
   "license": "MIT",
