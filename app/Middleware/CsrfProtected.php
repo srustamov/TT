@@ -72,7 +72,7 @@ class CsrfProtected
             return false;
         }
 
-        if ( $input !== $response) {
+        if ($input !== $response) {
             return false;
         }
 

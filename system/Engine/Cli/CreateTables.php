@@ -7,7 +7,6 @@
 
 namespace System\Engine\Cli;
 
-
 use System\Engine\App;
 use System\Facades\DB;
 

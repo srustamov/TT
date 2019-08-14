@@ -141,22 +141,20 @@ class Response
      * @param null $statusCode
      * @return Response
      */
-    public function json($data = null,$statusCode = null): Response
+    public function json($data = null, $statusCode = null): Response
     {
         $this->contentType('application/json');
 
-        if($statusCode !== null && is_int($statusCode)) {
+        if ($statusCode !== null && is_int($statusCode)) {
             $this->setStatusCode($statusCode);
         }
 
         if ($data !== null) {
-
             $this->setContent(json_encode($data));
 
             if (JSON_ERROR_NONE !== json_last_error()) {
                 throw new InvalidArgumentException(json_last_error_msg());
             }
-
         }
 
         return $this;
@@ -199,7 +197,7 @@ class Response
      */
     public function header($name, $value, $replace = true): self
     {
-        $this->headers->set($name,['value' => $value , 'replace' => $replace] );
+        $this->headers->set($name, ['value' => $value , 'replace' => $replace]);
 
         return $this;
     }
@@ -343,7 +341,6 @@ class Response
         $this->refresh($refresh);
 
         return $this;
-
     }
 
 
@@ -390,11 +387,9 @@ class Response
 
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
-        } else if (!CONSOLE) {
+        } elseif (!CONSOLE) {
             static::closeOutputBuffers();
         }
-
-
     }
 
 

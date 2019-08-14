@@ -7,30 +7,27 @@
 
 namespace System\Engine\Cli;
 
-
 class Create
 {
     public static function execute($argv)
     {
-
         $subCommand = false;
 
-        list($command,$name,&$subCommand) = $argv;
+        list($command, $name, &$subCommand) = $argv;
 
-        list($create,$type) = explode(':',$command,2);
+        list($create, $type) = explode(':', $command, 2);
 
-        if(strlen($type) === 1) {
-
-          $replace = [
+        if (strlen($type) === 1) {
+            $replace = [
             'c' => 'controller',
             'm' => 'model',
             'f' => 'facade',
             'r' => 'resource',
           ];
-          $type = $replace[strtolower($type)];
+            $type = $replace[strtolower($type)];
         }
 
-        if(!isset($argv[1])) {
+        if (!isset($argv[1])) {
             new PrintConsole('error', "\nPlease enter {$type} name \n\n");
             exit();
         }
@@ -43,13 +40,13 @@ class Create
 
         $type = ucfirst($type);
 
-        $namespace = ( $type === 'Middleware') ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
+        $namespace = ($type === 'Middleware') ? "namespace App\\{$type}" : "namespace App\\{$type}" . "s";
 
         if (strpos($name, '/')) {
             $part = explode('/', $name);
             $name = array_pop($part);
-            $dir  = implode('/',$part);
-            $namespace .= '\\' . str_replace('/','\\',$dir);
+            $dir  = implode('/', $part);
+            $namespace .= '\\' . str_replace('/', '\\', $dir);
         }
 
 
@@ -59,14 +56,15 @@ class Create
             case 'Middleware':
                 if ($subCommand && strtolower($subCommand) === '-r') {
                     $content = str_replace(
-                       [ ':namespace' , ':name' ],
-                       [ $namespace , $name ],
-                       file_get_contents(__DIR__ . '/resource/resource.mask')
+                        [ ':namespace' , ':name' ],
+                        [ $namespace , $name ],
+                        file_get_contents(__DIR__ . '/resource/resource.mask')
                      );
                 } else {
                     $content = str_replace(
-                      [ ':namespace' , ':name' ], [ $namespace , $name ],
-                      file_get_contents(__DIR__ . '/resource/'.\strtolower($type).'.mask')
+                        [ ':namespace' , ':name' ],
+                        [ $namespace , $name ],
+                        file_get_contents(__DIR__ . '/resource/'.\strtolower($type).'.mask')
                     );
                 }
                 $type .= ($type == 'Middleware') ?'':'s';
@@ -78,9 +76,9 @@ class Create
 
         if (!file_exists("app/{$type}/{$argv[1]}.php")) {
             if (isset($dir) && !is_dir(app_path($type.'/'.$dir))) {
-              if (!mkdir(\app_path($type.'/'.$dir),0777,true)) {
-                  throw new \RuntimeException(sprintf('Directory "%s" was not created', app_path($dir)));
-              }
+                if (!mkdir(\app_path($type.'/'.$dir), 0777, true)) {
+                    throw new \RuntimeException(sprintf('Directory "%s" was not created', app_path($dir)));
+                }
             }
             if (touch(app_path("{$type}/{$argv[1]}.php"))) {
                 file_put_contents(app_path("{$type}/{$argv[1]}.php"), $content);

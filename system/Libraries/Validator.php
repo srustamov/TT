@@ -88,7 +88,7 @@ class Validator
                         }
                     }
                 }
-            } else if (in_array('required', $fields, true)) {
+            } elseif (in_array('required', $fields, true)) {
                 $this->translation('required', $key, ['field' => $key]);
             }
         }
@@ -129,7 +129,7 @@ class Validator
             $this->messages[$key][] = $custom_message;
         } elseif (isset($this->translator['custom_messages']) && ($custom_message = Arr::get($this->translator['custom_messages'], $key.'.'.$field))) {
             $this->messages[$key][] = $custom_message;
-        } else if (isset($this->translator[$field])) {
+        } elseif (isset($this->translator[$field])) {
             if (!empty($replace)) {
                 $keys = array_map(
                     static function ($item) {
@@ -236,5 +236,4 @@ class Validator
     {
         return ($value1 === $value2);
     }
-
 }

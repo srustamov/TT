@@ -11,9 +11,6 @@ namespace System\Engine;
 
 use ArrayAccess;
 use Exception;
-use System\Facades\Route;
-use System\Facades\Config;
-use System\Facades\Http;
 use System\Libraries\Benchmark;
 use System\Engine\Http\Middleware;
 use System\Engine\Http\Request;
@@ -53,7 +50,17 @@ class App implements ArrayAccess
      *
      * @param null $basePath
      */
-    public function __construct($basePath = null)
+    public function __construct(string $basePath = null)
+    {
+        $this->prepare($basePath);
+    }
+
+    public function version(): string
+    {
+        return static::VERSION;
+    }
+
+    protected function prepare(string $basePath = null)
     {
         if (!defined('CONSOLE')) {
             define('CONSOLE', PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
@@ -68,11 +75,8 @@ class App implements ArrayAccess
         chdir($this->paths['base']);
 
         static::$instance = $this;
-    }
 
-    public function version(): string
-    {
-        return static::VERSION;
+        return $this;
     }
 
     /**
@@ -83,7 +87,7 @@ class App implements ArrayAccess
      */
     public function bootstrap(): self
     {
-        if (!$this->bootstrapping) {
+        if (!$this->isBoot()) {
             $this->setPublicPath();
 
             self::register('request', new Request($this));
@@ -94,7 +98,7 @@ class App implements ArrayAccess
 
             $this->setAliases();
 
-            $this->registerMiddleware($this->middleware);
+            $this->middleware($this->middleware);
 
             $this->setLocale();
 
@@ -102,6 +106,12 @@ class App implements ArrayAccess
         }
 
         return $this;
+    }
+
+
+    public function isBoot(): bool
+    {
+        return $this->bootstrapping;
     }
 
     protected function callImportantClasses()
@@ -113,12 +123,14 @@ class App implements ArrayAccess
 
 
     /**
-     * @param array $middleware_array
+     * @param array|string $name
      * @throws Exception
      */
-    protected function registerMiddleware(array $middleware_array): void
+    protected function middleware($name): void
     {
-        foreach ($middleware_array as $middleware) {
+        $names = is_array($name) ? $name : [$name];
+
+        foreach ($names as $middleware) {
             Middleware::init($middleware, true);
         }
     }
@@ -128,7 +140,7 @@ class App implements ArrayAccess
      */
     protected function setAliases(): void
     {
-        $aliases = Config::get('aliases', []);
+        $aliases = self::get('config')->get('aliases', []);
 
         $aliases['App'] = get_class($this);
 
@@ -144,9 +156,9 @@ class App implements ArrayAccess
      */
     protected function setLocale(): void
     {
-        setlocale(LC_ALL, Config::get('datetime.setLocale'));
+        setlocale(LC_ALL, self::get('config')->get('datetime.setLocale'));
 
-        date_default_timezone_set(Config::get('datetime.time_zone', 'UTC'));
+        date_default_timezone_set(self::get('config')->get('datetime.time_zone', 'UTC'));
     }
 
 
@@ -157,7 +169,7 @@ class App implements ArrayAccess
      */
     public function routing(): Response
     {
-        return Route::execute($this, $this->routeMiddleware);
+        return self::get('route')->execute($this, $this->routeMiddleware);
     }
 
 
@@ -169,7 +181,11 @@ class App implements ArrayAccess
      */
     public function benchmark($finish)
     {
-        if (!(CONSOLE || !Config::get('app.debug') || Http::isAjax())) {
+        if (!(
+            CONSOLE ||
+          !self::get('config')->get('app.debug') ||
+          self::get('http')->isAjax()
+        )) {
             $benchmark = new Benchmark($this);
             self::register('benchmark', $benchmark);
             return $benchmark->table($finish);
@@ -249,28 +265,18 @@ class App implements ArrayAccess
         return $this->path($this->paths['lang'] . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR));
     }
 
-    public function configsCacheFile(String $file = null): string
+    public function configsCacheFile(): string
     {
-        if ($file !== null) {
-            $this->paths['configsCacheFile'] = $file;
-        }
         return $this->path($this->paths['configsCacheFile']);
     }
 
-    public function routesCacheFile(String $file = null): string
+    public function routesCacheFile(): string
     {
-        if ($file !== null) {
-            $this->paths['routesCacheFile'] = $file;
-        }
         return $this->path($this->paths['routesCacheFile']);
     }
 
-    public function envCacheFile(String $file = null): string
+    public function envCacheFile(): string
     {
-        if ($file !== null) {
-            $this->paths['envCacheFile'] = $file;
-        }
-
         return $this->path($this->paths['envCacheFile']);
     }
 

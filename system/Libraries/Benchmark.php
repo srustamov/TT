@@ -25,7 +25,7 @@ class Benchmark
 
     public function loadTime($finish = null, $start = APP_START): float
     {
-        if($finish === null) {
+        if ($finish === null) {
             $finish = microtime(true);
         }
 
@@ -91,5 +91,4 @@ class Benchmark
 
         return $this->view($data);
     }
-
 }

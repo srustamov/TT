@@ -155,29 +155,27 @@ use Predis\Client as RedisDriver;
 
  use System\Facades\Config;
 
-class Redis extends RedisDriver
-{
-    private $redis;
+ class Redis extends RedisDriver
+ {
+     private $redis;
 
 
-    public function __construct($option = [])
-    {
-        if (!empty($option)) {
-            $this->redis = parent::__construct($option);
-        } else {
-            $config = Config::get('cache.redis');
-            $this->redis = parent::__construct($config);
-        }
+     public function __construct($option = [])
+     {
+         if (!empty($option)) {
+             $this->redis = parent::__construct($option);
+         } else {
+             $config = Config::get('cache.redis');
+             $this->redis = parent::__construct($config);
+         }
+     }
 
-    }
 
-
-    public function connection()
-    {
-        if ($this->redis === null) {
-            $this->__construct();
-        }
-        return $this->redis;
-    }
-
-}
+     public function connection()
+     {
+         if ($this->redis === null) {
+             $this->__construct();
+         }
+         return $this->redis;
+     }
+ }

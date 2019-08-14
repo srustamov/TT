@@ -1,6 +1,5 @@
 <?php namespace System\Engine\Http;
 
-
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
  * @link    https://github.com/srustamov/TT
@@ -12,7 +11,6 @@
 //-------------------------------------------------------------
 
 use System\Engine\App;
-
 
 abstract class Controller
 {

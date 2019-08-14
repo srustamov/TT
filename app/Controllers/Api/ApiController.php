@@ -69,7 +69,7 @@ class ApiController extends Controller
         return Response::json([
             'message'=>'User register error occurred.Please try again',
             'created' => false
-        ],417);
+        ], 417);
     }
 
 

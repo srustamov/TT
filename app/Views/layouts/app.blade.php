@@ -60,7 +60,7 @@
       let elements = document.querySelectorAll('a.lang');
 
       elements.forEach(function (a) {
-          if(a.attributes.href.nodeValue.substr(-2) === locale) {
+          if(a.attributes.href.nodeValue.replace(/^\/|\/$/g, '').substr(-2) === locale) {
               a.parentElement.classList.add('active');
           }
       });

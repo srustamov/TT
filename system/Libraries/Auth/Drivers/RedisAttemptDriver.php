@@ -18,9 +18,9 @@ class RedisAttemptDriver implements AttemptDriverInterface
         $count = $this->getAttemptsCountOrFail();
 
         RDriver::setex(
-          "AUTH_ATTEMPT_COUNT".Http::ip(),
-          60*60,
-          $count ? $count->count+1 :1
+            "AUTH_ATTEMPT_COUNT".Http::ip(),
+            60*60,
+            $count ? $count->count+1 :1
         );
     }
 

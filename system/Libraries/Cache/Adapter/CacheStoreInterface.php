@@ -1,6 +1,6 @@
-<?php namespace System\Libraries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Adapter;
 
-interface CacheStore
+interface CacheStoreInterface
 {
     public function put(String $key, $value, $expires = null, $forever = false);
 

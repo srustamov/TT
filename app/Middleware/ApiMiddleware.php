@@ -1,12 +1,10 @@
 <?php  namespace App\Middleware;
 
-
 use Closure;
 use System\Engine\Http\Request;
 use System\Facades\Response;
 use System\Facades\Auth;
 use App\Models\User;
-
 
 /*
 |-------------------------------------------
@@ -39,7 +37,6 @@ class ApiMiddleware
         }
 
         $request->app()->end();
-
     }
 
 
@@ -49,11 +46,9 @@ class ApiMiddleware
      */
     protected function getAuthToken(Request $request)
     {
-
         $token = $request->headers->get('X-Auth-Token');
 
         if (!$token && $request->headers->has('Authorization')) {
-
             $authorization = $request->headers->get('Authorization');
 
             if (preg_match('/Bearer\s(\S+)/', $authorization, $matches)) {

@@ -3,9 +3,7 @@
 
 return array(
 
-    'driver' => 'file',
-
-
+    'adapter' => setting('CACHE_ADAPTER','file'),
 
     'file' => array(
         'path' => storage_path('cache/data')

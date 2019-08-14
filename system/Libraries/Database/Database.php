@@ -49,12 +49,11 @@ class Database extends Connection
      * @param array $data
      */
 
-    public function raw(string $sql,array $data = [])
+    public function raw(string $sql, array $data = [])
     {
         if (empty($data)) {
             $stmt = $this->pdo()->query($sql);
         } else {
-
             $stmt = $this->pdo()->prepare($sql);
 
             $stmt->execute($data);

@@ -50,7 +50,7 @@ class RegisterController extends Controller
             ]);
 
         if (!$validation->check()) {
-            return Redirect::to('/auth/register')->withErrors(Validator::messages());
+            return Redirect::route('register')->withErrors(Validator::messages());
         }
 
         $create = User::create([
@@ -60,9 +60,9 @@ class RegisterController extends Controller
         ]);
 
         if ($create) {
-            return Redirect::to('auth/login')->with('register', 'Register successfully');
+            return Redirect::route('login')->with('register', 'Register successfully');
         }
 
-        return Redirect::to('auth/register')->with('register', 'User register error occurred.Please try again');
+        return Redirect::route('register')->with('register', 'User register error occurred.Please try again');
     }
 }

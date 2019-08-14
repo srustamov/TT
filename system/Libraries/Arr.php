@@ -106,7 +106,7 @@ class Arr
             }
 
             unset($array[array_shift($keys)]);
-        } else if (array_key_exists($key, $array)) {
+        } elseif (array_key_exists($key, $array)) {
             unset($array[$key]);
         }
     }

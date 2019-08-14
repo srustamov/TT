@@ -4,7 +4,6 @@ use System\Exceptions\TTException;
 
 class RegisterExceptionHandler
 {
-
     private $app;
 
     public function __construct(App $app)
@@ -27,7 +26,5 @@ class RegisterExceptionHandler
 
             $exception->register();
         }
-
-
     }
 }

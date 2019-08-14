@@ -51,7 +51,7 @@ class Redirect
     {
         $url = $this->prepareUrl($url);
 
-        App::get('response')->redirect($url,$refresh,$http_response_code);
+        App::get('response')->redirect($url, $refresh, $http_response_code);
 
         return $this;
     }
@@ -119,6 +119,7 @@ class Redirect
         return $this;
     }
 
-    public function __toString(){}
-
+    public function __toString()
+    {
+    }
 }

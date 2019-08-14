@@ -56,7 +56,7 @@
           <div class="card-header">
             <h3 class="card-title">Login User</h3><br>
             @if(($register_message = Session::flash('register')))
-              <div class="alert alert-success fade in" role="alert">
+              <div class="alert alert-success fade in show" role="alert">
                  <button type="button" class="close" onclick="this.parentNode.style.display = 'none';">
                  <span aria-hidden="true">×</span>
                  </button>

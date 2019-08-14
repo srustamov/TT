@@ -15,7 +15,7 @@ use System\Facades\Redirect;
 class GuestMiddleware
 {
     public function handle($request, \Closure $next)
-    {  
+    {
         if (Auth::check()) {
             return Redirect::back();
         }

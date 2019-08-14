@@ -83,7 +83,7 @@ class Url
 
         if (!$base_url || empty($base_url)) {
             $base_url  = $this->scheme().'://'.$this->host();
-        } else if (!preg_match('/^(https?:\/\/)/', $base_url)) {
+        } elseif (!preg_match('/^(https?:\/\/)/', $base_url)) {
             $base_url = $this->scheme().'://'.$base_url;
         }
 

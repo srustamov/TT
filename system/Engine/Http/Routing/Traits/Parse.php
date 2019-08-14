@@ -7,12 +7,10 @@
 
 use System\Engine\Http\Parameters;
 
- trait Parse
- {
-
+trait Parse
+{
     public function parsePath($path): array
     {
-
         $middleware = $this->middleware;
 
         $pattern = $this->pattern;
@@ -20,7 +18,6 @@ use System\Engine\Http\Parameters;
         $url = $path;
 
         if (is_array($path)) {
-
             $parameters = new Parameters($path);
 
             if ($parameters->has('path')) {
@@ -42,7 +39,7 @@ use System\Engine\Http\Parameters;
 
         $middleware_array = array_merge($this->group_middleware, $middleware);
 
-        $_path = rtrim($this->domain().'/'.ltrim($this->prefix.strtolower($url),'/'));
+        $_path = rtrim($this->domain().'/'.ltrim($this->prefix.strtolower($url), '/'));
         
         if (isset($parameters) && $parameters->has('name')) {
             $this->routes['NAMES'][$this->group_name.$parameters->get('name')] = $_path;
@@ -54,12 +51,12 @@ use System\Engine\Http\Parameters;
     }
 
 
-     /**
-      * @param $uri
-      * @param $args
-      * @throws \Exception
-      */
-     public function parseRouteParams($uri, $args)
+    /**
+     * @param $uri
+     * @param $args
+     * @throws \Exception
+     */
+    public function parseRouteParams($uri, $args)
     {
         preg_match_all('/{(.+?)}/', $uri, $keys);
 
@@ -70,7 +67,6 @@ use System\Engine\Http\Parameters;
         $routeParams = array_combine(array_slice($keys, 0, count($args)), $args);
 
         $this->app::get('request')->setRouteParams($routeParams);
-
     }
 
 
@@ -109,5 +105,4 @@ use System\Engine\Http\Parameters;
 
         return array( array_values($args) , $resource , $route);
     }
-
- }
+}

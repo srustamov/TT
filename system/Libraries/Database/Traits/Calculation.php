@@ -11,72 +11,67 @@
 
  trait Calculation
  {
+     public function count($column = false)
+     {
+         $column = $column ? $column : implode('', $this->select);
 
-       public function count($column = false)
-       {
-           $column = $column ? $column : implode('', $this->select);
+         $this->select = array("COUNT({$column}) as count");
 
-           $this->select = array("COUNT({$column}) as count");
+         if ($result = $this->get(true)) {
+             return (int)$result->count;
+         } else {
+             return null;
+         }
+     }
 
-           if ($result = $this->get(true)) {
-               return (int)$result->count;
-           } else {
-               return null;
-           }
-       }
+     public function min(string $column)
+     {
+         $as_name = 'min_'.$column;
+         $this->select = array("MIN({$column}) as {$as_name}");
 
-       public function min(string $column)
-       {
+         if ($result = $this->get(true)) {
+             return (int) $result->$as_name;
+         } else {
+             return null;
+         }
+     }
 
-           $as_name = 'min_'.$column;
-           $this->select = array("MIN({$column}) as {$as_name}");
+     public function max(string $column)
+     {
+         $as_name = 'min_'.$column;
 
-           if ($result = $this->get(true)) {
-               return (int) $result->$as_name;
-           } else {
-               return null;
-           }
-       }
+         $this->select = array("MAX({$column}) as {$as_name}");
 
-       public function max(string $column)
-       {
+         if ($result = $this->get(true)) {
+             return (int) $result->$as_name;
+         } else {
+             return null;
+         }
+     }
 
-           $as_name = 'min_'.$column;
+     public function avg($column = false)
+     {
+         $column = $column ? $column : implode('', $this->select);
 
-           $this->select = array("MAX({$column}) as {$as_name}");
+         $this->select = array("AVG({$column}) as avg");
 
-           if ($result = $this->get(true)) {
-               return (int) $result->$as_name;
-           } else {
-               return null;
-           }
-       }
+         if ($result = $this->get(true)) {
+             return $result->avg;
+         } else {
+             return null;
+         }
+     }
 
-       public function avg($column = false)
-       {
-           $column = $column ? $column : implode('', $this->select);
+     public function sum($column = false)
+     {
+         $column = $column ? $column : implode('', $this->select);
 
-           $this->select = array("AVG({$column}) as avg");
+         $this->select = array("SUM({$column}) as sum");
 
-           if ($result = $this->get(true)) {
-               return $result->avg;
-           } else {
-               return null;
-           }
-       }
-
-       public function sum($column = false)
-       {
-           $column = $column ? $column : implode('', $this->select);
-
-           $this->select = array("SUM({$column}) as sum");
-
-           if ($result = $this->get(true)) {
-               return $result->sum;
-           } else {
-               return null;
-           }
-       }
-
-
+         if ($result = $this->get(true)) {
+             return $result->sum;
+         } else {
+             return null;
+         }
+     }
  }

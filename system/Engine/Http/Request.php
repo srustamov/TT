@@ -12,9 +12,6 @@ use Countable;
 use ArrayAccess;
 use Serializable;
 use System\Engine\App;
-use System\Facades\Redirect;
-use System\Facades\Response;
-use System\Facades\Validator;
 
 /**
  * @method all()
@@ -89,7 +86,6 @@ class Request implements ArrayAccess, Countable, Serializable
         }
 
         return $this;
-
     }
 
 
@@ -120,7 +116,6 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function get($key, $default = null)
     {
-
         if ($this !== $result = $this->query->get($key, $this)) {
             return $result;
         }
@@ -159,7 +154,6 @@ class Request implements ArrayAccess, Countable, Serializable
         }
 
         return $this->cookies->get($key);
-
     }
 
 
@@ -186,12 +180,10 @@ class Request implements ArrayAccess, Countable, Serializable
 
     public function method($default = 'GET'): String
     {
-
         if ($this->method === null) {
             $method = $this->server('request_method');
 
             if ($method === 'POST') {
-
                 $xhmo = $this->headers->get('X-HTTP-Method-Override');
 
                 if ($xhmo && in_array($xhmo, array('PUT', 'DELETE', 'PATCH'))) {
@@ -243,7 +235,6 @@ class Request implements ArrayAccess, Countable, Serializable
         $validation = $this->app('validator')->make($this->all(), $roles);
 
         if (!$validation->check()) {
-
             $this->app('redirect')->back()->withErrors($validation->messages());
 
             $this->app('response')::send();
@@ -380,5 +371,4 @@ class Request implements ArrayAccess, Countable, Serializable
     {
         unserialize($serialized);
     }
-
 }

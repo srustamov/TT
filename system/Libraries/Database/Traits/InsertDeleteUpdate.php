@@ -8,122 +8,120 @@
  * @category    Database
  */
 
+use System\Libraries\Arr;
 
  trait InsertDeleteUpdate
  {
+     public function insert($insert, array $data = [], Bool $getId = false)
+     {
+         if (is_string($insert)) {
+             $query = $insert;
+
+             $this->bindValues = $data;
+         } else {
+             if (is_array($insert)) {
+                 if (Arr::isAssoc($insert)) {
+                     $query = "INSERT INTO {$this->table} SET " . $this->normalizeCrud($insert);
+
+                     $this->bindValues = array_values($insert);
+                 }
+             }
+         }
+
+         $queryString = $this->normalizeQueryString($query);
+
+         try {
+             $statement = $this->pdo->prepare($query);
+
+             $this->bindValues($statement);
+
+             $statement->execute();
+
+             $this->reset();
+
+             return $getId ? $this->pdo->lastInsertId() : ($statement->rowCount() > 0);
+         } catch (\PDOException $e) {
+             throw new DatabaseException($e->getMessage(), $queryString);
+         }
+     }
 
 
-       public function insert($insert, array $data = [], Bool $getId = false)
-       {
-           if (is_string($insert)) {
-               $query = $insert;
-
-               $this->bindValues = $data;
-           } else {
-               if (is_array($insert)) {
-                   if (Arr::isAssoc($insert)) {
-                       $query = "INSERT INTO {$this->table} SET " . $this->normalizeCrud($insert);
-
-                       $this->bindValues = array_values($insert);
-                   }
-               }
-           }
-
-           $queryString = $this->normalizeQueryString($query);
-
-           try {
-               $statement = $this->pdo->prepare($query);
-
-               $this->bindValues($statement);
-
-               $statement->execute();
-
-               $this->reset();
-
-               return $getId ? $this->pdo->lastInsertId() : ($statement->rowCount() > 0);
-           } catch (\PDOException $e) {
-               throw new DatabaseException($e->getMessage(), $queryString);
-           }
-       }
+     public function insertGetId($insert, array $data = [])
+     {
+         return $this->insert($insert, $data, true);
+     }
 
 
-       public function insertGetId($insert, array $data = [])
-       {
-           return $this->insert($insert, $data, true);
-       }
+     public function update($update, array $data = [])
+     {
+         if (is_string($update)) {
+             $query = $update;
 
+             $this->bindValues = $data;
+         } else {
+             if (is_array($update)) {
+                 if (Arr::isAssoc($update)) {
+                     $query = "UPDATE {$this->table} SET " . $this->normalizeCrud($update);
+                     $query .= " " . preg_replace("/^SELECT.*FROM {$this->table}/", '', $this->getQueryString(), 1);
 
-       public function update($update, array $data = [])
-       {
-           if (is_string($update)) {
-               $query = $update;
+                     $this->bindValues = array_merge(array_values($update), $this->bindValues);
+                 }
+             }
+         }
 
-               $this->bindValues = $data;
-           } else {
-               if (is_array($update)) {
-                   if (Arr::isAssoc($update)) {
-                       $query = "UPDATE {$this->table} SET " . $this->normalizeCrud($update);
-                       $query .= " " . preg_replace("/^SELECT.*FROM {$this->table}/", '', $this->getQueryString(), 1);
+         $queryString = $this->normalizeQueryString($query);
 
-                       $this->bindValues = array_merge(array_values($update), $this->bindValues);
-                   }
-               }
-           }
+         try {
+             $statement = $this->pdo->prepare($query);
 
-           $queryString = $this->normalizeQueryString($query);
+             $this->bindValues($statement);
 
-           try {
-               $statement = $this->pdo->prepare($query);
+             $statement->execute();
 
-               $this->bindValues($statement);
+             $this->reset();
 
-               $statement->execute();
+             return $statement->rowCount() > 0;
+         } catch (\PDOException $e) {
+             throw new DatabaseException($e->getMessage(), $queryString);
+         }
+     }
 
-               $this->reset();
+     public function delete($delete = null, array $data = [])
+     {
+         if (is_string($delete)) {
+             $query = $delete;
 
-               return $statement->rowCount() > 0;
-           } catch (\PDOException $e) {
-               throw new DatabaseException($e->getMessage(), $queryString);
-           }
-       }
-
-       public function delete($delete = null, array $data = [])
-       {
-           if (is_string($delete)) {
-               $query = $delete;
-
-               $this->bindValues = $data;
-           } else {
-               if (is_array($delete)) {
-                   if (Arr::isAssoc($delete)) {
-                       $this->where($delete);
-                   }
-               } else {
-                   $query = "DELETE FROM {$this->table} " .
+             $this->bindValues = $data;
+         } else {
+             if (is_array($delete)) {
+                 if (Arr::isAssoc($delete)) {
+                     $this->where($delete);
+                 }
+             } else {
+                 $query = "DELETE FROM {$this->table} " .
                        preg_replace(
                            "/SELECT.*FROM {$this->table}/",
                            '',
                            $this->getQueryString(),
                            1
                        );
-               }
-           }
+             }
+         }
 
-           $queryString = $this->normalizeQueryString($query);
+         $queryString = $this->normalizeQueryString($query);
 
-           try {
-               $statement = $this->pdo->prepare($query);
+         try {
+             $statement = $this->pdo->prepare($query);
 
-               $this->bindValues($statement);
+             $this->bindValues($statement);
 
-               $statement->execute();
+             $statement->execute();
 
-               $this->reset();
+             $this->reset();
 
-               return $statement->rowCount() > 0;
-           } catch (\PDOException $e) {
-               throw new DatabaseException($e->getMessage(), $queryString);
-           }
-       }
-
+             return $statement->rowCount() > 0;
+         } catch (\PDOException $e) {
+             throw new DatabaseException($e->getMessage(), $queryString);
+         }
+     }
  }

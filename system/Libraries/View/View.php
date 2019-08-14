@@ -135,6 +135,6 @@ class View
      */
     public function __toString()
     {
-         return (string) $this->finishRender();
+        return (string) $this->finishRender();
     }
 }

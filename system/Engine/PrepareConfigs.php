@@ -1,6 +1,5 @@
 <?php namespace System\Engine;
 
-
 class PrepareConfigs
 {
     private $app;

@@ -30,8 +30,7 @@ class UploadedFile extends \SplFileInfo
 
     public function get($name)
     {
-        if(isset($this->files[$name])) {
-
+        if (isset($this->files[$name])) {
             $file = $this->files[$name];
 
             $this->error = $file['error'] ? : UPLOAD_ERR_OK;

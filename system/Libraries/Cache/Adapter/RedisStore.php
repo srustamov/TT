@@ -1,8 +1,8 @@
-<?php namespace System\Libraries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Adapter;
 
 use System\Facades\Redis as DRedis;
 
-class RedisStore implements CacheStore
+class RedisStore implements CacheStoreInterface
 {
     private $key;
 

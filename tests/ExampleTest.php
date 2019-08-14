@@ -4,22 +4,37 @@
 
 use App\Models\User;
 use System\Facades\Auth;
+use System\Engine\App;
+use PHPUnit\Framework\TestCase;
 
-class ExampleTest extends \PHPUnit_Framework_TestCase
+class ExampleTest extends TestCase
 {
+    public function testAppIsBoot()
+    {
+        $this->assertTrue(App::instance()->isBoot());
+    }
+
+
     public function testAuth()
     {
-        $this->assertTrue(Auth::guest());
-
-        $this->assertFalse(Auth::check());
+        $isAuth = Auth::check();
+        if ($isAuth) {
+            $this->assertEquals($isAuth, true);
+        } else {
+            $this->assertEquals($isAuth, false);
+        }
     }
 
 
 
     public function testUserModel()
     {
-        if ($user = User::where('name', 'username')->first()) {
+        $user = User::where('name', 'username')->first();
+
+        if ($user) {
             $this->assertEquals($user->name, 'username');
+        } else {
+            $this->assertEquals($user, null);
         }
     }
 }

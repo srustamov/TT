@@ -5,6 +5,7 @@ use System\Engine\App;
 class Kernel extends App
 {
     protected $middleware = [
+        \App\Middleware\OverrideXPoweredBy::class ,
         \App\Middleware\TrimString::class ,
         \App\Middleware\StartSession::class ,
         \App\Middleware\CsrfProtected::class,

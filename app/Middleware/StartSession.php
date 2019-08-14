@@ -15,7 +15,7 @@ class StartSession
     {
         if (!CONSOLE) {
             if (!$request->ajax()) {
-                register_shutdown_function(static function () use ($request){
+                register_shutdown_function(static function () use ($request) {
                     $request->app('session')->set('_prev_url', $request->app('url')->current());
                 });
             }

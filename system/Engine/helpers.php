@@ -12,18 +12,15 @@ use System\Engine\App;
 
 function app(string $class = null)
 {
-    $app = App::instance();
-
     if ($class === null) {
-        return $app;
+        return App::instance();
     }
 
-    return $app[$class];
+    return App::get($class);
 }
 
 
 if (!function_exists('getallheaders')) {
-
     function getallheaders()
     {
         $headers = [];
@@ -127,7 +124,7 @@ function abort(Int $http_code, $message = null, $headers = [])
 
     $response->send();
 
-    App::instance()->end();
+    App::end();
 }
 
 
@@ -160,12 +157,12 @@ function csrf_field(): String
 
 
 /**
- * @param $name
+ * @param string $name
  * @param array $parameters
  * @return mixed
  * @throws Exception
  */
-function route($name, array $parameters = [])
+function route(string $name, array $parameters = [])
 {
     return App::get('route')->getName($name, $parameters);
 }
@@ -173,11 +170,11 @@ function route($name, array $parameters = [])
 
 if (!function_exists('flash')) {
     /**
-     * @param $key
+     * @param string $key
      * @return mixed
      * @throws Exception
      */
-    function flash($key)
+    function flash(string $key)
     {
         return App::get('session')->flash($key);
     }
@@ -186,10 +183,10 @@ if (!function_exists('flash')) {
 
 if (!function_exists('is_base64')) {
     /**
-     * @param String $string
+     * @param string $string
      * @return bool
      */
-    function is_base64(String $string): Bool
+    function is_base64(string $string): Bool
     {
         return base64_encode(base64_decode($string)) === $string;
     }

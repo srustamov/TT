@@ -1,8 +1,5 @@
 <?php namespace System\Engine\Http;
 
-
-
-
 use Countable;
 use ArrayAccess;
 use System\Libraries\Arr;
@@ -25,31 +22,26 @@ class Parameters implements ArrayAccess, Countable
     }
 
 
-    public function get($key,$default = false)
+    public function get($key, $default = false)
     {
         return $this->parameters[$key] ?? $default;
     }
 
-    public function set($key,$value = null)
+    public function set($key, $value = null)
     {
-        if(is_array($key)) {
-
-            foreach($key as $name => $_value)
-            {
+        if (is_array($key)) {
+            foreach ($key as $name => $_value) {
                 $this->parameters[$name] = $_value;
             }
-        }
-        else
-        {
+        } else {
             $this->parameters[$key] = $value;
         }
-
     }
 
 
-    public function add($key,$value = null)
+    public function add($key, $value = null)
     {
-        $this->set($key,$value);
+        $this->set($key, $value);
     }
 
     public function all()
@@ -66,8 +58,7 @@ class Parameters implements ArrayAccess, Countable
 
     public function remove($key)
     {
-        if($this->has($key)) {
-
+        if ($this->has($key)) {
             unset($this->parameters[$key]);
         }
     }
@@ -100,9 +91,8 @@ class Parameters implements ArrayAccess, Countable
 
     public function map($callback)
     {
-        foreach($this->parameters as $key => $value)
-        {
-            $this->parameters[$key] = $callback($value,$key);
+        foreach ($this->parameters as $key => $value) {
+            $this->parameters[$key] = $callback($value, $key);
         }
 
         return $this;
@@ -132,9 +122,9 @@ class Parameters implements ArrayAccess, Countable
         return $this->has($name);
     }
 
-    public function __set($key,$value)
+    public function __set($key, $value)
     {
-        return $this->set($key,$value);
+        return $this->set($key, $value);
     }
 
 
@@ -166,7 +156,7 @@ class Parameters implements ArrayAccess, Countable
      */
     public function offsetSet($offset, $value)
     {
-        $this->set($offset,$value);
+        $this->set($offset, $value);
     }
 
     /**
@@ -215,6 +205,4 @@ class Parameters implements ArrayAccess, Countable
     {
         return count($this->parameters);
     }
-
-
 }

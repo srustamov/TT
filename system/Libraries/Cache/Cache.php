@@ -8,46 +8,42 @@
  * @category    Cache
  */
 
-use System\Libraries\Cache\Drivers\CacheStore;
-use System\Libraries\Cache\Drivers\FileStore;
-use System\Libraries\Cache\Drivers\DatabaseStore;
-use System\Libraries\Cache\Drivers\MemcacheStore;
-use System\Libraries\Cache\Drivers\RedisStore;
+
 use System\Engine\App;
 use System\Facades\DB;
 
 class Cache
 {
-    /**@var Drivers\CacheStore*/
-    private $driver;
+    /**@var Adapter\CacheStoreInterface*/
+    private $adapter;
 
 
     public function __construct()
     {
-        $driver = App::get('config')->get('cache.driver', 'file');
+        $adapter = App::get('config')->get('cache.adapter', 'file');
 
-        $this->driver($driver);
+        $this->adapter($adapter);
     }
 
 
 
-    public function driver($driver)
+    public function adapter($adapter)
     {
-        if ($driver instanceof CacheStore) {
-            $this->driver = $driver;
+        if ($adapter instanceof Adapter\CacheStoreInterface) {
+            $this->adapter = $adapter;
         } else {
-            switch (strtolower($driver)) {
+            switch (strtolower($adapter)) {
                 case 'database':
-                    $this->driver = new DatabaseStore();
+                    $this->adapter = new Adapter\DatabaseStore();
                     break;
                 case 'memcache':
-                    $this->driver = new MemcacheStore();
+                    $this->adapter = new Adapter\MemcacheStore();
                     break;
                 case 'redis':
-                    $this->driver = new RedisStore();
+                    $this->adapter = new Adapter\RedisStore();
                     break;
                 default:
-                    $this->driver = new FileStore();
+                    $this->adapter = new Adapter\FileStore();
                     break;
             }
         }
@@ -79,68 +75,68 @@ class Cache
 
     public function put(String $key, $value, $expires = null)
     {
-        return $this->driver->put($key, $value, $expires);
+        return $this->adapter->put($key, $value, $expires);
     }
 
 
     public function forever(String $key, $value)
     {
-        return $this->driver->forever($key, $value);
+        return $this->adapter->forever($key, $value);
     }
 
 
     public function has($key)
     {
-        return $this->driver->has($key);
+        return $this->adapter->has($key);
     }
 
 
     public function get($key)
     {
-        return $this->driver->get($key);
+        return $this->adapter->get($key);
     }
 
 
     public function forget($key)
     {
-        return $this->driver->forget($key);
+        return $this->adapter->forget($key);
     }
 
 
     public function expires(Int $expires)
     {
-        return $this->driver->expires($expires);
+        return $this->adapter->expires($expires);
     }
 
 
     public function minutes(Int $minutes)
     {
-        return $this->driver->minutes($minutes);
+        return $this->adapter->minutes($minutes);
     }
 
     public function hours(Int $hours)
     {
-        return $this->driver->hours($hours);
+        return $this->adapter->hours($hours);
     }
 
     public function day(Int $day)
     {
-        return $this->driver->day($day);
+        return $this->adapter->day($day);
     }
 
     public function flush()
     {
-        $this->driver->flush();
+        $this->adapter->flush();
     }
 
     public function __call($method, $args)
     {
-        return $this->driver->$method(...$args);
+        return $this->adapter->$method(...$args);
     }
 
 
     public function __destruct()
     {
-        $this->driver->close();
+        $this->adapter->close();
     }
 }

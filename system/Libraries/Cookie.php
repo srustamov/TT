@@ -193,7 +193,7 @@ class Cookie implements ArrayAccess
             return $data;
         }
 
-        return unserialize(OpenSsl::decrypt($data),['allow_classes' => []]);
+        return unserialize(OpenSsl::decrypt($data), ['allow_classes' => []]);
     }
 
 

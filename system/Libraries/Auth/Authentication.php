@@ -20,7 +20,6 @@ use System\Libraries\Arr;
 use System\Facades\Hash;
 use System\Facades\DB;
 
-
 class Authentication
 {
     protected $message;
@@ -82,7 +81,7 @@ class Authentication
     {
         if ($user && is_object($user)) {
             $this->user = (object) Arr::except((array) $user, $this->hidden);
-        } else if (!$this->user) {
+        } elseif (!$this->user) {
             $authId = Session::get('AuthId');
 
             if ($authId) {
@@ -304,8 +303,8 @@ class Authentication
     protected function getFailMessage($remaining)
     {
         return Language::translate(
-          'auth.incorrect',
-          array(
+            'auth.incorrect',
+            array(
         'remaining' => $remaining)
       );
     }
@@ -314,8 +313,8 @@ class Authentication
     protected function getLockMessage($seconds)
     {
         return Language::translate(
-          'auth.many_attempts.text',
-          array(
+            'auth.many_attempts.text',
+            array(
         'time' => $this->convertTime($seconds))
       );
     }
@@ -334,15 +333,15 @@ class Authentication
         if ($seconds >= 60) {
             $m = (int) ($seconds/60);
 
-            $minute .= sprintf(' %s',Language::translate('auth.many_attempts.minute'.($m > 1 ? 's' : ''))) . ' ';
+            $minute .= sprintf(' %s', Language::translate('auth.many_attempts.minute'.($m > 1 ? 's' : ''))) . ' ';
 
             if ($seconds%60 > 0) {
                 $s = ($seconds%60);
 
-                $second .= sprintf(' %s',Language::translate('auth.many_attempts.second'.($s > 1 ? 's' : ''))) . ' ';
+                $second .= sprintf(' %s', Language::translate('auth.many_attempts.second'.($s > 1 ? 's' : ''))) . ' ';
             }
         } else {
-            $second .= sprintf(' %s',Language::translate('auth.many_attempts.second'.($seconds > 1 ? 's' : ''))) . ' ';
+            $second .= sprintf(' %s', Language::translate('auth.many_attempts.second'.($seconds > 1 ? 's' : ''))) . ' ';
         }
 
         return $minute.$second;

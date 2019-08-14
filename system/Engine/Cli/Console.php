@@ -50,9 +50,9 @@ class Console
 
         switch (strtolower($manage[ 0 ])) {
             case 'runserver':
-      	    case 'serve':
-      	    case 'start':
-      	    case 'run':
+              case 'serve':
+              case 'start':
+              case 'run':
                 $instance->startPhpDevelopmentServer($manage);
                 break;
             case 'session:table':
@@ -161,11 +161,11 @@ class Console
 
             $key = 'APP_KEY = ' . str_replace('=', '', $key) . "\n";
 
-            if(isset($replace)) {
+            if (isset($replace)) {
                 $new_content = \preg_replace("/{$replace}/", $key, $content);
                 file_put_contents($envFile, $new_content);
             } else {
-                file_put_contents($envFile,$key.FILE_APPEND);
+                file_put_contents($envFile, $key.FILE_APPEND);
             }
 
 
@@ -205,13 +205,12 @@ class Console
 
             $key = 'APP_DEBUG = ' . str_replace('=', '', 'FALSE') . "\n";
 
-            if(isset($replace)) {
+            if (isset($replace)) {
                 $new_content = \preg_replace("/{$replace}/", $key, $content);
                 file_put_contents($envFile, $new_content);
             } else {
-                file_put_contents($envFile,$key.FILE_APPEND);
+                file_put_contents($envFile, $key.FILE_APPEND);
             }
-
         } catch (\Exception $e) {
             new PrintConsole('error', $e->getMessage() . "\n");
         }

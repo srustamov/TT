@@ -1,8 +1,8 @@
-<?php namespace System\Libraries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Adapter;
 
 use System\Engine\App;
 
-class MemcacheStore implements CacheStore
+class MemcacheStore implements CacheStoreInterface
 {
     private $put = false;
 

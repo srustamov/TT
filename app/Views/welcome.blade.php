@@ -45,7 +45,7 @@
 </head>
 <body>
 <div id="container">
-    <span id="welcome">{{ setting('APP_NAME') }}</span><br>
+    <span id="welcome">{{ config('app.name') }}</span><br>
     <span><a href="{{url('/home')}}">HOME</a></span> |
     <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
 </div>

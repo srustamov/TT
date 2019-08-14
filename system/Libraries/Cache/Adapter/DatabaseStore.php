@@ -1,9 +1,9 @@
-<?php namespace System\Libraries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Adapter;
 
 use System\Engine\App;
 use System\Facades\DB;
 
-class DatabaseStore implements CacheStore
+class DatabaseStore implements CacheStoreInterface
 {
     private $put = false;
 

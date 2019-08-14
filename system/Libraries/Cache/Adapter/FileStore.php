@@ -1,8 +1,8 @@
-<?php namespace System\Libraries\Cache\Drivers;
+<?php namespace System\Libraries\Cache\Adapter;
 
 use System\Engine\App;
 
-class FileStore implements CacheStore
+class FileStore implements CacheStoreInterface
 {
     private $path;
 

@@ -16,7 +16,6 @@ namespace System\Engine\Cli;
 
 use System\Engine\App;
 
-
 class Config
 {
     /**
@@ -27,7 +26,6 @@ class Config
         $file = App::instance()->configsCacheFile();
 
         if ($subCommand === '--create') {
-
             $configsArray = [];
 
             foreach (glob(path('app/Config/*.php')) as $config) {
@@ -55,14 +53,13 @@ class Config
      */
     protected static function create($configsArray)
     {
-
         $file = App::instance()->configsCacheFile();
 
         foreach ($configsArray as $key => $value) {
             if (is_array($value)) {
-                file_put_contents($file,"\t'" . $key . "' => array(\n\n",FILE_APPEND);
+                file_put_contents($file, "\t'" . $key . "' => array(\n\n", FILE_APPEND);
                 static::create($value);
-                file_put_contents($file,"\t),\n\n",FILE_APPEND);
+                file_put_contents($file, "\t),\n\n", FILE_APPEND);
             } else {
                 if (is_bool($value)) {
                     $value = $value ? 'true' : 'false';

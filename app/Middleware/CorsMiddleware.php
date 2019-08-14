@@ -5,7 +5,6 @@ use System\Engine\Http\Request;
 use System\Facades\Response;
 use System\Facades\Config;
 
-
 class CorsMiddleware
 {
     /**
@@ -15,7 +14,7 @@ class CorsMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        Config::set('app.debug',false);
+        Config::set('app.debug', false);
 
         Response::withHeaders([
             'Access-Control-Allow-Origin' => '*',
@@ -25,8 +24,7 @@ class CorsMiddleware
             'Access-Control-Allow-Headers' => 'Origin, Content-Type, X-Auth-Token , Authorization',
         ]);
 
-        if($request->isMethod('OPTIONS'))
-        {
+        if ($request->isMethod('OPTIONS')) {
             Response::send();
 
             $request->app()->end();

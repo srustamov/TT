@@ -107,7 +107,7 @@ class Route
         $this->methods = is_array($methods) ? $methods : [$methods];
 
 
-        list($_path,$middleware,$pattern) = $this->parsePath($path);
+        list($_path, $middleware, $pattern) = $this->parsePath($path);
 
 
         foreach ($this->methods as $method) {
@@ -158,14 +158,13 @@ class Route
 
 
         foreach ($this->routes[ $method ] as $resource) {
-
             if (! $ajax && $resource['ajax']) {
                 continue;
             }
 
             $args    = [];
 
-            $route   = rtrim($resource['path'],'/');
+            $route   = rtrim($resource['path'], '/');
 
             $handler = $resource[ 'handler' ];
 
@@ -179,7 +178,7 @@ class Route
             }
 
             if (isset($uri)) {
-                $this->parseRouteParams($uri,$args);
+                $this->parseRouteParams($uri, $args);
             }
 
             if (is_string($handler) && strpos($handler, '@')) {
@@ -236,7 +235,7 @@ class Route
 
             $content = call_user_func_array([new $controller_with_namespace(...$constructorArgs),$method], $args);
 
-            if($this->app::isInstance($content,'response')) {
+            if ($this->app::isInstance($content, 'response')) {
                 return $content;
             }
             return $this->app::get('response')->setContent($content);
@@ -398,7 +397,6 @@ class Route
             return $route;
         }
         throw new RouteException("Route name [{$name}] not found");
-
     }
 
 

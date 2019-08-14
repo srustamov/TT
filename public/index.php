@@ -10,8 +10,6 @@
  * @link 		https://github.com/srustamov/TT
  *
  */
-ini_set('display_errors',1);
-header('X-Powered-By:TT Framework');
 //--------------------------------------------------
 // Defined application started time
 //--------------------------------------------------
@@ -29,10 +27,10 @@ require __DIR__.'/../vendor/autoload.php';
 // Application Bootstrapping and Routing
 //------------------------------------------
 
-$TT = new App\Kernel(dirname(__DIR__));
+$app = new App\Kernel(dirname(__DIR__));
 
 
-$response = $TT->bootstrap()->routing();
+$response = $app->bootstrap()->routing();
 
 
 
@@ -41,7 +39,7 @@ $response = $TT->bootstrap()->routing();
 // Application Benchmark panel view
 //------------------------------------------
 
-$response->appendContent($TT->benchmark(microtime(true)));
+$response->appendContent($app->benchmark(microtime(true)));
 
 
 

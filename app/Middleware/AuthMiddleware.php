@@ -20,7 +20,7 @@ class AuthMiddleware
      */
     public function handle($request, Closure $next)
     {
-        if (Auth::guest()) {
+        if (!Auth::check()) {
             return Redirect::route('login')->withErrors('auth', 'You must first log in');
         }
 

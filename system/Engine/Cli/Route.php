@@ -55,14 +55,14 @@ class Route
         foreach ($routesArray as $key => $value) {
             if (is_array($value)) {
                 if (is_numeric($key)) {
-                    file_put_contents($file,"\t array(\n\n",FILE_APPEND);
+                    file_put_contents($file, "\t array(\n\n", FILE_APPEND);
                 } else {
-                    file_put_contents($file,"\t'" . $key . "' => array(\n\n",FILE_APPEND);
+                    file_put_contents($file, "\t'" . $key . "' => array(\n\n", FILE_APPEND);
                 }
 
                 static::create($value);
 
-                file_put_contents($file,"\t),\n\n",FILE_APPEND);
+                file_put_contents($file, "\t),\n\n", FILE_APPEND);
             } else {
                 if (is_bool($value)) {
                     $value = $value ? "true" : "false";
