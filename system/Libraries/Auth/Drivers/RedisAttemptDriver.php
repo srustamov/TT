@@ -1,13 +1,13 @@
 <?php namespace System\Libraries\Auth\Drivers;
 
-use System\Facades\Redis as RDriver;
+use System\Facades\Redis as R;
 use System\Facades\Http;
 
 class RedisAttemptDriver implements AttemptDriverInterface
 {
     public function getAttemptsCountOrFail()
     {
-        if (($result = RDriver::get("AUTH_ATTEMPT_COUNT".Http::ip()))) {
+        if (($result = R::get("AUTH_ATTEMPT_COUNT".Http::ip()))) {
             return (object) array('count' => $result);
         }
         return false;
@@ -17,7 +17,7 @@ class RedisAttemptDriver implements AttemptDriverInterface
     {
         $count = $this->getAttemptsCountOrFail();
 
-        RDriver::setex(
+        R::setex(
             "AUTH_ATTEMPT_COUNT".Http::ip(),
             60*60,
             $count ? $count->count+1 :1
@@ -30,23 +30,23 @@ class RedisAttemptDriver implements AttemptDriverInterface
     {
         $expire = strtotime("+ {$lockTime} seconds");
 
-        RDriver::expire("AUTH_ATTEMPT_COUNT".Http::ip(), $expire);
+        R::expire("AUTH_ATTEMPT_COUNT".Http::ip(), $expire);
 
-        RDriver::setex("AUTH_ATTEMPT_EXPIRE".Http::ip(), $expire, $expire);
+        R::setex("AUTH_ATTEMPT_EXPIRE".Http::ip(), $expire, $expire);
     }
 
 
     public function deleteAttempt()
     {
-        RDriver::delete("AUTH_ATTEMPT_COUNT".Http::ip());
-        RDriver::delete("AUTH_ATTEMPT_EXPIRE".Http::ip());
+        R::delete("AUTH_ATTEMPT_COUNT".Http::ip());
+        R::delete("AUTH_ATTEMPT_EXPIRE".Http::ip());
     }
 
 
 
     public function expireTimeOrFail()
     {
-        return RDriver::get("AUTH_ATTEMPT_EXPIRE".Http::ip());
+        return R::get("AUTH_ATTEMPT_EXPIRE".Http::ip());
     }
 
 

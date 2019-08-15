@@ -11,7 +11,6 @@
 use Exception;
 use RuntimeException;
 use InvalidArgumentException;
-use System\Facades\Language;
 use System\Facades\Redirect;
 use System\Facades\Session;
 use System\Facades\Cookie;
@@ -96,6 +95,12 @@ class Authentication
     }
 
 
+    protected function getPasswordName()
+    {
+        return 'password';
+    }
+
+
     /**
      * @param array $data
      * @param bool $remember
@@ -114,12 +119,12 @@ class Authentication
             return false;
         }
 
-        if (isset($data['password'])) {
-            $password = $data['password'];
+        if (isset($data[$this->getPasswordName()])) {
+            $password = $data[$this->getPasswordName()];
 
-            unset($data['password']);
+            unset($data[$this->getPasswordName()]);
         } else {
-            throw new InvalidArgumentException('Auth password not found');
+            throw new InvalidArgumentException('Auth '. $this->getPasswordName().' not found');
         }
 
 
@@ -187,8 +192,6 @@ class Authentication
         if (Session::get('Login') === true) {
             if ($this->user() && is_object($this->user)) {
                 $authId = Session::get('AuthId');
-
-
                 if ($authId && $this->user->id === $authId) {
                     return true;
                 }
@@ -240,13 +243,13 @@ class Authentication
         if ($user->remember_token) {
             Cookie::set('remember', base64_encode($user->remember_token), 3600 * 24 * 30);
         } else {
-            $_token = hash_hmac('sha256', $user->email . $user->name, Config::get('app.key'));
+            $token = hash_hmac('sha256', $user->email . $user->name, Config::get('app.key'));
 
-            Cookie::set('remember', base64_encode($_token), 3600 * 24 * 30);
+            Cookie::set('remember', base64_encode($token), 3600 * 24 * 30);
 
             DB::table($this->table)
                 ->where('id', $user->id)
-                ->update(['remember_token' => $_token]);
+                ->update(['remember_token' => $token]);
         }
 
         return $this;
@@ -302,7 +305,7 @@ class Authentication
 
     protected function getFailMessage($remaining)
     {
-        return Language::translate(
+        return lang(
             'auth.incorrect',
             array(
         'remaining' => $remaining)
@@ -312,7 +315,7 @@ class Authentication
 
     protected function getLockMessage($seconds)
     {
-        return Language::translate(
+        return lang(
             'auth.many_attempts.text',
             array(
         'time' => $this->convertTime($seconds))
@@ -333,15 +336,15 @@ class Authentication
         if ($seconds >= 60) {
             $m = (int) ($seconds/60);
 
-            $minute .= sprintf(' %s', Language::translate('auth.many_attempts.minute'.($m > 1 ? 's' : ''))) . ' ';
+            $minute .= sprintf(' %s', lang('auth.many_attempts.minute'.($m > 1 ? 's' : ''))) . ' ';
 
             if ($seconds%60 > 0) {
                 $s = ($seconds%60);
 
-                $second .= sprintf(' %s', Language::translate('auth.many_attempts.second'.($s > 1 ? 's' : ''))) . ' ';
+                $second .= sprintf(' %s', lang('auth.many_attempts.second'.($s > 1 ? 's' : ''))) . ' ';
             }
         } else {
-            $second .= sprintf(' %s', Language::translate('auth.many_attempts.second'.($seconds > 1 ? 's' : ''))) . ' ';
+            $second .= sprintf(' %s',lang('auth.many_attempts.second'.($seconds > 1 ? 's' : ''))) . ' ';
         }
 
         return $minute.$second;

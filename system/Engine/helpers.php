@@ -49,6 +49,7 @@ function config(String $name = null, $default = null)
 }
 
 
+
 function setting($key, $default = null)
 {
     return $_ENV[$key] ?? $default;
@@ -103,6 +104,12 @@ function path($path = '')
     return App::getInstance()->path($path);
 }
 
+
+
+function __($word = null, $replace = [])
+{
+    return lang($word, $replace);
+}
 
 /**
  * @param Int $http_code

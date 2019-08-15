@@ -61,6 +61,12 @@ class Console
             case 'users:table':
                 CreateTables::users();
                 break;
+            case 'cache:table':
+                $create = App::get('cache')->createDatabaseTable();
+                $create ? 
+                    new PrintConsole('success',PHP_EOL.'Create cache table successfully'.PHP_EOL) :
+                    new PrintConsole('error',PHP_EOL.'Something went wrong'.PHP_EOL);
+                break;
             case 'view:cache':
                 $instance->clearViewCache();
                 break;
@@ -84,7 +90,7 @@ class Console
                 (new LoadEnvVariables(App::getInstance()))->handle();
                 self::command('config:cache --create');
                 self::command('route:cache --create');
-                new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL.PHP_EOL);
+                new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL);
                 break;
             case 'create:controller':
             case 'create:model':

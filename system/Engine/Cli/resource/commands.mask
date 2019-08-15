@@ -19,6 +19,8 @@
 +---------------------------+--------------------------------------+
 + users:table [table name]  + Database Migrate users table         +
 +---------------------------+--------------------------------------+
++ cache:table               + Database Migrate cache table         +
++---------------------------+--------------------------------------+
 + view:cache                + View cache files clear               +
 +---------------------------+--------------------------------------+
 + config:cache              + Configs cache file clear             +
