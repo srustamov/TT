@@ -23,7 +23,7 @@ class Config
      */
     public static function clearConfigsCacheOrCreate($subCommand)
     {
-        $file = App::instance()->configsCacheFile();
+        $file = App::getInstance()->configsCacheFile();
 
         if ($subCommand === '--create') {
             $configsArray = [];
@@ -53,7 +53,7 @@ class Config
      */
     protected static function create($configsArray)
     {
-        $file = App::instance()->configsCacheFile();
+        $file = App::getInstance()->configsCacheFile();
 
         foreach ($configsArray as $key => $value) {
             if (is_array($value)) {

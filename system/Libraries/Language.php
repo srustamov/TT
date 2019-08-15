@@ -26,7 +26,7 @@ class Language implements \ArrayAccess
     {
         $locale = $this->locale();
 
-        $app = App::instance();
+        $app = App::getInstance();
 
         foreach (glob($app->langPath($locale.'/*')) as $file) {
             $this->languages[pathinfo($file, PATHINFO_FILENAME)] = require_once($file);

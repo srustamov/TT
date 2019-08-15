@@ -237,7 +237,7 @@ class Request implements ArrayAccess, Countable, Serializable
         if (!$validation->check()) {
             $this->app('redirect')->back()->withErrors($validation->messages());
 
-            $this->app('response')::send();
+            $this->app('response')->send();
         }
     }
 

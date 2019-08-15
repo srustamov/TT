@@ -13,7 +13,7 @@ use System\Engine\App;
 function app(string $class = null)
 {
     if ($class === null) {
-        return App::instance();
+        return App::getInstance();
     }
 
     return App::get($class);
@@ -82,25 +82,25 @@ function importFiles($directory, $once = true)
 
 function storage_path($path = '')
 {
-    return App::instance()->storagePath($path);
+    return App::getInstance()->storagePath($path);
 }
 
 
 function app_path($path = '')
 {
-    return App::instance()->appPath($path);
+    return App::getInstance()->appPath($path);
 }
 
 
 function public_path($path = '')
 {
-    return App::instance()->publicPath($path);
+    return App::getInstance()->publicPath($path);
 }
 
 
 function path($path = '')
 {
-    return App::instance()->path($path);
+    return App::getInstance()->path($path);
 }
 
 

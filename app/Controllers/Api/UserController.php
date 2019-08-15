@@ -75,7 +75,7 @@ class UserController extends Controller
             return Response::setStatusCode(201)->json([
                 'message' =>'User create successfully',
                 'success' => true,
-                'auth_token' => $token
+                'auth_token' => OpenSsl::encrypt($token)
             ]);
         }
 

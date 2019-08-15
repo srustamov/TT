@@ -38,7 +38,7 @@ class TTException
 
         $date     = date('Y-m-d H:m:s');
 
-        $log_file = path('/storage/logs/'.date('Y-m-d').'.log');
+        $log_file = path('/storage/logs/errors/'.date('Y-m-d').'.log');
 
         if (!file_exists($log_file)) {
             touch($log_file);

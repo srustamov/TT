@@ -77,4 +77,4 @@
     </script>
     @yield('js')
   </body>
-</html>{{-- <!--Load Time (seconds) : {{(new \System\Libraries\Benchmark(\System\Engine\App::instance()))->loadTime()}} --> --}}
+</html>{{-- <!--Load Time (seconds) : {{(new \System\Libraries\Benchmark(\System\Engine\App::getInstance()))->loadTime()}} --> --}}

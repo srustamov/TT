@@ -27,7 +27,7 @@ class Route
 {
     public static function clearRoutesCacheOrCreate($subCommand)
     {
-        $file = App::instance()->routesCacheFile();
+        $file = App::getInstance()->routesCacheFile();
 
         if ($subCommand === '--create') {
             $routesArray = BaseRoute::getRoutes();
@@ -50,7 +50,7 @@ class Route
 
     protected static function create($routesArray)
     {
-        $file = App::instance()->routesCacheFile();
+        $file = App::getInstance()->routesCacheFile();
 
         foreach ($routesArray as $key => $value) {
             if (is_array($value)) {
@@ -83,7 +83,7 @@ class Route
     {
         $output = "\n";
 
-        $file = App::instance()->routesCacheFile();
+        $file = App::getInstance()->routesCacheFile();
 
         if (file_exists($file)) {
             $routes = require $file;

@@ -29,7 +29,7 @@ class App implements ArrayAccess
     protected $routeMiddleware = [];
 
     public $paths = [
-        'base' => 'app',
+        'base' => '',
         'public' => 'public',
         'storage' => 'storage',
         'lang' => 'lang',
@@ -337,7 +337,7 @@ class App implements ArrayAccess
             return static::$classes[$class];
         }
 
-        if ($instance = self::instance()->classes($class)) {
+        if ($instance = self::getInstance()->classes($class)) {
             if (method_exists($instance, '__construct')) {
                 $args = Reflections::classMethodParameters($instance, '__construct', $args);
             }
@@ -348,7 +348,7 @@ class App implements ArrayAccess
         }
 
         if (strpos($class, '\\')) {
-            if ($instance = self::instance()->classes($class, true)) {
+            if ($instance = self::getInstance()->classes($class, true)) {
                 return static::get($instance, ...$args);
             }
 
@@ -395,7 +395,7 @@ class App implements ArrayAccess
     /**
      * @return mixed
      */
-    public static function instance()
+    public static function getInstance()
     {
         return self::$instance;
     }

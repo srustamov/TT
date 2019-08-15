@@ -15,7 +15,12 @@ class CsrfProtected
 
     public function handle(Request $request, \Closure $next)
     {
-        if (CONSOLE || $this->isReading($request) || $this->isExcept($request) || $this->tokensMatch($request)) {
+        if (
+            CONSOLE || 
+            $this->isReading($request) || 
+            $this->isExcept($request) || 
+            $this->tokensMatch($request)
+        ) {
             $this->addCookie($request);
         } else {
             throw new RuntimeException('VERIFY CSRF TOKEN FAILED');

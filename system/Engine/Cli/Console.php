@@ -81,7 +81,7 @@ class Console
             case 'production':
                 self::appDebugFalse();
                 $instance->keyGenerate();
-                (new LoadEnvVariables(App::instance()))->handle();
+                (new LoadEnvVariables(App::getInstance()))->handle();
                 self::command('config:cache --create');
                 self::command('route:cache --create');
                 new PrintConsole('success', PHP_EOL.'Getting Application in Production :)'.PHP_EOL.PHP_EOL);

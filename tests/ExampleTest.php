@@ -11,7 +11,7 @@ class ExampleTest extends TestCase
 {
     public function testAppIsBoot()
     {
-        $this->assertTrue(App::instance()->isBoot());
+        $this->assertTrue(App::getInstance()->isBoot());
     }
 
 

@@ -3,7 +3,7 @@
 use Closure;
 use System\Engine\Http\Request;
 use System\Facades\Response;
-use System\Facades\Config;
+
 
 class CorsMiddleware
 {
@@ -14,8 +14,6 @@ class CorsMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        Config::set('app.debug', false);
-
         Response::withHeaders([
             'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Credentials' => 'true',

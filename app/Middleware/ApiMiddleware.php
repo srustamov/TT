@@ -3,6 +3,8 @@
 use Closure;
 use System\Engine\Http\Request;
 use System\Facades\Response;
+use System\Facades\OpenSsl;
+use System\Facades\Config;
 use System\Facades\Auth;
 use App\Models\User;
 
@@ -22,18 +24,20 @@ class ApiMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        Config::set('app.debug', false);
+
         $token = $this->getAuthToken($request);
 
         if ($token) {
-            $user = User::where(['api_token' => $token])->first();
+            $user = User::where(['api_token' => OpenSsl::decrypt($token)])->first();
 
             if ($user) {
                 Auth::user($user);
                 return $next($request);
             }
-            Response::setStatusCode(401)->json(['error' => 'Authentication token incorrect !'])->send();
+            Response::json(['error' => 'Authentication token incorrect !'],401)->send();
         } else {
-            Response::setStatusCode(401)->json(['error' => 'Authentication token required!'])->send();
+            Response::json(['error' => 'Authentication token required!'],401)->send();
         }
 
         $request->app()->end();
