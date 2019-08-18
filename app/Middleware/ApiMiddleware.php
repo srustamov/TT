@@ -33,12 +33,10 @@ class ApiMiddleware
             /**@var \System\Libraries\Auth\Jwt $jwt*/
             $jwt = Jwt::make($token);
 
-            if($jwt->validate()) {
-                if($user_id = $jwt->get('user_id')) {
-                    if ($user = User::find($user_id)) {
-                        Auth::user($user);
-                        return $next($request);
-                    }
+            if($jwt->validate() && $user_id = $jwt->get('user_id')) {
+                if ($user = User::find($user_id)) {
+                    Auth::user($user);
+                    return $next($request);
                 }
             }
 
