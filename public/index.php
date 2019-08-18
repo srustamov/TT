@@ -39,7 +39,7 @@ $response = $app->bootstrap()->routing();
 // Application Benchmark panel view
 //------------------------------------------
 
-$response->appendContent($app->benchmark(microtime(true)));
+//$response->appendContent($app->benchmark(microtime(true)));
 
 
 

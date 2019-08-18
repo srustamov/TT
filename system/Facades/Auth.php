@@ -10,7 +10,7 @@
  * @method static attempt(array $data, $remember = false): bool
  * @method static logoutUser()
  * @method static getMessage()
- * @method static user()
+ * @method static user($user = null)
  */
 
 

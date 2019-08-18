@@ -203,10 +203,29 @@ class Request implements ArrayAccess, Countable, Serializable
         return $this->method() === $method;
     }
 
+    public function isJson()
+    {
+        return $this->headers->has('Accept') &&
+            strpos($this->headers->get('Accept'), 'application/json') === 0;
+    }
+
 
     public function ajax(): Bool
     {
         return ($this->server('HTTP_X_REQUESTED_WITH') === 'XMLHttpRequest');
+    }
+
+
+    public function bearerToken($default = null)
+    {
+        if ($this->headers->has('Authorization')) {
+            $authorization = $this->headers->get('Authorization');
+            if (preg_match('/Bearer\s+(\S+)/', $authorization, $matches)) {
+                $token =  $matches[1];
+            }
+        }
+
+        return $token ?? $default;
     }
 
     public function ip()

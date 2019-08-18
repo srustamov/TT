@@ -58,6 +58,7 @@ class Route
 
     private $ajax = false;
 
+    /**@var App*/
     private $app;
 
 
@@ -266,7 +267,7 @@ class Route
 
         $content = call_user_func_array($handler, $args);
 
-        if (Load::isInstance($content, 'response')) {
+        if ($this->app::isInstance($content, 'response')) {
             return $content;
         }
 

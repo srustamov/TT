@@ -15,6 +15,7 @@ return array(
     // 'Http' => System\Facades\Http::class ,
     // 'Language' => System\Facades\Language::class ,
     // 'OpenSsl' => System\Facades\OpenSsl::class ,
+    // 'Jwt' => System\Facades\Jwt::class,
     // 'Redirect' => System\Facades\Redirect::class ,
     // 'RedisDB' => System\Facades\Redis::class ,
     // 'Request' => System\Facades\Request::class ,

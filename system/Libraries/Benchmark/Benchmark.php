@@ -1,4 +1,4 @@
-<?php namespace System\Libraries;
+<?php namespace System\Libraries\Benchmark;
 
 /**
  * @package TT
@@ -70,9 +70,12 @@ class Benchmark
 
     private function view($data)
     {
+        if(!file_exists(__DIR__.'/view/benchmark.php')) {
+            return null;
+        }
         ob_start();
 
-        require_once path('system/Engine/view/benchmark.php');
+        require_once __DIR__.'/view/benchmark.php';
 
         $content  = ob_get_clean();
 

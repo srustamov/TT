@@ -22,7 +22,7 @@ class Parameters implements ArrayAccess, Countable
     }
 
 
-    public function get($key, $default = false)
+    public function get($key, $default = null)
     {
         return $this->parameters[$key] ?? $default;
     }
@@ -187,7 +187,7 @@ class Parameters implements ArrayAccess, Countable
      * The return value will be casted to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->has($offset);
     }
@@ -201,7 +201,7 @@ class Parameters implements ArrayAccess, Countable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count(): int
     {
         return count($this->parameters);
     }

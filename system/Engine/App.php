@@ -11,7 +11,7 @@ namespace System\Engine;
 
 use ArrayAccess;
 use Exception;
-use System\Libraries\Benchmark;
+use System\Libraries\Benchmark\Benchmark;
 use System\Engine\Http\Middleware;
 use System\Engine\Http\Request;
 use System\Engine\Http\Response;
@@ -48,19 +48,26 @@ class App implements ArrayAccess
      * App constructor.
      * Set application base path
      *
-     * @param null $basePath
+     * @param string $basePath
      */
     public function __construct(string $basePath = null)
     {
         $this->prepare($basePath);
     }
 
+    /**
+     * @return string
+     */
     public function version(): string
     {
         return static::VERSION;
     }
 
-    protected function prepare(string $basePath = null)
+    /**
+     * @param string|null $basePath
+     * @return $this
+     */
+    protected function prepare(string $basePath = null): self
     {
         if (!defined('CONSOLE')) {
             define('CONSOLE', PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
@@ -114,7 +121,7 @@ class App implements ArrayAccess
         return $this->bootstrapping;
     }
 
-    protected function callImportantClasses()
+    protected function callImportantClasses(): void
     {
         (new LoadEnvVariables($this))->handle();
         (new PrepareConfigs($this))->handle();
@@ -300,6 +307,7 @@ class App implements ArrayAccess
             'language' => 'System\Libraries\Language',
             'middleware' => 'System\Engine\Http\Middleware',
             'openssl' => 'System\Libraries\Encrypt\OpenSsl',
+            'jwt' => 'System\Libraries\Auth\Jwt',
             'redirect' => 'System\Libraries\Redirect',
             'redis' => 'System\Libraries\Redis',
             'request' => 'System\Engine\Http\Request',
@@ -352,10 +360,8 @@ class App implements ArrayAccess
                 return static::get($instance, ...$args);
             }
 
-            $instance = call_user_func_array(
-                [new $class,'__construct'],
-                Reflections::classMethodParameters($class, '__construct', $args)
-            );
+            $instance = new $class(Reflections::classMethodParameters($class, '__construct', $args));
+            
 
             static::$classes[$class] = $instance;
 
@@ -367,7 +373,7 @@ class App implements ArrayAccess
     }
 
 
-    public static function register($className, $object)
+    public static function register($className, $object): void
     {
         if ($object instanceof \Closure) {
             static::register($className, $object());

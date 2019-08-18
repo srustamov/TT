@@ -20,8 +20,8 @@ function app(string $class = null)
 }
 
 
-if (!function_exists('getallheaders')) {
-    function getallheaders()
+if (!function_exists('getAllHeaders')) {
+    function getAllHeaders()
     {
         $headers = [];
         foreach ($_SERVER as $name => $value) {
@@ -47,7 +47,6 @@ function config(String $name = null, $default = null)
     }
     return App::get('config')->get($name, $default);
 }
-
 
 
 function setting($key, $default = null)
@@ -99,13 +98,22 @@ function public_path($path = '')
 }
 
 
+/**
+ * @param string $path
+ * @return mixed
+ */
 function path($path = '')
 {
     return App::getInstance()->path($path);
 }
 
 
-
+/**
+ * @param null $word
+ * @param array $replace
+ * @return mixed
+ * @throws Exception
+ */
 function __($word = null, $replace = [])
 {
     return lang($word, $replace);
@@ -135,6 +143,9 @@ function abort(Int $http_code, $message = null, $headers = [])
 }
 
 
+/**
+ * @return bool
+ */
 function inConsole()
 {
     return CONSOLE;
@@ -292,7 +303,7 @@ if (!function_exists('cookie')) {
         }
 
         if (func_num_args() === 1) {
-            return App::get('cookie')->get(func_get_args(0));
+            return App::get('cookie')->get(func_get_arg(0));
         }
 
         return App::get('cookie', ...func_get_args());

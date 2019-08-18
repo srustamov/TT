@@ -37,4 +37,21 @@ class ExampleTest extends TestCase
             $this->assertEquals($user, null);
         }
     }
+
+    /*
+    public function testModel()
+    {
+        for ($i = 0; $i < 100; $i++) {
+            $this->assertTrue(
+                User::create([
+                    'name' => microtime(),
+                    'email' => microtime() . '@mail.com',
+                    'password' => 'abc'
+                ])
+            );
+            //$this->assertTrue(User::where('id', '>', 1)->delete());
+        }
+
+    }
+    */
 }

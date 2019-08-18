@@ -8,48 +8,62 @@
 use App\Controllers\Controller;
 use System\Engine\Http\Request;
 use System\Facades\Response;
-use System\Facades\Validator;
-use System\Facades\Hash;
-use System\Facades\OpenSsl;
-use App\Models\User;
+use App\Models\Article;
 
-class UserController extends Controller
+class ArticleController extends Controller
 {
     /**
      * @param Request $request
      * @return mixed
      */
-    public function user(Request $request)
+    public function index(Request $request)
     {
         return Response::json(
-            $this->transform($request->user())
+            $this->transform(
+                Article::where(['user_id' => auth()->user()->id])->get()
+            )
         );
+    }
+
+    public function show($id)
+    {
+        $article = Article::where([
+                                'id' => $id,
+                                'user_id' => auth()->user()->id,
+                            ])->get();
+        if($article) {
+            return Response::json($this->transform($article));
+        }
+
+        return Response::json(['success' => false],404);
+
     }
 
 
     /**
-     * @param object|array $user
+     * @param object|array $data
      * @return array
      */
-    public function transform($user_resource): array
+    public function transform($data): array
     {
-        $users = is_array($user_resource) ? $user_resource : [$user_resource];
+        $articles = is_array($data) ? $data : [$data];
 
         $transform = [];
 
+        $author = auth()->user()->name;
+
         $transform['success'] = true;
 
-        foreach ($users as $user) {
+        foreach ($articles as $article) {
             $transform['data'][] = [
-              'name' => $user->name,
-              'email' => $user->email,
-              'status' => $user->status ? 'active' : 'inactive',
-              'created_at' => $user->created_at
+              'title' => $article->title,
+              'body' => $article->body,
+              'author' => $author
           ];
         }
 
         $transform['version'] = '1.3.0';
-        $transform['author']  = 'Samir Rustamov';
+
         return $transform;
     }
 }

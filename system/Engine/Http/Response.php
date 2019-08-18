@@ -15,11 +15,12 @@ class Response
 {
     private $content;
 
+    /**@var Parameters*/
     private $headers = [];
 
     private $statusCode = 200;
 
-    private $protocol = "HTTP/1.1";
+    private $protocol = 'HTTP/1.1';
 
     private $statusMessage;
 
@@ -174,7 +175,7 @@ class Response
         $this->header('Content-Type', 'application/octet-stream');
         $this->header('Content-Type', 'application/download');
         $this->header('Content-Description', 'File Transfer');
-        $this->header('Content-Lenght', File::size($path));
+        $this->header('Content-Length', File::size($path));
         $this->setContent(File::get($path));
 
         return $this;
@@ -372,6 +373,10 @@ class Response
 
         if (!$this->hasHeader('Content-Type')) {
             $this->contentType("text/html;charset={$this->charset}");
+        }
+
+        if (App::get('request')->isJson()) {
+            $this->contentType('application/json;charset='.$this->charset);
         }
 
         $this->headersSend();

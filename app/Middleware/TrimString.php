@@ -11,6 +11,9 @@ class TrimString
 
     ];
 
+
+    protected $emptyConvertNull = false;
+
     /**
      * @param Request $request
      * @param \Closure $next
@@ -26,7 +29,7 @@ class TrimString
      * @param Request $request
      * @return Request
      */
-    public function trimString(Request $request)
+    public function trimString(Request $request): Request
     {
         $request->map([$this,'trim']);
         $request->query->map([$this,'trim']);
@@ -51,6 +54,22 @@ class TrimString
             return $value;
         }
 
-        return is_string($value) ? trim($value) :$value;
+        if(is_string($value)) {
+
+            if($this->emptyConvertNull) {
+                return $this->emptyStringConvertNull(trim($value));
+            }
+            return trim($value);
+        }
+        return $value;
+    }
+
+    /**
+     * @param string $string
+     * @return string|null
+     */
+    public function emptyStringConvertNull(string $string)
+    {
+        return empty($string) ? null : $string;
     }
 }

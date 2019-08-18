@@ -4,15 +4,26 @@
  * @link 	https://github.com/srustamov/TT
  */
 
-/*
-$this->group(['prefix' => '/api','middleware' => ['api'] ],function($api)
-{
-    $api->get('/user','Api\UserController@user');
-    $api->get('/users','Api\UserController@users');
-    $api->post('/users','Api\UserController@create');
-    $api->put('/users/{id}','Api\UserController@update');
-    $api->delete('/users/{id}','Api\UserController@delete');
 
-    # code...
+use System\Engine\Http\Request;
+use System\Facades\Route;
+
+Route::group('/api',static function (){
+
+    //get access_token
+    Route::post('auth/login','Api\AuthController@login');
+
+    Route::group(['middleware' => ['api'] ], static function() {
+        //Refresh Token
+        Route::get('/auth/refresh','Api\AuthController@refresh');
+
+
+        Route::get('/user',function (Request $request){
+            return response()->json($request->user());
+        });
+        # code...
+    });
 });
-*/
+
+
+

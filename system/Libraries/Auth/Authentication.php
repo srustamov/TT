@@ -76,7 +76,7 @@ class Authentication
      * @param bool $user
      * @return object
      */
-    public function user($user = false)
+    public function user($user = null)
     {
         if ($user && is_object($user)) {
             $this->user = (object) Arr::except((array) $user, $this->hidden);
@@ -95,7 +95,7 @@ class Authentication
     }
 
 
-    protected function getPasswordName()
+    protected function getPasswordName(): string
     {
         return 'password';
     }
@@ -326,6 +326,7 @@ class Authentication
     /**
      * @param $seconds
      * @return string
+     * @throws Exception
      */
     protected function convertTime($seconds): string
     {
@@ -351,7 +352,7 @@ class Authentication
     }
 
 
-    protected function setAttemptDriver()
+    protected function setAttemptDriver(): void
     {
         switch ($this->attemptDriver) {
             case 'session':

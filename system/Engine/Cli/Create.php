@@ -11,9 +11,12 @@ class Create
 {
     public static function execute($argv)
     {
-        $subCommand = false;
-
-        list($command, $name, &$subCommand) = $argv;
+        $subCommand = null;
+        if(version_compare(PHP_VERSION, '7.3.0') >= 0) {
+            //list($command, $name, &$subCommand) = $argv;
+        } else {
+            @list($command, $name, $subCommand) = $argv;
+        }
 
         list($create, $type) = explode(':', $command, 2);
 
