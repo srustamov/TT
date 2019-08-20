@@ -16,7 +16,7 @@ return[
                 'lock_time' => 300, //seconds
             ]
         ],
-
+       /*
         'admin' => [
             'model' => App\Models\Admin::class,
             'password_name' => 'password',
@@ -31,6 +31,7 @@ return[
                 'lock_time' => 300, //seconds
             ]
         ]
+       */
 
     ]
 
