@@ -15,28 +15,21 @@ class Middleware
 
 
     /**
-     * @param String $extension
-     * @param Bool $isClassName
+     * @param string|object $class
+     * @param string $guard
+     * @param array $excepts
      * @return bool|mixed
      * @throws \Exception
      */
 
-    public static function init(String $extension, Bool $isClassName = false)
+    public static function init($class, string $guard = 'default',$excepts = [])
     {
         $request  = App::get('request');
 
-        if (!$isClassName) {
-            list($name, $excepts) = static::instance()->getExcepts($extension);
-
-            foreach ($excepts as $action) {
-                if ($request->controller(true) === strtolower($action)) {
-                    return true;
-                }
+        foreach ($excepts as $action) {
+            if ($request->controller(true) === strtolower($action)) {
+                return true;
             }
-
-            $middleware = "\\App\\Middleware\\{$name}";
-        } else {
-            $middleware = $extension;
         }
 
         $next = static function ($ClientRequest) {
@@ -45,16 +38,12 @@ class Middleware
             }
         };
 
+        $response = call_user_func([new $class(), 'handle'], $request, $next,$guard);
 
-        if (class_exists($middleware)) {
-            $response = call_user_func([new $middleware(), 'handle'], $request, $next);
-
-            if (!App::isInstance($response, 'response')) {
-                App::get('response')->setContent($response)->send();
-            }
-        } else {
-            throw new RuntimeException("Middleware {$middleware} class not found");
+        if (!App::isInstance($response, 'response')) {
+            App::get('response')->setContent($response)->send();
         }
+
     }
 
 
@@ -62,11 +51,13 @@ class Middleware
      * @param $extension
      * @return array
      */
-    protected function getExcepts($extension): array
+    public static function getExceptsAndGuard($extension): array
     {
         $excepts = [];
 
-        $name    = $extension;
+        $guard = 'default';
+
+        $name = $extension;
 
         if (strpos($extension, '|') !== false) {
             list($name, $excepts) = explode('|', $extension, 2);
@@ -74,17 +65,12 @@ class Middleware
             $excepts = explode(',', $excepts);
         }
 
-
-        return array($name,$excepts);
-    }
-
-
-
-    public static function instance()
-    {
-        if (static::$instance === null) {
-            static::$instance = new static();
+        if(strpos($name, ':')) {
+            list($name, $guard) = explode(':', $extension, 2);
         }
-        return static::$instance;
+
+
+        return array($name,$excepts,$guard);
     }
+
 }

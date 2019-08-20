@@ -6,31 +6,29 @@
  */
 
 use App\Controllers\Controller;
-use System\Engine\Http\Request;
+//use System\Engine\Http\Request;
 use System\Facades\Response;
-use App\Models\Article;
+use System\Facades\Auth;
+//use App\Models\Article;
 
 class ArticleController extends Controller
 {
     /**
-     * @param Request $request
      * @return mixed
      */
-    public function index(Request $request)
+    public function index()
     {
         return Response::json(
             $this->transform(
-                Article::where(['user_id' => auth()->user()->id])->get()
+                Auth::user()->articles()->limit(10)->get()
             )
         );
     }
 
     public function show($id)
     {
-        $article = Article::where([
-                                'id' => $id,
-                                'user_id' => auth()->user()->id,
-                            ])->get();
+        $article = Auth::user()->article()->find( $id );
+
         if($article) {
             return Response::json($this->transform($article));
         }
@@ -50,14 +48,13 @@ class ArticleController extends Controller
 
         $transform = [];
 
-        $author = auth()->user()->name;
+        $author = Auth::user()->name;
 
         $transform['success'] = true;
 
         foreach ($articles as $article) {
             $transform['data'][] = [
-              'title' => $article->title,
-              'body' => $article->body,
+              'id' => $article->id,
               'author' => $author
           ];
         }

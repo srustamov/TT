@@ -112,7 +112,7 @@ class Database extends Connection
     /**
      * @return string
      */
-    private function getQueryString()
+    public function getQueryString()
     {
         if (empty($this->select)) {
             $this->select[] = "*";

@@ -1,5 +1,5 @@
 <?php namespace System\Exceptions;
 
-class CookieException extends \Exception
+class CookieException extends \RuntimeException
 {
 }

@@ -30,7 +30,7 @@ class Session implements ArrayAccess, Countable
      */
     public function start()
     {
-        if (session_status() === PHP_SESSION_NONE) {
+        if (!$this->isStarted()) {
             $this->config = Config::get('session');
 
             ini_set('session.cookie_httponly', $this->config['cookie']['http_only']);
@@ -71,10 +71,14 @@ class Session implements ArrayAccess, Countable
             } else {
                 session_start();
             }
-
-
             $this->token();
         }
+    }
+
+
+    public function isStarted() :bool
+    {
+        return !(session_status() === PHP_SESSION_NONE);
     }
 
 

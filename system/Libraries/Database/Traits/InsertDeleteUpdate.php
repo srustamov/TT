@@ -9,6 +9,7 @@
  */
 
 use System\Libraries\Arr;
+use System\Exceptions\DatabaseException;
 
  trait InsertDeleteUpdate
  {

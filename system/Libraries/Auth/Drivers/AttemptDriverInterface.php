@@ -2,6 +2,8 @@
 
 interface AttemptDriverInterface
 {
+    public function __construct(string $guard);
+
     public function getAttemptsCountOrFail();
 
     public function increment();

@@ -13,13 +13,21 @@ class Article extends Model
 {
 
    // default Articles
-   protected $table;
+   //protected $table;
 
    // default [*]
-   protected $select;
+   //protected $select;
 
    /*
    * default Primary Key id
    protected $primaryKey;
    */
+
+
+
+   public function user()
+   {
+       return $this->belongsTo(User::class,'user_id');
+   }
+
 }

@@ -6,9 +6,9 @@
  */
 
 
-use Exception;
+use RuntimeException;
 
-class ModelNotFoundException extends Exception
+class ModelNotFoundException extends RuntimeException
 {
     /**
      * NotFoundException constructor.

@@ -5,9 +5,19 @@ use System\Facades\Http;
 
 class RedisAttemptDriver implements AttemptDriverInterface
 {
+    protected $guard;
+
+    protected $ip;
+
+    public function __construct(string $guard)
+    {
+        $this->guard = $guard;
+        $this->ip = Http::ip();
+    }
+
     public function getAttemptsCountOrFail()
     {
-        if (($result = R::get("AUTH_ATTEMPT_COUNT".Http::ip()))) {
+        if (($result = R::get("AUTH_ATTEMPT_COUNT_".md5($this->ip.$this->guard)))) {
             return (object) array('count' => $result);
         }
         return false;
@@ -18,7 +28,7 @@ class RedisAttemptDriver implements AttemptDriverInterface
         $count = $this->getAttemptsCountOrFail();
 
         R::setex(
-            "AUTH_ATTEMPT_COUNT".Http::ip(),
+            "AUTH_ATTEMPT_COUNT".md5($this->ip.$this->guard),
             60*60,
             $count ? $count->count+1 :1
         );
@@ -30,23 +40,23 @@ class RedisAttemptDriver implements AttemptDriverInterface
     {
         $expire = strtotime("+ {$lockTime} seconds");
 
-        R::expire("AUTH_ATTEMPT_COUNT".Http::ip(), $expire);
+        R::expire("AUTH_ATTEMPT_COUNT".md5($this->ip.$this->guard), $expire);
 
-        R::setex("AUTH_ATTEMPT_EXPIRE".Http::ip(), $expire, $expire);
+        R::setex("AUTH_ATTEMPT_EXPIRE".md5($this->ip.$this->guard), $expire, $expire);
     }
 
 
     public function deleteAttempt()
     {
-        R::delete("AUTH_ATTEMPT_COUNT".Http::ip());
-        R::delete("AUTH_ATTEMPT_EXPIRE".Http::ip());
+        R::delete("AUTH_ATTEMPT_COUNT".md5($this->ip.$this->guard));
+        R::delete("AUTH_ATTEMPT_EXPIRE".md5($this->ip.$this->guard));
     }
 
 
 
     public function expireTimeOrFail()
     {
-        return R::get("AUTH_ATTEMPT_EXPIRE".Http::ip());
+        return R::get("AUTH_ATTEMPT_EXPIRE".md5($this->ip.$this->guard));
     }
 
 

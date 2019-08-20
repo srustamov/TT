@@ -26,7 +26,6 @@ class RegisterController extends Controller
     /**
      * RegisterController show method.Show register form page
      *
-     * @return \System\Libraries\View\View
      * @throws \Exception
      */
     public function show()
@@ -40,9 +39,11 @@ class RegisterController extends Controller
      *
      * @param Request $request
      * @return \System\Libraries\Redirect
+     * @throws \Exception
      */
     public function register(Request $request)
     {
+        /**@var $validation \System\Libraries\Validator*/
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email|unique:users',
                 'password' => 'required|min:6',
@@ -50,7 +51,7 @@ class RegisterController extends Controller
             ]);
 
         if (!$validation->check()) {
-            return Redirect::route('register')->withErrors(Validator::messages());
+            return redirect()->route('register')->withErrors(Validator::messages());
         }
 
         $create = User::create([
@@ -60,9 +61,9 @@ class RegisterController extends Controller
         ]);
 
         if ($create) {
-            return Redirect::route('login')->with('register', 'Register successfully');
+            return redirect()->route('login')->with('register', 'Register successfully');
         }
 
-        return Redirect::route('register')->with('register', 'User register error occurred.Please try again');
+        return redirect()->route('register')->with('register', 'User register error occurred.Please try again');
     }
 }

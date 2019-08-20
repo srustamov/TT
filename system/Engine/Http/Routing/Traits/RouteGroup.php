@@ -27,10 +27,20 @@ trait RouteGroup
     }
 
 
-
+    /**
+     * @param $group_parameters
+     * @return array|string
+     */
     private function prepareGroupParameters($group_parameters)
     {
-        $prefix     = $group_parameters['prefix'] ?? (is_string($group_parameters) ? $group_parameters : '');
+        if(is_string($group_parameters)) {
+            $prefix = $group_parameters;
+            $this->prefix .= trim($prefix);
+
+            return array(false,$prefix,false ?? false,false);
+        }
+
+        $prefix     = $group_parameters['prefix'] ?? '';
 
         $middleware = $group_parameters['middleware'] ?? false;
 

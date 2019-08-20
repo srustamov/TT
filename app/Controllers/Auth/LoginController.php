@@ -12,20 +12,19 @@
 
 namespace App\Controllers\Auth;
 
+use Exception;
 use System\Engine\Http\Request;
 use System\Facades\Validator;
-use System\Facades\Redirect;
-use System\Libraries\Auth\Authentication;
+use System\Facades\Auth;
 
-class LoginController extends Authentication
+class LoginController
 {
 
 
     /**
      * LoginController show method.Show login form page
      *
-     * @return \System\Libraries\View\View
-     * @throws \Exception
+     * @throws Exception
      */
     public function show()
     {
@@ -38,34 +37,39 @@ class LoginController extends Authentication
      * Validate post data and Authentication attempt
      *
      * @param Request $request
-     * @return \System\Libraries\Redirect
+     * @return mixed
+     * @throws Exception
      */
     public function login(Request $request)
     {
-        $validation =  Validator::make($request->all(), [
+        /**@var $validation \System\Libraries\Validator*/
+        $validation =  Validator::make($request->only('email', 'password'), [
                 'email'    => 'required|email',
                 'password' => 'required|min:6'
             ]);
 
         if (!$validation->check()) {
-            return Redirect::route('login')->withErrors($validation->messages());
+            return redirect()->route('login')->withErrors($validation->messages());
         }
 
-        if ($this->attempt($request->only('email', 'password'), $request->remember)) {
-            return Redirect::route('home');
+        if (Auth::attempt($request->only('email', 'password'), $request->remember)) {
+            return redirect()->route('home');
         }
 
-        return Redirect::route('login')->withErrors('login', $this->getMessage());
+        return redirect()->route('login')->withErrors('login', Auth::getMessage());
     }
 
 
     /**
-    * LoginController logout method.Logout Authenticate User and redirect Home page
-    *
-    * @return \System\Libraries\Redirect
-    */
+     * LoginController logout method.Logout Authenticate User and redirect Home page
+     *
+     * @return mixed
+     * @throws Exception
+     */
     public function logout()
     {
-        return $this->logoutUser()->redirect()->route('home');
+        Auth::logoutUser();
+
+        return redirect()->route('home');
     }
 }

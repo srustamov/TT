@@ -6,48 +6,77 @@
  */
 
 
-
-
 //------------------------------------------------------
 // Model Class
 //------------------------------------------------------
 
-use App\Exceptions\ModelNotFoundException;
-use System\Libraries\Arr;
+use RuntimeException;
 use System\Facades\DB;
+use System\Libraries\Arr;
+use ArrayAccess, JsonSerializable;
+use App\Exceptions\ModelNotFoundException;
 
-abstract class Model
+
+abstract class Model implements ArrayAccess, JsonSerializable
 {
-    private static $attributes = [];
+    use Relations\HasMany,Relations\HasOne,Relations\BelongsTo;
+
+    protected static $models = [];
+
+    protected $attributes = [];
 
     protected $table;
 
-    protected $select  = ['*'];
+    protected $select = ['*'];
 
     protected $primaryKey = 'id';
 
 
-    /**
-     * @param $column
-     * @param $value
-     */
-    public function __set($column, $value)
+    public function __construct()
     {
-        self::$attributes[$column] = $value;
+        if (!isset(self::$models[static::class])) {
+            $this->boot();
+        }
     }
 
 
+    protected function boot()
+    {
+        $model = $this;
+
+        if ($model->table === null) {
+            $called_class = explode('\\', static::class);
+
+            $this->table = strtolower(array_pop($called_class)) . 's';
+        }
+        if ($model->primaryKey === null) {
+            $model->primaryKey = 'id';
+        }
+
+        self::$models[static::class] = $model;
+
+    }
 
 
     /**
      * @return bool
      */
-    public function save():Bool
+    public function save(): Bool
     {
-        if (!empty(self::$attributes)) {
-            $return = static::create(self::$attributes);
+        if (!empty(self::getAttributes())) {
+            $pk = self::getInstance()->primaryKey;
+            if (array_key_exists($pk, self::getAttributes())) {
+                /**@var $query Database */
+                $query = DB::table(self::getTable());
 
-            self::$attributes = [];
+                $query->where($pk, self::getAttributes()[$pk]);
+
+                $return = $query->update(Arr::except(self::getAttributes(), [$pk]));
+            } else {
+                $return = static::create(self::getAttributes());
+            }
+
+            self::setAttributes([]);
 
             return $return;
         }
@@ -59,48 +88,52 @@ abstract class Model
      * @param array $data
      * @return bool
      */
-    public static function create(array $data):Bool
+    public static function create(array $data): Bool
     {
-        return DB::table((new static)->getTable())->insert($data);
+        return DB::table(self::getTable())->insert($data);
     }
 
 
     /**
-     * @return mixed
      * @param array|int $primaryKey
+     * @return mixed
      * @internal param $pk
      */
     public static function find($primaryKey)
     {
-        $pk = (new static)->primaryKey;
+        $pk = self::getInstance()->getPrimaryKey();
 
-        if (is_null($pk)) {
-            throw new Exception('No primary key defined on model.');
+        if ($pk === null) {
+            throw new RuntimeException('No primary key defined on model.');
         }
 
-        $select = !is_null((new static)->select) ? (new static)->select : '*';
-
-        $query =  DB::table((new static)->getTable())->select($select);
-
-        $first = true;
-
-        if (is_array($primaryKey)) {
-            $query->whereIn($pk, $primaryKey);
-            if (count($primaryKey) > 1) {
-                $first = false;
-            }
+        if (is_array($primaryKey) && Arr::isAssoc($primaryKey)) {
+            $where = $primaryKey;
         } else {
-            $query->where($pk, $primaryKey);
+            $where = [$pk => $primaryKey];
+        }
+        $select = self::getInstance()->select ?? '*';
+
+        /**@var $query Database */
+        $query = DB::table(self::getTable());
+
+        $result = $query->select($select)->where($where)->toArray(true);
+
+        if (!$result) {
+            return null;
         }
 
-        return $query->get($first);
+        self::getInstance()->setAttributes((array)$result);
+
+        return self::getInstance();
+
     }
 
 
     public static function findOrFail(...$args)
     {
-        if ($result = self::find(...$args)) {
-            return $result;
+        if ($model = self::getInstance()->find(...$args)) {
+            return $model;
         }
         throw new ModelNotFoundException;
     }
@@ -108,13 +141,14 @@ abstract class Model
 
     public static function destroy($primaryKey)
     {
-        $pk = (new static)->primaryKey;
+        $pk = self::getInstance()->getPrimaryKey();
 
-        if (is_null($pk)) {
-            throw new Exception('No primary key defined on model.');
+        if ($pk === null) {
+            throw new RuntimeException('No primary key defined on model.');
         }
 
-        $query = DB::table((new static)->getTable());
+        /**@var $query Database */
+        $query = DB::table(self::getTable());
 
         if (is_array($primaryKey)) {
             $query->whereIn($pk, $primaryKey);
@@ -132,47 +166,61 @@ abstract class Model
      */
     public static function all($select = null)
     {
-        $select = !is_null((new static)->select) ? (new static)->select : '*';
+        $select = $select ?? self::getInstance()->select ?? '*';
 
-        return DB::table((new static)->getTable())->select($select)->get();
+        return DB::table(self::getTable())->select($select)->get();
     }
-
-
 
 
     public function setPrimaryKey($key)
     {
-        $this->primaryKey = $key;
+        self::getInstance()->primaryKey = $key;
 
-        return $this;
+        return self::getInstance();
     }
 
-
-    public function getTable()
+    public function getPrimaryKey()
     {
-        if (is_null($this->table)) {
-            $called_class = explode('\\', get_called_class());
-
-            $this->table  = strtolower(array_pop($called_class)).'s';
-        }
-
-        return $this->table;
+        return self::getInstance()->primaryKey;
     }
 
 
-    public function setTable($table)
+    public static function getTable()
     {
-        $this->table = $table;
-
-        return $this;
+        return self::getInstance()->table;
     }
 
+
+    protected function setTable($table)
+    {
+        self::getInstance()->table = $table;
+
+        return self::getInstance();
+    }
+
+    public static function setAttributes(array $attributes)
+    {
+        self::getInstance()->attributes = $attributes;
+
+        return self::getInstance();
+    }
+
+
+    public static function getAttributes(): array
+    {
+        return self::getInstance()->attributes;
+    }
+
+    public static function getInstance()
+    {
+        return self::$models[static::class] ?? new static();
+    }
 
     private function callCustomMethod($name, $arguments)
     {
-        $select = !is_null($this->select) ? $this->select : '*';
+        $select = self::getInstance()->select ?? '*';
 
-        return DB::table($this->getTable())->select($select)->{$name}(...$arguments);
+        return DB::table(self::getTable())->select($select)->{$name}(...$arguments);
     }
 
 
@@ -182,9 +230,111 @@ abstract class Model
     }
 
 
-
     public static function __callStatic($name, $arguments)
     {
         return (new static)->callCustomMethod($name, $arguments);
+    }
+
+
+    /**
+     * @param $column
+     * @param $value
+     */
+    public function __set($column, $value)
+    {
+        self::getInstance()->attributes[$column] = $value;
+    }
+
+    public function __isset($name)
+    {
+        return array_key_exists($name, self::getAttributes());
+    }
+
+    /**
+     * @param $column
+     * @return array|null
+     */
+    public function __get($column)
+    {
+        return self::getInstance()->attributes[$column] ?? null;
+    }
+
+
+    /**
+     * Offset to retrieve
+     * @link http://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
+     */
+    public function offsetGet($offset)
+    {
+        return self::getAttributes()[$offset] ?? null;
+    }
+
+    /**
+     * Offset to set
+     * @link http://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet($offset, $value)
+    {
+        self::getInstance()->attributes[$offset] = $value;
+    }
+
+    /**
+     * Offset to unset
+     * @link http://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset($offset)
+    {
+        if (array_key_exists($offset, self::getAttributes())) {
+            unset(self::getInstance()->attributes[$offset]);
+        }
+    }
+
+    /**
+     * Whether a offset exists
+     * @link http://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists($offset): bool
+    {
+        return array_key_exists($offset, self::getAttributes());
+    }
+
+    /**
+     * Count elements of an object
+     * @link http://php.net/manual/en/countable.count.php
+     * @return array The custom count as an integer.
+     * </p>
+     * <p>
+     * The return value is cast to an integer.
+     * @since 5.1.0
+     */
+    public function jsonSerialize(): array
+    {
+        return self::getAttributes();
     }
 }

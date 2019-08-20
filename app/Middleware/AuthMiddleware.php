@@ -16,15 +16,17 @@ use System\Facades\Response;
 class AuthMiddleware
 {
     /**
-     * @param $request
+     * @param Request $request
      * @param Closure $next
+     * @param $guard
      * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next,$guard)
     {
         if (!Auth::check()) {
-            if($request->isJson()) {
-                return Response::json(['error' => 'UnAuthorized',401]);
+            if($request->isJson() || $guard === 'api') {
+                Response::json(['error' => 'unAuthorized'],401)->send();
+                $request->app()->end();
             }
             return Redirect::route('login')->withErrors('auth', 'You must first log in');
         }

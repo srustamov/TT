@@ -7,6 +7,6 @@
 
 
 
-class RouteException extends \Exception
+class RouteException extends \RuntimeException
 {
 }

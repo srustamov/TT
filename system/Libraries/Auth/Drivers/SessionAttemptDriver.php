@@ -4,9 +4,16 @@ use System\Facades\Session;
 
 class SessionAttemptDriver implements AttemptDriverInterface
 {
+    protected $guard;
+
+    public function __construct(string $guard)
+    {
+        $this->guard = $guard;
+    }
+
     public function getAttemptsCountOrFail()
     {
-        if ($count = Session::get("AUTH_ATTEMPT_COUNT")) {
+        if ($count = Session::get('AUTH_ATTEMPT_COUNT_'.$this->guard)) {
             return (object) array('count' => $count);
         }
         return false;
@@ -15,11 +22,11 @@ class SessionAttemptDriver implements AttemptDriverInterface
     public function increment()
     {
         if ($this->getAttemptsCountOrFail()) {
-            Session::set("AUTH_ATTEMPT_COUNT", function ($session) {
-                return $session->get("AUTH_ATTEMPT_COUNT")+1;
+            Session::set('AUTH_ATTEMPT_COUNT_'.$this->guard, function ($session) {
+                return $session->get('AUTH_ATTEMPT_COUNT_'.$this->guard)+1;
             });
         } else {
-            Session::set("AUTH_ATTEMPT_COUNT", 1);
+            Session::set('AUTH_ATTEMPT_COUNT_'.$this->guard, 1);
         }
     }
 
@@ -27,20 +34,20 @@ class SessionAttemptDriver implements AttemptDriverInterface
 
     public function startLockTime($lockTime)
     {
-        Session::set("AUTH_ATTEMPT_EXPIRE", strtotime("+ {$lockTime} seconds"));
+        Session::set('AUTH_ATTEMPT_EXPIRE_'.$this->guard, strtotime('+ {$lockTime} seconds'));
     }
 
 
     public function deleteAttempt()
     {
-        Session::delete(array("AUTH_ATTEMPT_COUNT","AUTH_ATTEMPT_EXPIRE"));
+        Session::delete(array('AUTH_ATTEMPT_COUNT_'.$this->guard,'AUTH_ATTEMPT_EXPIRE_'.$this->guard));
     }
 
 
 
     public function expireTimeOrFail()
     {
-        return Session::get("AUTH_ATTEMPT_EXPIRE");
+        return Session::get('AUTH_ATTEMPT_EXPIRE_'.$this->guard);
     }
 
 

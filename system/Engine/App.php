@@ -10,7 +10,9 @@ namespace System\Engine;
  */
 
 use ArrayAccess;
+use Closure;
 use Exception;
+use RuntimeException;
 use System\Libraries\Benchmark\Benchmark;
 use System\Engine\Http\Middleware;
 use System\Engine\Http\Request;
@@ -136,9 +138,8 @@ class App implements ArrayAccess
     protected function middleware($name): void
     {
         $names = is_array($name) ? $name : [$name];
-
         foreach ($names as $middleware) {
-            Middleware::init($middleware, true);
+            Middleware::init($middleware);
         }
     }
 
@@ -184,19 +185,21 @@ class App implements ArrayAccess
      * Show Application Benchmark Panel in development mode
      *
      * @param $finish
-     * @return string|mixed
+     * @return string|null
      */
     public function benchmark($finish)
     {
         if (!(
             CONSOLE ||
-          !self::get('config')->get('app.debug') ||
-          self::get('http')->isAjax()
+            !self::get('config')->get('app.debug') ||
+            self::get('http')->isAjax() ||
+            self::get('request')->isJson()
         )) {
             $benchmark = new Benchmark($this);
             self::register('benchmark', $benchmark);
             return $benchmark->table($finish);
         }
+        return null;
     }
 
     /**
@@ -337,7 +340,7 @@ class App implements ArrayAccess
      * @param string $class
      * @param mixed ...$args
      * @return mixed
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public static function get(string $class, ...$args)
     {
@@ -361,7 +364,7 @@ class App implements ArrayAccess
             }
 
             $instance = new $class(Reflections::classMethodParameters($class, '__construct', $args));
-            
+
 
             static::$classes[$class] = $instance;
 
@@ -369,13 +372,13 @@ class App implements ArrayAccess
 
             return static::$classes[$class];
         }
-        throw new \RuntimeException('Class not found [' . $class . ']');
+        throw new RuntimeException('Class not found [' . $class . ']');
     }
 
 
     public static function register($className, $object): void
     {
-        if ($object instanceof \Closure) {
+        if ($object instanceof Closure) {
             static::register($className, $object());
         } elseif (is_string($object)) {
             static::$classes[$className] = new $object();
@@ -389,7 +392,7 @@ class App implements ArrayAccess
      * @param $object
      * @param $className
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public static function isInstance($object, $className): bool
     {

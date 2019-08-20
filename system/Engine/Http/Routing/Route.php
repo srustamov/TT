@@ -71,9 +71,9 @@ class Route
     }
 
 
-    public function setGlobalPatterns(array $pattrens)
+    public function setGlobalPatterns(array $patterns)
     {
-        $this->patterns = $pattrens;
+        $this->patterns = $patterns;
     }
 
 
@@ -172,7 +172,7 @@ class Route
             if (preg_match('/({.+?})/', $route)) {
                 list($args, $uri, $route) = $this->parseRoute($requestUri, $route, $resource[ 'pattern' ] ?? []);
             }
-            
+
             if (!preg_match("#^$route$#", $requestUri)) {
                 unset($this->routes[ $method ]);
                 continue;
@@ -205,6 +205,7 @@ class Route
      */
     protected function callAction(String $action, $middleware_array, $args)
     {
+
         list($controller, $method) = explode('@', $action);
 
         if (strpos($controller, '/') !== false) {
@@ -218,13 +219,7 @@ class Route
 
             define('CONTROLLER', $controller);
 
-            if (!empty($middleware_array)) {
-                foreach ($middleware_array as $middleware) {
-                    if (isset($this->middlewareAliases[$middleware])) {
-                        Middleware::init($this->middlewareAliases[$middleware], true);
-                    }
-                }
-            }
+            $this->callMiddleware($middleware_array);
 
             $args = Reflections::classMethodParameters($controller_with_namespace, $method, $args);
 
@@ -255,13 +250,7 @@ class Route
      */
     protected function callHandler(callable $handler, $middleware_array, $args)
     {
-        if (!empty($middleware_array)) {
-            foreach ($middleware_array as $middleware) {
-                if (isset($this->middlewareAliases[$middleware])) {
-                    Middleware::init($this->middlewareAliases[$middleware], true);
-                }
-            }
-        }
+        $this->callMiddleware($middleware_array);
 
         $args = Reflections::functionParameters($handler, $args);
 
@@ -273,6 +262,23 @@ class Route
 
 
         return $this->app::get('response')->setContent($content);
+    }
+
+
+    /**
+     * @param array $middleware_array
+     * @throws Exception
+     */
+    protected function callMiddleware(array $middleware_array)
+    {
+        if (!empty($middleware_array)) {
+            foreach ($middleware_array as $middleware) {
+                list($name,$excepts,$guard) = Middleware::getExceptsAndGuard($middleware);
+                if (isset($this->middlewareAliases[$name])) {
+                    Middleware::init($this->middlewareAliases[$name],$guard,$excepts );
+                }
+            }
+        }
     }
 
 

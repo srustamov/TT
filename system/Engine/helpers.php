@@ -15,8 +15,16 @@ function app(string $class = null)
     if ($class === null) {
         return App::getInstance();
     }
-
     return App::get($class);
+}
+
+
+function auth(string $guard = null)
+{
+    if($guard !== null) {
+        return App::get('authentication')->guard($guard);
+    }
+    return App::get('authentication');
 }
 
 

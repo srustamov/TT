@@ -6,9 +6,9 @@
  */
 
 
-use Exception;
+use RuntimeException;
 
-class NotFoundException extends Exception
+class NotFoundException extends RuntimeException
 {
     /**
      * NotFoundException constructor.

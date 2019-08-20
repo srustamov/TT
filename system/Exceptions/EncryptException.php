@@ -1,5 +1,5 @@
 <?php namespace System\Exceptions;
 
-class EncryptException extends \Exception
+class EncryptException extends \RuntimeException
 {
 }

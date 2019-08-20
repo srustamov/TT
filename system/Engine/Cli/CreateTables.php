@@ -73,7 +73,7 @@ class CreateTables
 
     private static function getUsersTableSql()
     {
-        return 'CREATE TABLE IF NOT EXISTS `users` (
+        return 'CREATE TABLE IF NOT EXISTS `admins` (
                     `id` int(11) NOT NULL AUTO_INCREMENT,
                     `name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
                     `password` varchar(100) COLLATE utf8_unicode_ci NOT NULL,

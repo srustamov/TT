@@ -1,10 +1,9 @@
 <?php return [
 
 
+    "many_attempts" => [
 
-    "many_attempts" =>  [
-
-        'text'    => "Too many login attempts. Please try again in :time ",
+        'text' => "Too many login attempts. Please try again in :time ",
 
         'minutes' => "minutes",
 
@@ -15,5 +14,6 @@
         'second' => "second",
     ],
 
-    "incorrect"     =>  "Login or password incorrect! :remaining attempts remaining !"
+    "incorrect" => "Login or password incorrect! ",
+    'remaining' => ':remaining attempts remaining !'
 ];

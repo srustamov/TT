@@ -16,7 +16,6 @@
 define('APP_START', microtime(true));
 
 
-
 //------------------------------------------
 // Load Composer Autoload file
 //------------------------------------------
@@ -39,7 +38,7 @@ $response = $app->bootstrap()->routing();
 // Application Benchmark panel view
 //------------------------------------------
 
-//$response->appendContent($app->benchmark(microtime(true)));
+$response->appendContent($app->benchmark(microtime(true)));
 
 
 

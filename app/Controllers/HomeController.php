@@ -12,6 +12,8 @@
 
 namespace App\Controllers;
 
+
+use App\Models\User;
 use System\Engine\Http\Request;
 use System\Libraries\Language;
 use System\Libraries\View\View;

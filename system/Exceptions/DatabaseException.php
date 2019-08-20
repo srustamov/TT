@@ -1,6 +1,6 @@
 <?php namespace System\Exceptions;
 
-class DatabaseException extends \Exception
+class DatabaseException extends \RuntimeException
 {
     public function __construct($message ='', $query = '')
     {

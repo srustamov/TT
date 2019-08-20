@@ -8,6 +8,7 @@
  * @method static destroy()
  * @method static set(string $string, bool $true)
  * @method static get(string $string)
+ * @method static isStarted(): bool
  */
 
 

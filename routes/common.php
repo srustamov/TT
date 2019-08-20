@@ -21,9 +21,9 @@ $this->get('/home/', 'HomeController@home')->name('home');
 
 $this->get('/language/{lang}/', 'HomeController@language')->name('lang')->pattern('lang', '[a-z]{2}');
 
-$this->get(['path'=>'/auth/logout','middleware'=> array('auth'),'name'=>'logout'], 'Auth/LoginController@logout');
+$this->get(['path'=>'/auth/logout','middleware'=> ['auth'],'name'=>'logout'], 'Auth/LoginController@logout');
 
-$this->group(['prefix' => '/auth','middleware' => array('guest')], function () {
+$this->group(['prefix' => '/auth','middleware' => ['guest']], function () {
     $this->get('/login/', 'Auth/LoginController@show')->name('login');
     $this->post('/login/', 'Auth/LoginController@login');
     $this->get('/register/', 'Auth/RegisterController@show')->name('register');

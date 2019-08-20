@@ -7,6 +7,6 @@
 
 
 
-class ViewException extends \Exception
+class ViewException extends \RuntimeException
 {
 }
