@@ -1,5 +1,4 @@
 # TT
-PHP simple and fastest mini mvc framework
 
 
 * Goto Command Line
