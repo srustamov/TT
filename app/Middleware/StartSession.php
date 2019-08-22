@@ -6,7 +6,7 @@ class StartSession
 {
 
     private $except = [
-        'api/.*'
+        //'api/.*'
     ];
 
 

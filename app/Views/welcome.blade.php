@@ -23,15 +23,15 @@
         }
 
         #welcome {
-            color: #3d8651 !important;
+            color: #4f449e !important;
             margin-bottom: 3vw;
             font-size: 5em;
-            display: block;
+            display: block !important;
         }
 
         #container span {
             display: inline-block;
-            margin: 3vw auto;
+            margin: 1rem auto;
             color: rgb(70, 9, 148);
             text-transform: uppercase;
         }
@@ -41,11 +41,17 @@
             cursor: pointer;
             text-decoration: none !important;
         }
+        strong#version{
+            font-size: 20px;
+            letter-spacing: 4px;
+            color: #768a87;
+        }
     </style>
 </head>
 <body>
 <div id="container">
-    <span id="welcome">{{ config('app.name') }}</span><br>
+    <span id="welcome">{{ config('app.name') }}</span>
+    <strong id="version">{{ app()->version() }}</strong><br>
     <span><a href="{{url('/home')}}">HOME</a></span> |
     <span><a href="https://github.com/srustamov/TT" target="_blank">GITHUB</a></span>
 </div>
