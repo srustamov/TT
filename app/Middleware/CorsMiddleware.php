@@ -1,8 +1,8 @@
 <?php  namespace App\Middleware;
 
 use Closure;
-use System\Engine\Http\Request;
-use System\Facades\Response;
+use TT\Engine\Http\Request;
+use TT\Facades\Response;
 
 
 class CorsMiddleware

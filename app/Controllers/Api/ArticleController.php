@@ -6,9 +6,9 @@
  */
 
 use App\Controllers\Controller;
-//use System\Engine\Http\Request;
-use System\Facades\Response;
-use System\Facades\Auth;
+//use TT\Engine\Http\Request;
+use TT\Facades\Response;
+use TT\Facades\Auth;
 //use App\Models\Article;
 
 class ArticleController extends Controller

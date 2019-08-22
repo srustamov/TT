@@ -6,7 +6,7 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use System\Libraries\Database\Model;
+use TT\Libraries\Database\Model;
 
 
 class Article extends Model

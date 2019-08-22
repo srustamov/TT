@@ -5,7 +5,7 @@
  */
 
 /*
-//subdomain example
+//sub domain example
 $this->group(['domain' => 'admin.example.com'],function($domain)
 {
     // admin.example.com

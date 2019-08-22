@@ -1,6 +1,6 @@
 <?php namespace App;
 
-use System\Engine\App;
+use TT\Engine\App;
 
 class Kernel extends App
 {

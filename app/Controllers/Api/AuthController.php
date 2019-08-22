@@ -7,10 +7,10 @@
  */
 
 use App\Controllers\Controller;
-use System\Engine\Http\Request;
+use TT\Engine\Http\Request;
 use App\Models\User;
-use System\Facades\Hash;
-use System\Facades\Jwt;
+use TT\Facades\Hash;
+use TT\Facades\Jwt;
 
 class AuthController extends Controller
 {

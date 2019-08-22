@@ -1,6 +1,6 @@
 <?php namespace App\Models;
 
-use System\Libraries\Database\Model;
+use TT\Libraries\Database\Model;
 
 
 class User extends Model

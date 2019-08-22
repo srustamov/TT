@@ -9,8 +9,8 @@
 
 
 
-use System\Facades\Auth;
-use System\Facades\Redirect;
+use TT\Facades\Auth;
+use TT\Facades\Redirect;
 
 class GuestMiddleware
 {
@@ -19,7 +19,7 @@ class GuestMiddleware
         if (Auth::check()) {
             return Redirect::back();
         }
-        
+
         return $next($request);
     }
 }

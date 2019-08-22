@@ -1,9 +1,9 @@
 <?php  namespace App\Middleware;
 
 use RuntimeException;
-use System\Engine\Http\Request;
-use System\Facades\Cookie;
-use System\Facades\Config;
+use TT\Engine\Http\Request;
+use TT\Facades\Cookie;
+use TT\Facades\Config;
 
 class CsrfProtected
 {
@@ -16,9 +16,9 @@ class CsrfProtected
     public function handle(Request $request, \Closure $next)
     {
         if (
-            CONSOLE || 
-            $this->isReading($request) || 
-            $this->isExcept($request) || 
+            CONSOLE ||
+            $this->isReading($request) ||
+            $this->isExcept($request) ||
             $this->tokensMatch($request)
         ) {
             $this->addCookie($request);

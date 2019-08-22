@@ -13,9 +13,9 @@
 namespace App\Controllers\Auth;
 
 use Exception;
-use System\Engine\Http\Request;
-use System\Facades\Validator;
-use System\Facades\Auth;
+use TT\Engine\Http\Request;
+use TT\Facades\Validator;
+use TT\Facades\Auth;
 
 class LoginController
 {
@@ -42,7 +42,7 @@ class LoginController
      */
     public function login(Request $request)
     {
-        /**@var $validation \System\Libraries\Validator*/
+        /**@var $validation \TT\Libraries\Validator*/
         $validation =  Validator::make($request->only('email', 'password'), [
                 'email'    => 'required|email',
                 'password' => 'required|min:6'
