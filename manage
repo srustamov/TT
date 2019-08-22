@@ -6,8 +6,8 @@
  */
 //------------------------------------------------------
 
-use System\Engine\Cli\Console;
-use System\Engine\Cli\PrintConsole;
+use TT\Engine\Cli\Console;
+use TT\Engine\Cli\PrintConsole;
 
 //------------------------------------------
 // Define set application started time

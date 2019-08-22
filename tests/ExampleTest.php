@@ -3,8 +3,8 @@
 
 
 use App\Models\User;
-use System\Facades\Auth;
-use System\Engine\App;
+use TT\Facades\Auth;
+use TT\Engine\App;
 use PHPUnit\Framework\TestCase;
 
 class ExampleTest extends TestCase
