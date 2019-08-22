@@ -15,10 +15,11 @@ use PDO;
 
 abstract class Connection
 {
-    protected $general = [];
+    protected $connections = [];
 
     protected $config = [];
 
+    /**@var PDO*/
     protected $pdo;
 
     protected $group = 'default';
@@ -32,15 +33,15 @@ abstract class Connection
 
     public function reconnect()
     {
-        if (!isset($this->general[ $this->group ])) {
+        if (!isset($this->connections[ $this->group ])) {
             $this->config[ $this->group ] = Config::get("database.$this->group");
 
             $config = $this->config[ $this->group ];
 
             try {
-                $dsn = "host={$config[ 'hostname' ]};dbname={$config[ 'dbname' ]};charset={$config[ 'charset' ]}";
-                $this->general[ $this->group ] = new PDO("mysql:{$dsn}", $config[ 'username' ], $config[ 'password' ]);
-                $this->pdo = $this->general[ $this->group ];
+                $dsn = "host={$config['hostname']};dbname={$config['dbname']};charset={$config['charset']}";
+                $this->connections[ $this->group ] = new PDO("mysql:{$dsn}", $config['username'], $config['password']);
+                $this->pdo = $this->connections[ $this->group ];
                 $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
                 $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 $this->pdo->query("SET CHARACTER SET  " . $config[ 'charset' ]);
@@ -49,16 +50,16 @@ abstract class Connection
                 throw new DatabaseException($e->getMessage());
             }
         } else {
-            $this->pdo = $this->general[ $this->group ];
+            $this->pdo = $this->connections[ $this->group ];
         }
     }
 
 
     /**
-     * @param String|null $query
+     * @param string|null $query
      * @return mixed
      */
-    public function pdo(String $query = null)
+    public function pdo(string $query = null): PDO
     {
         if ($query !== null) {
             return $this->pdo->query($query);
@@ -90,8 +91,8 @@ abstract class Connection
     {
         $connect = $group? :$this->group;
 
-        if (isset($this->general[ $connect ])) {
-            unset($this->general[ $connect ]);
+        if (isset($this->connections[ $connect ])) {
+            unset($this->connections[ $connect ]);
         }
 
         $this->pdo = null;

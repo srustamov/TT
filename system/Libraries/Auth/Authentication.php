@@ -11,22 +11,22 @@
 
 use Exception;
 use RuntimeException;
+use System\Libraries\Database\Model;
 use InvalidArgumentException;
 use System\Facades\Session;
 use System\Facades\Cookie;
 use System\Facades\Config;
 use System\Facades\Hash;
-use System\Libraries\Database\Model;
 
 
-class Authentication
+class Authentication implements \ArrayAccess,\JsonSerializable
 {
     protected $message;
 
     protected $throttle;
 
     /**@var Drivers\AttemptDriverInterface */
-    protected $driver;
+    protected $attemptDriver;
 
 
     protected $lockTime;
@@ -46,6 +46,12 @@ class Authentication
 
     protected $guard = 'default';
 
+    /**@var array*/
+    protected $booted;
+
+    /**@var array*/
+    protected $config;
+
     /**@var Model*/
     protected $user;
 
@@ -55,9 +61,18 @@ class Authentication
 
     public function __construct()
     {
-        $guards = Config::get('authentication.guards');
+        $this->config = Config::get('authentication.guards');
 
-        foreach ($guards as $guard => $config) {
+        $this->guardBootIfNotBoot();
+    }
+
+
+    protected function guardBootIfNotBoot($guard = null)
+    {
+        $guard = $guard ?? $this->guard;
+
+        if(!isset($this->booted[$guard])) {
+            $config = $this->config[$guard];
 
             if(class_exists($config['model'])) {
                 $this->model[$guard] = new $config['model']();
@@ -79,8 +94,9 @@ class Authentication
             }
 
             $this->hidden[$guard] = $config['hidden'];
-        }
 
+            $this->booted[$guard] = true;
+        }
     }
 
 
@@ -88,6 +104,7 @@ class Authentication
     {
         if ($guard !== null) {
             $this->guard = $guard;
+            $this->guardBootIfNotBoot();
             return $this;
         }
         return $this->guard;
@@ -154,9 +171,9 @@ class Authentication
             $this->setAttemptDriver();
 
             if (
-                ($attempts = $this->driver[$this->guard]->getAttemptsCountOrFail()) &&
+                ($attempts = $this->attemptDriver[$this->guard]->getAttemptsCountOrFail()) &&
                 $attempts->count >= $this->maxAttempts &&
-                $seconds = $this->driver[$this->guard]->getRemainingSecondsOrFail()
+                $seconds = $this->attemptDriver[$this->guard]->getRemainingSecondsOrFail()
             ) {
                 $this->message[$this->guard] = $this->getLockMessage($seconds);
                 return false;
@@ -174,7 +191,7 @@ class Authentication
         if ($user = $this->model[$this->guard]->find($data)) {
             if (Hash::check($password, $user->password)) {
                 if($this->throttle[$this->guard]) {
-                    $this->driver[$this->guard]->deleteAttempt();
+                    $this->attemptDriver[$this->guard]->deleteAttempt();
                 }
                 if ($remember) {
                     $this->setRemember($user);
@@ -187,12 +204,12 @@ class Authentication
                 return false;
             }
         }
-
+        /**@var $this->throttle[$this->guard] Att*/
         if($this->throttle[$this->guard]) {
-            $this->driver[$this->guard]->increment();
-            $remaining = $this->maxAttempts[$this->guard] - $this->driver[$this->guard]->getAttemptsCountOrFail()->count;
+            $this->attemptDriver[$this->guard]->increment();
+            $remaining = $this->maxAttempts[$this->guard] - $this->attemptDriver[$this->guard]->getAttemptsCountOrFail()->count;
             if ($remaining === 0) {
-                $this->driver[$this->guard]->startLockTime($this->lockTime[$this->guard]);
+                $this->attemptDriver[$this->guard]->startLockTime($this->lockTime[$this->guard]);
             }
         }
 
@@ -369,15 +386,15 @@ class Authentication
 
     protected function setAttemptDriver(): void
     {
-        switch ($this->attemptDriver[$this->guard]) {
+        switch ($this->attemptDriverName[$this->guard]) {
             case 'session':
-                $this->driver[$this->guard] = new Drivers\SessionAttemptDriver($this->guard);
+                $this->attemptDriver[$this->guard] = new Drivers\SessionAttemptDriver($this->guard);
                 break;
             case 'database':
-                $this->driver[$this->guard] = new Drivers\DatabaseAttemptDriver($this->guard);
+                $this->attemptDriver[$this->guard] = new Drivers\DatabaseAttemptDriver($this->guard);
                 break;
             case 'redis':
-                $this->driver[$this->guard] = new Drivers\RedisAttemptDriver($this->guard);
+                $this->attemptDriver[$this->guard] = new Drivers\RedisAttemptDriver($this->guard);
                 break;
             default:
                 throw new RuntimeException('Attempt Driver not found !');
@@ -388,17 +405,13 @@ class Authentication
 
     public function __get($key)
     {
-        return $this->user()->{$key} ?? false;
+        return $this->user[$this->guard][$key];
     }
 
-    public function __isset($name)
-    {
-        return true;
-    }
 
     public function __set($key, $value)
     {
-        $this->user()->{$key} = $value;
+        $this->user[$this->guard][$key] = $value;
 
         return $this;
     }
@@ -407,7 +420,7 @@ class Authentication
     public function __call($method, $args)
     {
         if ($this->check()) {
-            return $this->user()->{$method} ?? false;
+            return $this->user()->{$method};
         }
         return false;
     }
@@ -416,5 +429,92 @@ class Authentication
     public function __toString()
     {
         return $this->message[$this->guard] ?? '';
+    }
+
+    /**
+     * Whether a offset exists
+     * @link https://php.net/manual/en/arrayaccess.offsetexists.php
+     * @param mixed $offset <p>
+     * An offset to check for.
+     * </p>
+     * @return boolean true on success or false on failure.
+     * </p>
+     * <p>
+     * The return value will be casted to boolean if non-boolean was returned.
+     * @since 5.0.0
+     */
+    public function offsetExists($offset): bool
+    {
+        if($this->check()) {
+            return array_key_exists($offset,$this->user[$this->guard]);
+        }
+        return false;
+    }
+
+    /**
+     * Offset to retrieve
+     * @link https://php.net/manual/en/arrayaccess.offsetget.php
+     * @param mixed $offset <p>
+     * The offset to retrieve.
+     * </p>
+     * @return mixed Can return all value types.
+     * @since 5.0.0
+     */
+    public function offsetGet($offset)
+    {
+        if($this->check()) {
+            return $this->user[$this->guard][$offset];
+        }
+        return null;
+    }
+
+    /**
+     * Offset to set
+     * @link https://php.net/manual/en/arrayaccess.offsetset.php
+     * @param mixed $offset <p>
+     * The offset to assign the value to.
+     * </p>
+     * @param mixed $value <p>
+     * The value to set.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetSet($offset, $value)
+    {
+        if($this->check()) {
+            $this->user[$this->guard][$offset] = $value;
+        }
+    }
+
+    /**
+     * Offset to unset
+     * @link https://php.net/manual/en/arrayaccess.offsetunset.php
+     * @param mixed $offset <p>
+     * The offset to unset.
+     * </p>
+     * @return void
+     * @since 5.0.0
+     */
+    public function offsetUnset($offset)
+    {
+        if($this->check()) {
+            unset($this->user[$this->guard][$offset]);
+        }
+    }
+
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        if($this->check()) {
+            return json_encode($this->user());
+        }
     }
 }

@@ -6,18 +6,15 @@
  */
 
 
-//------------------------------------------------------
-// Model Class
-//------------------------------------------------------
 
 use RuntimeException;
 use System\Facades\DB;
 use System\Libraries\Arr;
-use ArrayAccess, JsonSerializable;
+use ArrayAccess, JsonSerializable, Countable;
 use App\Exceptions\ModelNotFoundException;
 
 
-abstract class Model implements ArrayAccess, JsonSerializable
+abstract class Model implements ArrayAccess, JsonSerializable, Countable
 {
     use Relations\HasMany,Relations\HasOne,Relations\BelongsTo;
 
@@ -34,7 +31,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     public function __construct()
     {
-        if (!isset(self::$models[static::class])) {
+        if (!$this->isBooted()) {
             $this->boot();
         }
     }
@@ -58,30 +55,52 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
 
+    protected function isBooted(): bool
+    {
+      return isset(self::$models[static::class]);
+    }
+
+
     /**
      * @return bool
      */
     public function save(): Bool
     {
-        if (!empty(self::getAttributes())) {
+        if (!empty($this->getAttributes())) {
             $pk = self::getInstance()->primaryKey;
-            if (array_key_exists($pk, self::getAttributes())) {
+            if (array_key_exists($pk, $this->getAttributes())) {
                 /**@var $query Database */
                 $query = DB::table(self::getTable());
 
-                $query->where($pk, self::getAttributes()[$pk]);
+                $query->where($pk, $this->getAttribute($pk));
 
-                $return = $query->update(Arr::except(self::getAttributes(), [$pk]));
+                $return = $query->update(Arr::except($this->getAttributes(), [$pk]));
             } else {
-                $return = static::create(self::getAttributes());
+                $return = static::create($this->getAttributes());
             }
 
-            self::setAttributes([]);
+            $this->setAttributes([]);
 
             return $return;
         }
         return false;
     }
+
+
+
+
+    public function delete()
+    {
+        $pk = $this->getAttribute($this->getPrimaryKey());
+        $delete = null;
+        if ($pk) {
+            $delete = self::destroy($pk);
+            unset($this[$this->getPrimaryKey()]);
+        }
+        return $delete;
+    }
+
+
 
 
     /**
@@ -90,7 +109,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public static function create(array $data): Bool
     {
-        return DB::table(self::getTable())->insert($data);
+        return self::getQuery()->insert($data);
     }
 
 
@@ -101,7 +120,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public static function find($primaryKey)
     {
-        $pk = self::getInstance()->getPrimaryKey();
+        $pk = self::getInstance()->primaryKey;
 
         if ($pk === null) {
             throw new RuntimeException('No primary key defined on model.');
@@ -114,10 +133,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         }
         $select = self::getInstance()->select ?? '*';
 
-        /**@var $query Database */
-        $query = DB::table(self::getTable());
-
-        $result = $query->select($select)->where($where)->toArray(true);
+        $result = self::getQuery()->select($select)->where($where)->toArray(true);
 
         if (!$result) {
             return null;
@@ -132,7 +148,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     public static function findOrFail(...$args)
     {
-        if ($model = self::getInstance()->find(...$args)) {
+        if ($model = self::find(...$args)) {
             return $model;
         }
         throw new ModelNotFoundException;
@@ -141,14 +157,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     public static function destroy($primaryKey)
     {
-        $pk = self::getInstance()->getPrimaryKey();
+        $pk = self::getInstance()->primaryKey;
 
         if ($pk === null) {
             throw new RuntimeException('No primary key defined on model.');
         }
 
         /**@var $query Database */
-        $query = DB::table(self::getTable());
+        $query = self::getQuery();
 
         if (is_array($primaryKey)) {
             $query->whereIn($pk, $primaryKey);
@@ -159,7 +175,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
         return $query->delete();
     }
 
-
     /**
      * @param $select
      * @return mixed
@@ -168,7 +183,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     {
         $select = $select ?? self::getInstance()->select ?? '*';
 
-        return DB::table(self::getTable())->select($select)->get();
+        return self::getQuery()->select($select)->get();
     }
 
 
@@ -198,7 +213,17 @@ abstract class Model implements ArrayAccess, JsonSerializable
         return self::getInstance();
     }
 
-    public static function setAttributes(array $attributes)
+    public function getAttribute($name)
+    {
+      return self::getInstance()->attributes[$name] ?? null;
+    }
+
+    public function setAttribute($name,$value)
+    {
+      self::getInstance()->attributes[$name] = $value;
+    }
+
+    public function setAttributes(array $attributes)
     {
         self::getInstance()->attributes = $attributes;
 
@@ -206,9 +231,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
 
-    public static function getAttributes(): array
+    public function getAttributes(): array
     {
         return self::getInstance()->attributes;
+    }
+
+    public static function getQuery(): Database
+    {
+        return DB::table(self::getTable());
     }
 
     public static function getInstance()
@@ -220,7 +250,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     {
         $select = self::getInstance()->select ?? '*';
 
-        return DB::table(self::getTable())->select($select)->{$name}(...$arguments);
+        return self::getQuery()->select($select)->{$name}(...$arguments);
     }
 
 
@@ -232,7 +262,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     public static function __callStatic($name, $arguments)
     {
-        return (new static)->callCustomMethod($name, $arguments);
+        return self::getInstance()->callCustomMethod($name, $arguments);
     }
 
 
@@ -242,12 +272,12 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function __set($column, $value)
     {
-        self::getInstance()->attributes[$column] = $value;
+        $this->setAttribute($column,$value);
     }
 
     public function __isset($name)
     {
-        return array_key_exists($name, self::getAttributes());
+        return array_key_exists($name, $this->getAttributes());
     }
 
     /**
@@ -256,7 +286,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function __get($column)
     {
-        return self::getInstance()->attributes[$column] ?? null;
+        return $this->getAttribute($column);
     }
 
 
@@ -271,7 +301,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetGet($offset)
     {
-        return self::getAttributes()[$offset] ?? null;
+        return $this->getAttribute($offset);
     }
 
     /**
@@ -288,7 +318,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetSet($offset, $value)
     {
-        self::getInstance()->attributes[$offset] = $value;
+        $this->setAttribute($offset,$value);
     }
 
     /**
@@ -302,7 +332,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetUnset($offset)
     {
-        if (array_key_exists($offset, self::getAttributes())) {
+        if (array_key_exists($offset, $this->getAttributes())) {
             unset(self::getInstance()->attributes[$offset]);
         }
     }
@@ -321,7 +351,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetExists($offset): bool
     {
-        return array_key_exists($offset, self::getAttributes());
+        return array_key_exists($offset, $this->getAttributes());
     }
 
     /**
@@ -335,6 +365,21 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return self::getAttributes();
+        return $this->getAttributes();
+    }
+
+
+    /**
+     * Count elements of an object
+     * @link http://php.net/manual/en/countable.count.php
+     * @return int The custom count as an integer.
+     * </p>
+     * <p>
+     * The return value is cast to an integer.
+     * @since 5.1.0
+     */
+    public function count()
+    {
+        return count($this->getAttributes());
     }
 }

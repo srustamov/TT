@@ -11,7 +11,6 @@
 
 use PDO;
 use PDOStatement;
-use System\Libraries\Arr;
 use System\Exceptions\DatabaseException;
 
 class Database extends Connection
@@ -52,13 +51,12 @@ class Database extends Connection
     public function raw(string $sql, array $data = [])
     {
         if (empty($data)) {
-            $stmt = $this->pdo()->query($sql);
+            $stmt = $this->pdo->query($sql);
         } else {
-            $stmt = $this->pdo()->prepare($sql);
+            $stmt = $this->pdo->prepare($sql);
 
             $stmt->execute($data);
         }
-
         return ($stmt->rowCount() > 0) ? $stmt : null;
     }
 
@@ -76,7 +74,7 @@ class Database extends Connection
     /**
      * @param bool $first
      * @param int $fetch
-     * @return null|object
+     * @return object|null
      * @throws DatabaseException
      */
     public function get($first = false, $fetch = PDO::FETCH_OBJ)
@@ -86,9 +84,7 @@ class Database extends Connection
         } else {
             $query = $this->getQueryString();
         }
-
         $queryString = $this->normalizeQueryString($query);
-
         try {
             $statement = $this->pdo->prepare($query);
 
@@ -100,9 +96,9 @@ class Database extends Connection
 
             if ($statement->rowCount() > 0) {
                 return $first ? $statement->fetch($fetch) : $statement->fetchAll($fetch);
-            } else {
-                return null;
             }
+            return null;
+
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage(), $queryString);
         }
@@ -129,7 +125,6 @@ class Database extends Connection
     {
         foreach ($this->bindValues as $value) {
             $position = strpos($query, '?');
-
             if ($position !== false) {
                 $query = substr_replace($query, $value, $position, 1);
             }
@@ -243,7 +238,6 @@ class Database extends Connection
                 }, $tables);
             } else {
                 $tables = explode(',', $tables);
-
                 $tables = array_map(function ($item) {
                     return $this->config[$this->group]['prefix'] . $item;
                 }, $tables);
@@ -346,7 +340,7 @@ class Database extends Connection
      * @return null|object
      * @throws DatabaseException
      */
-    public function list_tables()
+    public function tables()
     {
         $database = $this->database ?: $this->config[$this->group]['dbname'];
 
@@ -368,7 +362,7 @@ class Database extends Connection
      * @return array|bool
      * @throws DatabaseException
      */
-    public function listColumns()
+    public function columns()
     {
         $queryString = "SHOW COLUMNS FROM {$this->table}";
 
@@ -390,9 +384,10 @@ class Database extends Connection
      */
     public function lastId()
     {
-        if (!is_null($this->pdo)) {
+        if ($this->pdo instanceof  PDO) {
             return $this->pdo->lastInsertId();
         }
+        return null;
     }
 
     /**
@@ -421,12 +416,9 @@ class Database extends Connection
         $this->limit = [];
         $this->orderBy = [];
         $this->groupBy = [];
-        $this->set = [];
         $this->join = [];
         $this->table = null;
         $this->database = null;
-        $this->lastId = null;
-        $this->exception = null;
 
         return $this;
     }
