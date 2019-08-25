@@ -3,7 +3,9 @@ php:
   - 7.2
   - hhvm
 
-before_script:
+before_script:  
   - sh -c "composer install"
+  - sh -c "cp .config.example .config"
+  - sh -c "php manage key:generate"
 
 script: phpunit
