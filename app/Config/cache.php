@@ -10,7 +10,7 @@ return array(
     ),
 
     /*--------------------------------------------------------
-     | Database table create { Cache::createDatabaseTable() }
+     | Database table create "php manage cache:table"
      |--------------------------------------------------------
     */
     'database' => array(

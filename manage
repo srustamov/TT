@@ -1,46 +1,10 @@
 #!/usr/bin/env php
 <?php
-//-----------------------------------------------------
-/**
- * @author  Samir Rustamov <rustemovv96@gmail.com>
- */
-//------------------------------------------------------
 
-use TT\Engine\Cli\Console;
-use TT\Engine\Cli\PrintConsole;
-
-//------------------------------------------
-// Define set application started time
-//------------------------------------------
-define('APP_START', microtime(true));
-
-
-//------------------------------------------
-// Load Composer Autoload file
-//------------------------------------------
 require __DIR__.'/vendor/autoload.php';
 
+$app = new App\Kernel(__DIR__);
 
+$app->bootstrap()->routing();
 
-//------------------------------------------
-// Application Bootstrapping
-//------------------------------------------
-$TT = new App\Kernel(__DIR__);
-
-$TT->bootstrap()->routing();
-
-
-
-//------------------------------------------
-// Application $argv parameters execute
-//------------------------------------------
-Console::run($argv);
-
-
-
-//------------------------------------------
-// Console command execute benchmark message
-//------------------------------------------
-$message = PrintConsole::benchmark(microtime(true));
-
-exit($message);
+TT\Engine\Cli\Console::run();
