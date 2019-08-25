@@ -1,17 +1,26 @@
 <?php
 
-
-
 use App\Models\User;
 use TT\Facades\Auth;
-use TT\Engine\App;
 use PHPUnit\Framework\TestCase;
 
 class ExampleTest extends TestCase
 {
     public function testAppIsBoot()
     {
-        $this->assertTrue(App::getInstance()->isBoot());
+        global $app;
+
+        $this->assertTrue($app->isBoot());
+    }
+
+
+    public function testRouting()
+    {
+        global $app;
+
+        $this->assertEquals(
+            $app->routing(),$app->get('response')
+        );
     }
 
 
@@ -20,25 +29,31 @@ class ExampleTest extends TestCase
         $isAuth = Auth::check();
         if ($isAuth) {
             $this->assertEquals($isAuth, true);
+            if(Auth::guard() === 'default') {
+                $this->assertEquals(
+                    Auth::user() instanceof User
+                );
+            }
+            
         } else {
             $this->assertEquals($isAuth, false);
         }
     }
 
 
+   /*
+    public function testUserModel()
+    {
+        $user = User::find(['name'=>'username']);
 
-    // public function testUserModel()
-    // {
-    //     $user = User::where('name', 'username')->first();
+        if ($user) {
+            $this->assertEquals($user->name, 'username');
+        } else {
+            $this->assertEquals($user, null);
+        }
+    }
 
-    //     if ($user) {
-    //         $this->assertEquals($user->name, 'username');
-    //     } else {
-    //         $this->assertEquals($user, null);
-    //     }
-    // }
-
-    /*
+    
     public function testModel()
     {
         for ($i = 0; $i < 100; $i++) {
