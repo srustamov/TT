@@ -27,16 +27,16 @@ class ExampleTest extends TestCase
 
 
 
-    public function testUserModel()
-    {
-        $user = User::where('name', 'username')->first();
+    // public function testUserModel()
+    // {
+    //     $user = User::where('name', 'username')->first();
 
-        if ($user) {
-            $this->assertEquals($user->name, 'username');
-        } else {
-            $this->assertEquals($user, null);
-        }
-    }
+    //     if ($user) {
+    //         $this->assertEquals($user->name, 'username');
+    //     } else {
+    //         $this->assertEquals($user, null);
+    //     }
+    // }
 
     /*
     public function testModel()
