@@ -5,6 +5,6 @@ require __DIR__.'/vendor/autoload.php';
 
 $app = new App\Kernel(__DIR__);
 
-$app->bootstrap()->routing();
+$app->bootstrap();
 
 TT\Engine\Cli\Console::run();
