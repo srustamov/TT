@@ -1,3 +1,8 @@
 *
+<<<<<<< HEAD
 !.gitignore
 !errors
+=======
+!errors
+!.gitignore
+>>>>>>> 1f86cc38c88504654991f8497bebdc20eca88406

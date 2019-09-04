@@ -9,8 +9,8 @@ return array(
     |
     | Driver use database|file|redis
     |
-    | Important! if using "database" run "php manage session:table --create [Your-Table-Name]" command on command line
-    | Or run code: Console::command("session:table --create yourTableName");
+    | Important! if using "database" run "php manage session:table --table=tablename" command on command line
+    | 
     |
     */
     'driver'          => setting('SESSION_DRIVER'),
