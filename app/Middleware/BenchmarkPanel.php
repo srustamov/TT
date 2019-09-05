@@ -1,0 +1,106 @@
+<?php  namespace App\Middleware;
+
+use Closure;
+use TT\Engine\Http\Request;
+use TT\Facades\Config;
+use TT\Facades\Route;
+use TT\Facades\File;
+
+
+class BenchmarkPanel
+{
+
+
+    protected $file = 'benchmark.html';
+
+    protected $url = '/app-benchmark-data';
+
+
+    /**
+     * @param Request $request
+     * @param Closure $next
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        $this->registerRoute();
+
+        if(!$this->check($request)) {
+            return $next($request);
+        }
+
+        register_shutdown_function(function(){
+            File::write(
+                storage_path('system/'.$this->file),
+                app('benchmark')->table(microtime(true))
+            );
+        });
+
+        $response =  $next($request);
+
+        $response->prependContent($this->getScript());
+
+        return $response;
+    }
+
+
+    protected function check($request)
+    {
+       return !(
+            CONSOLE ||
+            !Config::get('app.debug') ||
+            $request->url() === $this->url || 
+            $request->ajax() ||
+            $request->isJson() 
+        );
+    }
+
+
+    protected function registerRoute()
+    {
+        Route::get($this->url,function(Request $request){
+            return File::get(
+                storage_path('system/'.$this->file)
+            );
+        });
+    }
+
+
+    protected function getScript()
+    {
+        $script = '
+            <script defer>
+                setTimeout(function loadBenchMark() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var benchmark_element = document.createElement("div");
+                            benchmark_element.innerHTML = this.responseText;
+                            document.body.appendChild(benchmark_element);
+                            var bscript = document.getElementById("bench-script");
+                            var bscript_new = document.createElement("script");
+                            bscript_new.innerHTML = bscript.innerHTML;
+                            document.body.appendChild(bscript_new);
+                            bscript.parentNode.removeChild(bscript);
+                        }
+                    };
+                    xhttp.open("GET", "'.$this->url.'", true);
+                    xhttp.send();
+                },1000);
+            </script>';
+
+        return $this->minify($script).PHP_EOL;
+
+    }
+
+
+    protected function minify(string $string)
+    {
+        $search = array('/\>[^\S ]+/s','/[^\S ]+\</s','/(\s)+/s');
+    
+        $replace = array('>','<','\\1');
+    
+        return preg_replace($search, $replace, $string);
+
+    }
+}

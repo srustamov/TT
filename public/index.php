@@ -16,10 +16,12 @@
 define('APP_START', microtime(true));
 
 
+
 //------------------------------------------
 // Load Composer Autoload file
 //------------------------------------------
 require __DIR__.'/../vendor/autoload.php';
+
 
 
 //------------------------------------------
@@ -28,18 +30,7 @@ require __DIR__.'/../vendor/autoload.php';
 
 $app = new App\Kernel(dirname(__DIR__));
 
-
 $response = $app->bootstrap()->routing();
-
-
-
-
-//------------------------------------------
-// Application Benchmark panel view
-//------------------------------------------
-
-$response->appendContent($app->benchmark(microtime(true)));
-
 
 
 //------------------------------------------

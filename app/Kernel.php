@@ -11,6 +11,9 @@ class Kernel extends App
         \App\Middleware\CsrfProtected::class,
         //\App\Middleware\CorsMiddleware::class,
         //\App\Middleware\MaintenanceMode::class,
+
+        \App\Middleware\BenchmarkPanel::class,
+
     ];
 
 
