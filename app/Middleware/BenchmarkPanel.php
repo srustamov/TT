@@ -58,10 +58,15 @@ class BenchmarkPanel
 
     protected function registerRoute()
     {
-        Route::get($this->url,function(Request $request){
-            return File::get(
+        Route::get($this->url,function(){
+
+            $content =  File::get(
                 storage_path('system/'.$this->file)
             );
+
+            File::delete(storage_path('system/' . $this->file));
+
+            return $content;
         });
     }
 
@@ -70,14 +75,14 @@ class BenchmarkPanel
     {
         $script = '
             <script defer>
-                setTimeout(function loadBenchMark() {
+                setTimeout(function() {
                     var xhttp = new XMLHttpRequest();
                     xhttp.onreadystatechange = function() {
                         if (this.readyState == 4 && this.status == 200) {
                             var benchmark_element = document.createElement("div");
                             benchmark_element.innerHTML = this.responseText;
                             document.body.appendChild(benchmark_element);
-                            var bscript = document.getElementById("bench-script");
+                            var bscript = document.getElementById("app-benchmark-panel-script");
                             var bscript_new = document.createElement("script");
                             bscript_new.innerHTML = bscript.innerHTML;
                             document.body.appendChild(bscript_new);
