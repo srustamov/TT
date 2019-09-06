@@ -23,7 +23,9 @@ class BenchmarkPanel
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->registerRoute();
+        if(!CONSOLE){
+            $this->registerRoute();
+        }
 
         if(!$this->check($request)) {
             return $next($request);
