@@ -3,7 +3,7 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-$app = new App\Kernel(__DIR__);
+$app = new App\Application(__DIR__);
 
 $app->bootstrap();
 

@@ -32,9 +32,10 @@ class BenchmarkPanel
         }
 
         register_shutdown_function(function(){
+            $content = app('benchmark')->table(microtime(true));
             File::write(
                 storage_path('system/'.$this->file),
-                app('benchmark')->table(microtime(true))
+                $content
             );
         });
 
