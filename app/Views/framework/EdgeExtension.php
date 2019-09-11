@@ -1,8 +1,8 @@
-<?php namespace App\Views\Edge;
+<?php namespace App\Views\framework;
 
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
 
-class Extension implements EdgeExtensionInterface
+class EdgeExtension implements EdgeExtensionInterface
 {
     public function getName()
     {

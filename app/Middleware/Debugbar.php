@@ -7,11 +7,11 @@ use TT\Facades\Route;
 use TT\Facades\File;
 
 
-class BenchmarkPanel
+class Debugbar
 {
 
 
-    protected $file = 'benchmark.html';
+    protected $file = 'debugbar.html';
 
     protected $url = '/app-benchmark-data';
 
@@ -31,14 +31,16 @@ class BenchmarkPanel
             return $next($request);
         }
 
-        register_shutdown_function(function(){
+        register_shutdown_function(function() use ($request){
+            $data = $this->getData($request);
+            $content = view('framework.debugbar', compact('data'))->getContent();
             File::write(
                 storage_path('system/'.$this->file),
-                app('benchmark')->table(microtime(true))
+                $content
             );
         });
 
-        $response =  $next($request);
+        $response = $next($request);
 
         $response->prependContent($this->getScript());
 
@@ -98,6 +100,31 @@ class BenchmarkPanel
 
         return $this->minify($script).PHP_EOL;
 
+    }
+
+
+    protected function getData(Request $request)
+    {
+        $data = array(
+            'time'             => round(microtime(true) - APP_START, 4) . " s",
+            'memory-usage'     => (int) (memory_get_usage() / 1024) . " kb",
+            'peak-memory-usage'=> (int) (memory_get_peak_usage() / 1024) . " kb",
+            'load-files'       => count(get_required_files()) - 1,
+            'request-method'   => $request->server('request_method'),
+            'url'              => $request->url(),
+            'ip'               => $request->ip(),
+            'document-root'    => basename($request->server('document_root')),
+            'locale'           => $request->app('language')->locale(),
+            'protocol'         => $request->server('server_protocol'),
+            'software'         => $request->server('server_software')
+        );
+
+        if(defined('CONTROLLER')) {
+            $data['controller'] = CONTROLLER;
+            $data['action']     = defined('ACTION') ? ACTION : null;
+        }
+
+        return $data;
     }
 
 

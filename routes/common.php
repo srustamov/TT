@@ -30,6 +30,18 @@ $this->group(['prefix' => '/auth','middleware' => ['guest']], function () {
     $this->post('/register/', 'Auth/RegisterController@register');
 });
 
+
+
+/*
+//sub domain example
+$this->group(['domain' => 'admin.example.com'],function($domain)
+{
+    // admin.example.com
+    $domain->get('/','Backend/DashbaordController@index');
+
+});
+*/
+
 /**
  *
  * php socket message route

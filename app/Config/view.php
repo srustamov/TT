@@ -23,7 +23,7 @@ return array(
     |
     */
     'extensions' => array(
-        App\Views\Edge\Extension::class,
+        App\Views\framework\EdgeExtension::class,
     ),
     /*
     |--------------------------------------------------------------------------

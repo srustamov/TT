@@ -12,7 +12,7 @@ class Kernel extends App
         //\App\Middleware\CorsMiddleware::class,
         //\App\Middleware\MaintenanceMode::class,
 
-        \App\Middleware\BenchmarkPanel::class,
+        \App\Middleware\Debugbar::class,
 
     ];
 
