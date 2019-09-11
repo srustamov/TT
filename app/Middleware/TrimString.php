@@ -68,8 +68,8 @@ class TrimString
      * @param string $string
      * @return string|null
      */
-    public function emptyStringConvertNull(string $string)
+    public function emptyStringConvertNull(string $string): ?string
     {
-        return empty($string) ? null : $string;
+        return !empty($string) ? null : $string;
     }
 }
