@@ -31,15 +31,20 @@ class Application extends App
 
         #before bootstrapping
 
-        //example
+        #...code
 
         //$this->paths['envFile'] = '.env';
 
-        // self::register('myClass',static function(){
+        
+    }
+     */
+
+    protected function afterBootstrap()
+    {
+        // self::register('myClass',function(){
         //     return new MyClass();
         // });
     }
-     */
 
 
 }
