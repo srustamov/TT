@@ -31,14 +31,9 @@ class Debugbar
             return $next($request);
         }
 
-<<<<<<< HEAD:app/Middleware/Debugbar.php
         register_shutdown_function(function() use ($request){
             $data = $this->getData($request);
             $content = view('framework.debugbar', compact('data'))->getContent();
-=======
-        register_shutdown_function(function(){
-            $content = app('benchmark')->table(microtime(true));
->>>>>>> e1fdcb8a0e2fd2f53f24194e144aad11dfc2dda6:app/Middleware/BenchmarkPanel.php
             File::write(
                 storage_path('system/'.$this->file),
                 $content
