@@ -7,4 +7,4 @@ before_script:
   - sh -c "cp .config.example .config"
   - sh -c "php manage key:generate"
 
-script: composer test
+script: phpunit
