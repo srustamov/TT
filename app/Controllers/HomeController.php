@@ -22,16 +22,11 @@ class HomeController extends Controller
 {
 
 
-    /**
-     * HomeController welcome method.Show Home page
-     *
-     * @return View
-     * @throws \Exception
-     */
-    public function welcome(): View
+    public function __construct()
     {
-        return view('welcome');
+        $this->middleware('auth');
     }
+
 
     /**
      * @return View
@@ -48,6 +43,7 @@ class HomeController extends Controller
      *
      * @param $lang
      * @param Redirect $redirect
+     * @param Language $language
      * @return Redirect
      */
     public function language($lang, Redirect $redirect,Language $language):Redirect

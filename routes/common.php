@@ -15,7 +15,11 @@
 
 */
 
-$this->get('/', 'HomeController@welcome');
+$this->get('/', function(){
+   return file_get_contents(
+            app_path('Views/welcome.html')
+          );
+});
 
 $this->get('/home/', 'HomeController@home')->name('home');
 
@@ -42,13 +46,3 @@ $this->group(['domain' => 'admin.example.com'],function($domain)
 });
 */
 
-/**
- *
- * php socket message route
- * run "php bin/socket/server.php" before activating
- */
- /*
-  $this->get('/chat', function () {
-      return view('socket-message');
-  });
- */

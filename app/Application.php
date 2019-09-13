@@ -1,6 +1,7 @@
 <?php namespace App;
 
 use TT\Engine\App;
+use TT\Engine\Cli\Console;
 
 class Application extends App
 {
@@ -35,12 +36,18 @@ class Application extends App
 
         //$this->paths['envFile'] = '.env';
 
-        
+
     }
      */
 
     protected function afterBootstrap()
     {
+        if(inConsole()) {
+            Console::setCommand([
+                \App\Commands\JwtSecretCommand::class,
+            ]);
+        }
+
         // self::register('myClass',function(){
         //     return new MyClass();
         // });
