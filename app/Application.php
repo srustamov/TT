@@ -13,7 +13,7 @@ class Application extends App
         //\App\Middleware\CsrfProtected::class,
         //\App\Middleware\CorsMiddleware::class,
 
-        \App\Middleware\Debugbar::class,
+        \App\Middleware\DebugBar::class,
 
     ];
 
@@ -44,7 +44,7 @@ class Application extends App
     {
         if(inConsole()) {
             Console::setCommand([
-                \App\Commands\JwtSecretCommand::class,
+                \App\Console\JwtSecretCommand::class,
             ]);
         }
 

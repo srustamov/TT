@@ -1,4 +1,4 @@
-<?php namespace App\Commands;
+<?php namespace App\Console;
 
 //use Symfony\Component\Console\Input\ArrayInput;
 //use Symfony\Component\Console\Input\InputArgument;

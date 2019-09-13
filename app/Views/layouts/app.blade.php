@@ -21,13 +21,14 @@
 
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
+              @auth
               <li class="nav-item">
                   <a class="nav-link" href="{{route('home')}}">@lang('home.home')</a>
               </li>
-              @guest
+              @else
               <li class="nav-item"><a class="nav-link" href="{{route('register')}}">@lang('home.register')</a></li>
               <li class="nav-item"><a class="nav-link" href="{{route('login')}}">@lang('home.login')</a></li>
-              @endguest
+              @endauth
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="nav-item">

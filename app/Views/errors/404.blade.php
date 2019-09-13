@@ -52,7 +52,7 @@
 <div class="_404">404</div>
 <div class="not-found">PAGE NOT FOUND !</div>
 <div class="btn">
-    <a href="<?php echo url('/');?>">Back to home</a>
+    <a href="{{url('/')}}">Back to home</a>
 </div>
 </body>
 </html>

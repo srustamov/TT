@@ -7,7 +7,7 @@ use TT\Facades\Route;
 use TT\Facades\File;
 
 
-class Debugbar
+class DebugBar
 {
 
 
@@ -33,7 +33,7 @@ class Debugbar
 
         register_shutdown_function(function() use ($request){
             $data = $this->getData($request);
-            $content = view('framework.debugbar', compact('data'))->getContent();
+            $content = view('framework.debugbar', compact('data','request'))->getContent();
             File::write(
                 storage_path('system/'.$this->file),
                 $content
@@ -53,9 +53,9 @@ class Debugbar
        return !(
             CONSOLE ||
             !Config::get('app.debug') ||
-            $request->url() === $this->url || 
+            $request->url() === $this->url ||
             $request->ajax() ||
-            $request->isJson() 
+            $request->isJson()
         );
     }
 
@@ -80,21 +80,21 @@ class Debugbar
         $script = '
             <script defer>
                 setTimeout(function() {
-                    var xhttp = new XMLHttpRequest();
-                    xhttp.onreadystatechange = function() {
-                        if (this.readyState == 4 && this.status == 200) {
-                            var benchmark_element = document.createElement("div");
-                            benchmark_element.innerHTML = this.responseText;
-                            document.body.appendChild(benchmark_element);
-                            var bscript = document.getElementById("app-benchmark-panel-script");
-                            var bscript_new = document.createElement("script");
-                            bscript_new.innerHTML = bscript.innerHTML;
-                            document.body.appendChild(bscript_new);
-                            bscript.parentNode.removeChild(bscript);
+                    let $http = new XMLHttpRequest();
+                    $http.onreadystatechange = function() {
+                        if (this.readyState === 4 && this.status === 200) {
+                            let debug_bar_element = document.createElement("div");
+                            debug_bar_element.innerHTML = this.responseText;
+                            document.body.appendChild(debug_bar_element);
+                            let debug_bar_script = document.querySelector("script#app-debug-bar-script");
+                            let debug_bar_script_new = document.createElement("script");
+                            debug_bar_script_new.innerHTML = debug_bar_script.innerHTML;
+                            document.body.appendChild(debug_bar_script_new);
+                            debug_bar_script.parentNode.removeChild(debug_bar_script);
                         }
                     };
-                    xhttp.open("GET", "'.$this->url.'", true);
-                    xhttp.send();
+                    $http.open("GET", "'.$this->url.'", true);
+                    $http.send();
                 },1000);
             </script>';
 
@@ -131,9 +131,9 @@ class Debugbar
     protected function minify(string $string)
     {
         $search = array('/\>[^\S ]+/s','/[^\S ]+\</s','/(\s)+/s');
-    
+
         $replace = array('>','<','\\1');
-    
+
         return preg_replace($search, $replace, $string);
 
     }

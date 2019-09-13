@@ -23,7 +23,7 @@ $this->get('/', function(){
 
 $this->get('/home/', 'HomeController@home')->name('home');
 
-$this->get('/language/{lang}/', 'HomeController@language')->name('lang')->pattern('lang', '[a-z]{2}');
+$this->get('/language/{lang}/', 'LanguageController@change')->name('lang')->pattern('lang', '[a-z]{2}');
 
 $this->get(['path'=>'/auth/logout','middleware'=> ['auth'],'name'=>'logout'], 'Auth/LoginController@logout');
 

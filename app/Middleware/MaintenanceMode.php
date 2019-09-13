@@ -37,9 +37,9 @@ class MaintenanceMode
 
         $response = $next($request);
 
-        $response->make(view('errors.maintenance', [
+        $response->make(view('framework.maintenance', [
             'message' => $this->options['message']
-        ]), 503)->send();
+        ])->getContent(), 503)->send();
 
         $request->app()->end();
     }
