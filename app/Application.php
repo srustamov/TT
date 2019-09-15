@@ -48,7 +48,7 @@ class Application extends App
             ]);
         }
 
-        // self::register('myClass',function(){
+        // $this->singleton('myClass',function($app){
         //     return new MyClass();
         // });
     }
