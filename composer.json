@@ -3,17 +3,15 @@
   "description": "php simple mini mvc framework",
   "type": "project",
   "license": "MIT",
-  "authors": [
-    {
-      "name": "Samir Rustamov",
-      "email": "rustemovv96@gmail.com",
-      "homepage": "https://github.com/srustamov",
-      "role": "Developer"
-    }
-  ],
+  "authors": [{
+    "name": "Samir Rustamov",
+    "email": "rustemovv96@gmail.com",
+    "homepage": "https://github.com/srustamov",
+    "role": "Developer"
+  }],
   "require": {
     "php": ">=7.2.0",
-    "srustamov/framework": "^1.2"
+    "srustamov/framework": "^1.4"
   },
   "require-dev": {
     "symfony/var-dumper": "^4.3"

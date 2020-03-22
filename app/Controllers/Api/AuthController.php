@@ -55,7 +55,7 @@ class AuthController extends Controller
 
     private function attempt($credit)
     {
-        $user = User::where('email', $credit['email'])->first();
+        $user = User::find(['email' => $credit['email']]);
 
         if ($user && Hash::check($credit['password'], $user->password)) {
             return $this->getAccessToken($user);

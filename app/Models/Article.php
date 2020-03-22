@@ -1,4 +1,6 @@
-<?php  namespace App\Models;
+<?php
+
+namespace App\Models;
 
 
 /**
@@ -6,28 +8,24 @@
  * @link    https://github.com/srustamov/TT
  */
 
-use TT\Libraries\Database\Model;
+use TT\Database\Orm\Model;
 
 
 class Article extends Model
 {
 
-   // default Articles
-   //protected $table;
+    // default Articles
+    //protected $table;
 
-   // default [*]
-   //protected $select;
-
-   /*
+    /*
    * default Primary Key id
    protected $primaryKey;
    */
 
 
 
-   public function user()
-   {
-       return $this->belongsTo(User::class,'user_id');
-   }
-
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

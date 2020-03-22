@@ -6,10 +6,9 @@
  */
 
 use App\Controllers\Controller;
-//use TT\Engine\Http\Request;
+use App\Models\Article;
 use TT\Facades\Response;
 use TT\Facades\Auth;
-//use App\Models\Article;
 
 class ArticleController extends Controller
 {
@@ -20,14 +19,17 @@ class ArticleController extends Controller
     {
         return Response::json(
             $this->transform(
-                Auth::user()->articles()->limit(10)->get()
+                Auth::user()->articles
             )
         );
     }
 
     public function show($id)
     {
-        $article = Auth::user()->article()->find( $id );
+        $article = Article::find([
+            'user_id' => Auth::user()->id,
+            'id' => $id
+        ]);
 
         if($article) {
             return Response::json($this->transform($article));

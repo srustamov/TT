@@ -1,15 +1,15 @@
-<?php namespace App\Models;
+<?php
 
-use TT\Libraries\Database\Model;
+namespace App\Models;
+
+use TT\Database\Orm\Model;
 
 
 class User extends Model
 {
 
-    /*
     public function articles()
     {
-        return $this->hasMany(Article::class,'user_id');
+        return $this->hasMany(Article::class, 'user_id');
     }
-    */
 }
