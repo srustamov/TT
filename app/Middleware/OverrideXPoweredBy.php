@@ -1,4 +1,6 @@
-<?php namespace App\Middleware;
+<?php
+
+namespace App\Middleware;
 
 use TT\Engine\Http\Request;
 
@@ -15,7 +17,7 @@ class OverrideXPoweredBy
     {
         $response =  $next($request);
 
-        $response->header('X-Powered-By','TT Framework');
+        $response->header('X-Powered-By', 'TT Framework');
 
         return $response;
     }

@@ -1,4 +1,6 @@
-<?php  namespace App\Middleware;
+<?php
+
+namespace App\Middleware;
 
 use Closure;
 use function preg_match;
@@ -12,8 +14,7 @@ class MaintenanceMode
             '/',
             '/login',
             '/home/?(.*)/any-url'
-         */
-    ];
+         */];
 
     protected $options = [
         'message' => 'Service Unavailable',
@@ -31,7 +32,7 @@ class MaintenanceMode
      */
     public function handle(Request $request, Closure $next)
     {
-        if (! $this->check($request) || $this->checkExcepts($request)) {
+        if (!$this->check($request) || $this->checkExcepts($request)) {
             return $next($request);
         }
 
@@ -49,7 +50,7 @@ class MaintenanceMode
      * @param $request
      * @return bool
      */
-    public function check($request):bool
+    public function check($request): bool
     {
         if ($this->checkAllowed($request)) {
             return false;
@@ -62,7 +63,7 @@ class MaintenanceMode
      * @param Request $request
      * @return bool
      */
-    public function checkAllowed(Request $request):bool
+    public function checkAllowed(Request $request): bool
     {
         if (empty($this->options['allowed'])) {
             return false;
@@ -84,7 +85,7 @@ class MaintenanceMode
      * @param Request $request
      * @return bool
      */
-    public function checkExcepts(Request $request):bool
+    public function checkExcepts(Request $request): bool
     {
         if (empty($this->excepts)) {
             return false;

@@ -1,61 +1,63 @@
 @extends('layouts.app')
 @section('style')
-  <style media="screen">
-    input , .btn {
-      border-radius: 0 !important;
-    }
-  </style>
+<style media="screen">
+  input,
+  .btn {
+    border-radius: 0 !important;
+  }
+</style>
 @endsection
 @section('content')
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6 offset-md-3 mt-5">
-        <div class="card card-default shadow-sm">
-          <div class="card-header">
-            <h3 class="card-title">Register User </h3>
-          </div>
-          <form action="{{url('auth/register')}}" method="post" id="register-form" onsubmit="return false;">
-            @csrf
-            <div class="card-body">
-              <div class="form-group">
-                <label for="">Name</label>
-                <input type="text" class="form-control" name="name"  placeholder="Name" required>
-                @if ($errors->has('name'))
-                  <p class="text-danger">{{$errors->first('name')}}</p>
-                @endif
-              </div>
-              <div class="form-group">
-                <label for="">Email</label>
-                <input type="text" class="form-control" name="email"  placeholder="Email" required>
-                @if ($errors->has('email'))
-                  <p class="text-danger">{{$errors->first('email')}}</p>
-                @endif
-              </div>
-              <div class="form-group">
-                <label for="">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-                @if ($errors->has('password'))
-                  <p class="text-danger">{{$errors->first('password')}}</p>
-                @endif
-              </div>
-              <div class="form-group">
-                <label for="">Password Configuration</label>
-                <input type="text" class="form-control" id="password_configuration" placeholder="Password Configuration" required>
-              </div>
-            </div>
-            <div class="card-footer text-right">
-              <button type="submit" onclick="formSubmit(event)" class="btn btn-outline-success "name="button">Register</button>
-            </div>
-          </form>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6 offset-md-3 mt-5">
+      <div class="card card-default shadow-sm">
+        <div class="card-header">
+          <h3 class="card-title">Register User </h3>
         </div>
+        <form action="{{url('auth/register')}}" method="post" id="register-form" onsubmit="return false;">
+          @csrf
+          <div class="card-body">
+            <div class="form-group">
+              <label for="">Name</label>
+              <input type="text" class="form-control" name="name" placeholder="Name" required>
+              @if ($errors->has('name'))
+              <p class="text-danger">{{$errors->first('name')}}</p>
+              @endif
+            </div>
+            <div class="form-group">
+              <label for="">Email</label>
+              <input type="text" class="form-control" name="email" placeholder="Email" required>
+              @if ($errors->has('email'))
+              <p class="text-danger">{{$errors->first('email')}}</p>
+              @endif
+            </div>
+            <div class="form-group">
+              <label for="">Password</label>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+              @if ($errors->has('password'))
+              <p class="text-danger">{{$errors->first('password')}}</p>
+              @endif
+            </div>
+            <div class="form-group">
+              <label for="">Password Configuration</label>
+              <input type="text" class="form-control" id="password_configuration" placeholder="Password Configuration"
+                required>
+            </div>
+          </div>
+          <div class="card-footer text-right">
+            <button type="submit" onclick="formSubmit(event)" class="btn btn-outline-success "
+              name="button">Register</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
+</div>
 @endsection
 @section('js')
 <script type="text/javascript">
-
-    function formSubmit(e)
+  function formSubmit(e)
     {
 
       let password = document.getElementById('password');
@@ -92,5 +94,5 @@
     }
 
 
-  </script>
+</script>
 @endsection

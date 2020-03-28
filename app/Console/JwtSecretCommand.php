@@ -1,4 +1,6 @@
-<?php namespace App\Console;
+<?php
+
+namespace App\Console;
 
 //use Symfony\Component\Console\Input\ArrayInput;
 //use Symfony\Component\Console\Input\InputArgument;
@@ -29,11 +31,11 @@ class JwtSecretCommand extends Command
             Helper::envFileChangeFragment('JWT_SECRET', $key);
             Config::set('jwt.key', $key);
             $output->writeln(
-                '<fg=green>key:'.$key.'</>'
+                '<fg=green>key:' . $key . '</>'
             );
         } catch (\Exception $e) {
             $output->writeln(
-                '<fg=red>'.$e->getMessage().'</>'
+                '<fg=red>' . $e->getMessage() . '</>'
             );
         }
     }

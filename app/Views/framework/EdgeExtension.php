@@ -1,4 +1,6 @@
-<?php namespace App\Views\framework;
+<?php
+
+namespace App\Views\framework;
 
 use Windwalker\Edge\Extension\EdgeExtensionInterface;
 
@@ -26,7 +28,7 @@ class EdgeExtension implements EdgeExtensionInterface
 
     public function lang()
     {
-        return "<?php echo lang".implode(',', func_get_args())."; ?>";
+        return "<?php echo lang" . implode(',', func_get_args()) . "; ?>";
     }
 
 
@@ -37,7 +39,7 @@ class EdgeExtension implements EdgeExtensionInterface
 
     public function auth($guard = 'user')
     {
-        return '<?php if(Auth::check('.$guard.')): ?>';
+        return '<?php if(Auth::check(' . $guard . ')): ?>';
     }
 
 
@@ -48,7 +50,7 @@ class EdgeExtension implements EdgeExtensionInterface
 
     public function guest($guard = 'user')
     {
-        return '<?php if(Auth::guest('.$guard.')): ?>';
+        return '<?php if(Auth::guest(' . $guard . ')): ?>';
     }
 
 
@@ -59,17 +61,17 @@ class EdgeExtension implements EdgeExtensionInterface
 
     public function css()
     {
-        return '<?php echo css'.implode(',', func_get_args()).'; ?>';
+        return '<?php echo css' . implode(',', func_get_args()) . '; ?>';
     }
 
     public function js()
     {
-        return '<?php echo js'.implode(',', func_get_args()).'; ?>';
+        return '<?php echo js' . implode(',', func_get_args()) . '; ?>';
     }
 
     public function img()
     {
-        return '<?php echo img'.implode(',', func_get_args()).'; ?>';
+        return '<?php echo img' . implode(',', func_get_args()) . '; ?>';
     }
 
 

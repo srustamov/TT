@@ -1,4 +1,6 @@
-<?php  namespace App\Controllers\Api;
+<?php
+
+namespace App\Controllers\Api;
 
 /**
  * @author  Samir Rustamov <rustemovv96@gmail.com>
@@ -31,12 +33,11 @@ class ArticleController extends Controller
             'id' => $id
         ]);
 
-        if($article) {
+        if ($article) {
             return Response::json($this->transform($article));
         }
 
-        return Response::json(['success' => false],404);
-
+        return Response::json(['success' => false], 404);
     }
 
 
@@ -56,9 +57,9 @@ class ArticleController extends Controller
 
         foreach ($articles as $article) {
             $transform['data'][] = [
-              'id' => $article->id,
-              'author' => $author
-          ];
+                'id' => $article->id,
+                'author' => $author
+            ];
         }
 
         $transform['version'] = '1.3.0';

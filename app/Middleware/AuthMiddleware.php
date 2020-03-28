@@ -1,4 +1,6 @@
-<?php  namespace App\Middleware;
+<?php
+
+namespace App\Middleware;
 
 /*
 |-------------------------------------------
@@ -21,11 +23,11 @@ class AuthMiddleware
      * @param $guard
      * @return mixed
      */
-    public function handle(Request $request, Closure $next,$guard)
+    public function handle(Request $request, Closure $next, $guard)
     {
         if (!Auth::check()) {
-            if($request->isJson() || $guard === 'api') {
-                Response::json(['error' => 'unAuthorized'],401)->send();
+            if ($request->isJson() || $guard === 'api') {
+                Response::json(['error' => 'unAuthorized'], 401)->send();
                 $request->app()->end();
             }
             return Redirect::route('login')->withErrors('auth', 'You must first log in');

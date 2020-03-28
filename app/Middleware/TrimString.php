@@ -7,9 +7,7 @@ use TT\Engine\Http\Request;
 
 class TrimString
 {
-    protected $except = [
-
-    ];
+    protected $except = [];
 
 
     protected $emptyConvertNull = false;
@@ -31,9 +29,9 @@ class TrimString
      */
     public function trimString(Request $request): Request
     {
-        $request->map([$this,'trim']);
-        $request->query->map([$this,'trim']);
-        $request->input->map([$this,'trim']);
+        $request->map([$this, 'trim']);
+        $request->query->map([$this, 'trim']);
+        $request->input->map([$this, 'trim']);
         return $request;
     }
 
@@ -54,9 +52,9 @@ class TrimString
             return $value;
         }
 
-        if(is_string($value)) {
+        if (is_string($value)) {
 
-            if($this->emptyConvertNull) {
+            if ($this->emptyConvertNull) {
                 return $this->emptyStringConvertNull(trim($value));
             }
             return trim($value);

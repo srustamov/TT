@@ -1,4 +1,6 @@
-<?php  namespace App\Middleware;
+<?php
+
+namespace App\Middleware;
 
 use RuntimeException;
 use TT\Engine\Http\Request;
@@ -8,7 +10,7 @@ use TT\Facades\Config;
 class CsrfProtected
 {
     private $except = [
-      '/api/.*'
+        '/api/.*'
     ];
 
 
@@ -58,8 +60,8 @@ class CsrfProtected
         $token = $this->getTokenRequest($request);
 
         return is_string($request->session('_token')) &&
-               is_string($token) &&
-               hash_equals($request->session('_token'), $token);
+            is_string($token) &&
+            hash_equals($request->session('_token'), $token);
     }
 
 
@@ -70,10 +72,12 @@ class CsrfProtected
 
         $response = Cookie::get('XSRF-TOKEN');
 
-        if (!is_string($input) ||
-        !is_string($response) ||
-        empty(trim($input)) ||
-        empty(trim($response))) {
+        if (
+            !is_string($input) ||
+            !is_string($response) ||
+            empty(trim($input)) ||
+            empty(trim($response))
+        ) {
             return false;
         }
 

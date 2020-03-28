@@ -1,11 +1,12 @@
-<?php  namespace App\Middleware;
+<?php
+
+namespace App\Middleware;
 
 use Closure;
 use TT\Engine\Http\Request;
 use TT\Facades\Config;
 use TT\Facades\Route;
 use TT\Facades\File;
-
 
 class DebugBar
 {
@@ -23,24 +24,24 @@ class DebugBar
      */
     public function handle(Request $request, Closure $next)
     {
-        if(!CONSOLE){
+        if (!CONSOLE) {
             $this->registerRoute();
         }
 
-        if(!$this->check($request)) {
+        if (!$this->check($request)) {
             return $next($request);
         }
 
-        register_shutdown_function(function() use ($request){
+        $response = $next($request);
+
+        register_shutdown_function(function () use ($request) {
             $data = $this->getData($request);
-            $content = view('framework.debugbar', compact('data','request'))->getContent();
+            $content = view('framework.debugbar', compact('data', 'request'))->getContent();
             File::write(
-                storage_path('system/'.$this->file),
+                storage_path('system/' . $this->file),
                 $content
             );
         });
-
-        $response = $next($request);
 
         $response->prependContent($this->getScript());
 
@@ -50,22 +51,20 @@ class DebugBar
 
     protected function check($request)
     {
-       return !(
-            CONSOLE ||
+        return !(CONSOLE ||
             !Config::get('app.debug') ||
             $request->url() === $this->url ||
             $request->ajax() ||
-            $request->isJson()
-        );
+            $request->isJson());
     }
 
 
     protected function registerRoute()
     {
-        Route::get($this->url,function(){
+        Route::get($this->url, function () {
 
             $content =  File::get(
-                storage_path('system/'.$this->file)
+                storage_path('system/' . $this->file)
             );
 
             File::delete(storage_path('system/' . $this->file));
@@ -93,20 +92,19 @@ class DebugBar
                             debug_bar_script.parentNode.removeChild(debug_bar_script);
                         }
                     };
-                    $http.open("GET", "'.$this->url.'", true);
+                    $http.open("GET", "' . $this->url . '", true);
                     $http.send();
                 },1000);
             </script>';
 
-        return $this->minify($script).PHP_EOL;
-
+        return $this->minify($script) . PHP_EOL;
     }
 
 
     protected function getData(Request $request)
     {
         $data = array(
-            'time'             => round(microtime(true) - APP_START, 4) . " s",
+            'time'             => round((microtime(true) - APP_START) * 1000) . " ms",
             'memory-usage'     => (int) (memory_get_usage() / 1024) . " kb",
             'peak-memory-usage'=> (int) (memory_get_peak_usage() / 1024) . " kb",
             'load-files'       => count(get_required_files()) - 1,
@@ -119,7 +117,7 @@ class DebugBar
             'software'         => $request->server('server_software')
         );
 
-        if(defined('CONTROLLER')) {
+        if (defined('CONTROLLER')) {
             $data['controller'] = CONTROLLER;
             $data['action']     = defined('ACTION') ? ACTION : null;
         }
@@ -130,11 +128,10 @@ class DebugBar
 
     protected function minify(string $string)
     {
-        $search = array('/\>[^\S ]+/s','/[^\S ]+\</s','/(\s)+/s');
+        $search = array('/\>[^\S ]+/s', '/[^\S ]+\</s', '/(\s)+/s');
 
-        $replace = array('>','<','\\1');
+        $replace = array('>', '<', '\\1');
 
         return preg_replace($search, $replace, $string);
-
     }
 }

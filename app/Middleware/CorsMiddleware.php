@@ -1,4 +1,6 @@
-<?php  namespace App\Middleware;
+<?php
+
+namespace App\Middleware;
 
 use Closure;
 use TT\Engine\Http\Request;

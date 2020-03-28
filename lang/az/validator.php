@@ -1,5 +1,4 @@
 <?php return [
-
     "required"  => ":field tələb olunur.",
     "email"     => "Düzgün Email daxil edin.",
     "unique"    => ":field artıq istifadə olunub.",

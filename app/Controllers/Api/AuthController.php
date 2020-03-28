@@ -1,4 +1,6 @@
-<?php namespace App\Controllers\Api;
+<?php
+
+namespace App\Controllers\Api;
 
 
 /**
@@ -43,8 +45,6 @@ class AuthController extends Controller
         return response()->json([
             'error' => 'Unauthorized'
         ], 401);
-
-
     }
 
 
@@ -74,6 +74,4 @@ class AuthController extends Controller
             'access_token' => $token
         ]);
     }
-
-
 }
