@@ -1,4 +1,6 @@
-<?php namespace App;
+<?php
+
+namespace App;
 
 use TT\Engine\App;
 use TT\Engine\Cli\Console;
@@ -38,11 +40,11 @@ class Application extends App
 
 
     }
-     */
+    */
 
     protected function afterBootstrap()
     {
-        if(inConsole()) {
+        if (inConsole()) {
             Console::setCommand([
                 \App\Console\JwtSecretCommand::class,
             ]);
@@ -54,4 +56,22 @@ class Application extends App
     }
 
 
+    /*
+     // ovveride framework routing function
+    public function routing(): \TT\Engine\Http\Response
+    {
+        $route = self::get('route');
+
+        $route->setMiddlewareAliases($this->routeMiddleware);
+
+        if (file_exists($file = $this->routesCacheFile())) {
+            $route->setRoutes(require $file);
+        } else {
+            $route->importRouteFiles(
+                glob($this->path('routes') . '/*')
+            );
+        }
+        return CONSOLE ? self::get('response') : $route->run();
+    }
+    */
 }

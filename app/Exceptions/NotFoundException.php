@@ -8,12 +8,12 @@ namespace App\Exceptions;
  */
 
 
-use RuntimeException;
+use Exception;
 
-class NotFoundException extends RuntimeException
+class NotFoundException extends Exception
 {
     /**
-     * NotFoundException constructor.
+     * HttpNotFoundException constructor.
      */
     public function __construct()
     {

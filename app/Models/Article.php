@@ -14,7 +14,7 @@ use TT\Database\Orm\Model;
 class Article extends Model
 {
 
-    // default Articles
+    // default articles
     //protected $table;
 
     /*

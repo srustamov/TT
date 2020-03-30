@@ -34,7 +34,7 @@ class CsrfProtected
 
     protected function isReading(Request $request): bool
     {
-        return in_array($request->method(), ['HEAD', 'GET', 'OPTIONS']);
+        return in_array($request->getMethod(), ['HEAD', 'GET', 'OPTIONS']);
     }
 
 

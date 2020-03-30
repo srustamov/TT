@@ -10,29 +10,36 @@ $this->get('/', function () {
   return file_get_contents(
     app_path('Views/welcome.html')
   );
-});
+})->name('welcome');
+
+// $this->get('/','WelcomeController@index')->name('welcome');
 
 $this->get('/home/', 'HomeController@home')->name('home');
 
-$this->get('/language/{lang}/', 'LanguageController@change')->name('lang')->pattern('lang', '[a-z]{2}');
+$this->get('/language/{lang}/', 'LanguageController@change')
+  ->name('lang')
+  ->pattern(['lang' => '[a-z]{2}']);
 
-$this->get(['path' => '/auth/logout', 'middleware' => ['auth'], 'name' => 'logout'], 'Auth/LoginController@logout');
+$this->get('/auth/logout', 'Auth/LoginController@logout')
+  ->middleware('auth')
+  ->name('logout');
 
-$this->group(['prefix' => '/auth', 'middleware' => ['guest']], function () {
-  $this->get('/login/', 'Auth/LoginController@show')->name('login');
-  $this->post('/login/', 'Auth/LoginController@login');
-  $this->get('/register/', 'Auth/RegisterController@show')->name('register');
-  $this->post('/register/', 'Auth/RegisterController@register');
-});
+$this->namespace('App\\Controllers\\Auth')
+  ->prefix('/auth')
+  ->middleware('guest')
+  ->group(function () {
+    $this->get('/login/', 'LoginController@show')->name('login');
+    $this->post('/login/', 'LoginController@login');
+    $this->get('/register/', 'RegisterController@show')->name('register');
+    $this->post('/register/', 'RegisterController@register');
+  });
 
 
 
 /*
-//sub domain example
-$this->group(['domain' => 'admin.example.com'],function($domain)
-{
+* sub domain example
+$this->domain('admin.example.com')->group(function(){
     // admin.example.com
-    $domain->get('/','Backend/DashbaordController@index');
-
+    Route::get('/','Backend/DashbaordController@index');
 });
 */
