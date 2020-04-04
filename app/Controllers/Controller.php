@@ -12,7 +12,7 @@
 
 namespace App\Controllers;
 
-use TT\Engine\Http\Controller as BaseController;
+use TT\Engine\Http\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {

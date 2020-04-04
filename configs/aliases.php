@@ -2,9 +2,9 @@
 
 return array(
 
-    'Route' => TT\Facades\Route::class ,
+    'Route' => TT\Facades\Route::class,
     // 'Arr' => TT\Libraries\Arr::class ,
-    'Auth' => TT\Facades\Auth::class ,
+    'Auth' => TT\Facades\Auth::class,
     // 'Cache' => TT\Facades\Cache::class ,
     // 'Config' => TT\Facades\Config::class ,
     // 'DB' => TT\Facades\DB::class ,
@@ -20,7 +20,7 @@ return array(
     // 'RedisDB' => TT\Facades\Redis::class ,
     // 'Request' => TT\Facades\Request::class ,
     // 'Response' => TT\Facades\Response::class ,
-    'Session' => TT\Facades\Session::class ,
+    'Session' => TT\Facades\Session::class,
     // 'Storage' => TT\Facades\Storage::class ,
     // 'Str' => TT\Facades\Str::class ,
     // 'Url' => TT\Facades\Url::class ,

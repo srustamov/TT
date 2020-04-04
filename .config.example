@@ -1,12 +1,8 @@
 APP_DEBUG = TRUE
-
 APP_NAME  = TT
-
 APP_KEY =
-
 LOCALE = en
-
-URL  = http://localhost:8000
+URL = http://localhost:8000
 
 
 #DATABASE CONFIGURATION
@@ -23,15 +19,5 @@ SESSION_DRIVER = file
 
 CACHE_ADAPTER = file
 
-#PHPMAILLER
-
-MAIL_HOST = ssl://smtp.gmail.com
-MAIL_PORT = 465
-MAIL_USER = example@gmail.com
-MAIL_PASS = secret
-MAIL_SMTP_SECURE = ssl
-MAIL_CHARSET = UTF-8
-MAIL_HTML = TRUE
-MAIL_SHOW_ERROR = 0
 
 JWT_SECRET=

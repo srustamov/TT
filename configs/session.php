@@ -13,7 +13,7 @@ return array(
     | 
     |
     */
-    'driver'          => setting('SESSION_DRIVER'),
+    'driver' => setting('SESSION_DRIVER'),
 
 
     /*
@@ -21,7 +21,7 @@ return array(
     | Session Files Location
     |---------------------------------------------------------
     */
-    'files_location'   => path('storage/sessions'),
+    'files_location' => path('storage/sessions'),
 
 
 
@@ -31,7 +31,7 @@ return array(
     |---------------------------------------------------------
     */
 
-    'table'          => 'sessions',
+    'table' => 'sessions',
 
 
 
@@ -42,7 +42,7 @@ return array(
     |
     */
 
-    'lifetime'        => 3600,
+    'lifetime' => 3600,
 
 
     /*
@@ -52,7 +52,7 @@ return array(
     |
     */
 
-    'regenerate'        => false,
+    'regenerate' => false,
 
 
     /*

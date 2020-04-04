@@ -4,6 +4,8 @@ vendor/*
 .config
 composer.lock
 node_modules/*
+routes/fw-test-routes.php
+app/Controllers/FWTestController.php
 
 
 *~

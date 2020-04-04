@@ -15,7 +15,7 @@ use TT\Facades\Auth;
 use TT\Facades\Redirect;
 use TT\Facades\Response;
 
-class AuthMiddleware
+class Authentication
 {
     /**
      * @param Request $request
@@ -23,7 +23,7 @@ class AuthMiddleware
      * @param $guard
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, $guard)
+    public function handle(Request $request, Closure $next, $guard = null)
     {
         if (!Auth::check()) {
             if ($request->isJson() || $guard === 'api') {

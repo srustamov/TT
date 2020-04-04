@@ -30,6 +30,7 @@ $this->namespace('App\\Controllers\\Auth')
   ->group(function () {
     $this->get('/login/', 'LoginController@show')->name('login');
     $this->post('/login/', 'LoginController@login');
+    $this->get('/logout/', 'LoginController@logout')->name('logout');
     $this->get('/register/', 'RegisterController@show')->name('register');
     $this->post('/register/', 'RegisterController@register');
   });

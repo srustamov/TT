@@ -72,18 +72,20 @@
     }
 
     #app_debug_bar #b-bottom {
-        display: grid;
-        justify-content: space-around;
-        padding: 2px 5px;
-        font-size: 1.3em;
-        min-height: 150px;
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 5px;
+        font-size: 1em;
+        /* min-height: 150px; */
         overflow-y: auto;
-        grid-template-columns: auto auto auto;
+        flex-direction: row;
+        flex-wrap: wrap
     }
 
     #app_debug_bar #b-bottom div {
-        flex: 1 1 50px;
+        /* flex: 1 1 50px; */
         align-items: center;
+        margin: 11px 5px;
     }
 
     #app_debug_bar .b-show {
@@ -112,7 +114,7 @@
             display: flex;
             flex-flow: row wrap;
             justify-content: center;
-            font-size: 1.3em;
+            font-size: 1em;
             height: 100%;
             min-height: 150px;
             overflow-y: scroll;
@@ -129,9 +131,9 @@
 <div id="app_debug_bar">
     <div id="b-top">
         <p>{{http_response_code()}}</p>
-        <span>Time:<?php echo $data['time']; unset($data['time']); ?></span>
-        <span class="b-hidden">Files:<?php echo $data['load-files']; ?></span>
-        <span class="b-hidden">Memory:<?php echo $data['memory-usage']; ?></span>
+        <span style="">TIME:<?php echo $data['time']; unset($data['time']); ?></span>
+        <span class="b-hidden">FILES:<?php echo $data['load-files']; ?></span>
+        <span class="b-hidden">MEMORY:<?php echo $data['memory-usage']; ?></span>
         <button title="Show Panel" onclick="debugBarToggle(this)">&uarr;</button>
     </div>
     <div style="overflow-y: auto;overflow-x:hidden;height: 210px">
@@ -141,7 +143,7 @@
                     {{ 'FILES' }}
                 </span>
                 <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                        style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{ $data['load-files'] }}
                 </span>
             </div>
@@ -150,92 +152,92 @@
                     {{ 'MEMORY' }}
                 </span>
                 <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                        style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{ $data['memory-usage'] }}
                 </span>
             </div>
             <?php unset($data['load-files']); unset($data['memory-usage']); ?>
             @foreach ($data as $name => $value)
-            <div>
+                <div>
                 <span style="padding: 2px;background:#04243e;border:1px solid #04243e;color:#fff">
                     {{strtoupper($name) }}
                 </span>
-                <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                    <span
+                            style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{$value }}
                 </span>
-            </div>
+                </div>
             @endforeach
         </div>
         <div style="text-align: center;border-top:2px solid #04243e;color:darkred">Requests</div>
         <div>
             <p style="margin: 10px;font-weight: bold;color: brown;">REQUEST []</p>
             @foreach($request->query->all() as $key => $value)
-            <div style="padding: 6px">
+                <div style="padding: 6px">
                 <span style="padding: 2px;border:1px solid #04243e;color:#690303">
                     {{$key}}
                 </span>
-                <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                    <span
+                            style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{$value }}
                 </span>
-            </div>
+                </div>
             @endforeach
         </div>
         <div>
             <p style="margin: 10px;font-weight: bold;color: brown;">QUERY []</p>
             @foreach($request->query->all() as $key => $value)
-            <div style="padding: 6px">
+                <div style="padding: 6px">
                 <span style="padding: 2px;border:1px solid #04243e;color:#690303">
                     {{$key}}
                 </span>
-                <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                    <span
+                            style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{$value }}
                 </span>
-            </div>
+                </div>
             @endforeach
         </div>
         <div>
             <p style="margin: 10px;font-weight: bold;color: brown;">ROUTE PARAMETERS []</p>
             @foreach($request->routeParams as $key => $value)
-            <div style="padding: 6px">
+                <div style="padding: 6px">
                 <span style="padding: 2px;border:1px solid #04243e;color:#690303">
                     {{$key}}
                 </span>
-                <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                    <span
+                            style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{$value }}
                 </span>
-            </div>
+                </div>
             @endforeach
         </div>
         <div>
             <p style="margin: 10px;font-weight: bold;color: brown;">INPUT []</p>
             @foreach($request->input->all() as $key => $value)
-            <div style="padding: 6px">
+                <div style="padding: 6px">
                 <span style="padding: 2px;border:1px solid #04243e;color:#690303">
                     {{$key}}
                 </span>
-                <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                    <span
+                            style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{$value }}
                 </span>
-            </div>
+                </div>
             @endforeach
         </div>
         <div style="text-align: center;border-top:2px solid #04243e;color:darkred">Sessions</div>
         <div style="display: grid;padding: 2em;">
-            @foreach($_SESSION as $key => $value)
-            <div style="padding: 6px">
+            @foreach($_SESSION ?? [] as $key => $value)
+                <div style="padding: 6px">
                 <span style="padding: 2px;border:1px solid #04243e;color:#690303">
                     {{$key}}
                 </span>
-                <span
-                    style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
+                    <span
+                            style="color: tomato;padding: 2px;background: #ffffff;border: 1px solid #04243e;font-weight: bold;">
                     {{$value }}
                 </span>
-            </div>
+                </div>
             @endforeach
         </div>
     </div>

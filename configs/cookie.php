@@ -12,8 +12,6 @@ return array(
 
     'prefix'    => '',
 
-    'encrypt_except_keys' => array(
-
-    )
+    'encrypt_except_keys' => array()
 
 );

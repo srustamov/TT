@@ -7,17 +7,17 @@
  */
 
 
-use TT\Libraries\Language;
-use TT\Libraries\Redirect;
+use TT\Redirect;
+use TT\Translation\Translator;
+use App\Controllers\Controller;
 
-
-class LanguageController
+class LanguageController extends Controller
 {
 
-    public function change($lang,Redirect $redirect,Language $language)
+    public function change($lang,Redirect $redirect,Translator $translator)
     {
         if (in_array($lang, array('az','en','tr'))) {
-            $language->locale($lang);
+            $translator->locale($lang);
         }
 
         return $redirect->back();

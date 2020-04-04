@@ -12,12 +12,14 @@
 
 namespace App\Controllers\Auth;
 
+use App\Controllers\Controller;
 use Exception;
 use TT\Engine\Http\Request;
 use TT\Facades\Validator;
 use TT\Facades\Auth;
+use TT\View\View;
 
-class LoginController
+class LoginController extends Controller
 {
 
 
@@ -26,7 +28,7 @@ class LoginController
      *
      * @throws Exception
      */
-    public function show()
+    public function show(): View
     {
         return view('auth.login');
     }
@@ -42,11 +44,11 @@ class LoginController
      */
     public function login(Request $request)
     {
-        /**@var $validation \TT\Libraries\Validator*/
+        /**@var $validation \TT\Validator*/
         $validation =  Validator::make($request->only('email', 'password'), [
-                'email'    => 'required|email',
-                'password' => 'required|min:6'
-            ]);
+            'email'    => 'required|email',
+            'password' => 'required|min:6'
+        ]);
 
         if (!$validation->check()) {
             return redirect()->route('login')->withErrors($validation->messages());

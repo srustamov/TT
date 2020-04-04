@@ -8,17 +8,7 @@ namespace App\Exceptions;
  */
 
 
-use RuntimeException;
 
-class ModelNotFoundException extends RuntimeException
+class ModelNotFoundException extends HttpNotFoundException
 {
-    /**
-     * NotFoundException constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        abort(404);
-    }
 }

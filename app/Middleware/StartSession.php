@@ -2,6 +2,7 @@
 
 namespace App\Middleware;
 
+use Closure;
 use TT\Engine\Http\Request;
 
 class StartSession
@@ -14,19 +15,21 @@ class StartSession
 
     /**
      * @param Request $request
-     * @param \Closure $next
+     * @param Closure $next
      * @return mixed
      * @throws \Exception
      */
 
-    public function handle(Request $request, \Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         if (!CONSOLE && !$this->isExcept($request)) {
             if (!$request->ajax()) {
                 register_shutdown_function(static function () use ($request) {
-                    $request->app('session')->set('_prev_url', $request->app('url')->current());
+                    $request->app('session')
+                        ->set('_prev_url', $request->app('url')->current());
                 });
             }
+
             $request->app('session')->start();
         }
 
@@ -38,11 +41,8 @@ class StartSession
     {
         if (!empty($this->except)) {
             $url = trim($request->url(), '/');
-            foreach ($this->except as $key => $value) {
-                $value = trim($value, '/');
-                if (preg_match("#^$value$#", $url)) {
-                    return true;
-                }
+            foreach ($this->except as $value) {
+                return preg_match("#^".trim($value, '/')."$#", $url);
             }
         }
         return false;

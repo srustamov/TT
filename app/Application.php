@@ -7,42 +7,34 @@ use TT\Engine\Cli\Console;
 
 class Application extends App
 {
+    // application bootstrapping middleware
     protected $middleware = [
-        //\App\Middleware\OverrideXPoweredBy::class ,
-        //\App\Middleware\MaintenanceMode::class,
-        //\App\Middleware\TrimString::class ,
-        \App\Middleware\StartSession::class,
-        //\App\Middleware\CsrfProtected::class,
-        //\App\Middleware\CorsMiddleware::class,
-
+        // \App\Middleware\MaintenanceMode::class,
+        // \App\Middleware\TrimString::class,
         \App\Middleware\DebugBar::class,
-
     ];
 
-
     protected $routeMiddleware = [
-        'auth' => \App\Middleware\AuthMiddleware::class,
-        'guest' => \App\Middleware\GuestMiddleware::class,
-        'api' => \App\Middleware\ApiMiddleware::class,
+        'start_session' => \App\Middleware\StartSession::class,
+        'cors' => \App\Middleware\Cors::class,
+        'csrf' => \App\Middleware\CSRF::class,
+        'auth' => \App\Middleware\Authentication::class,
+        'guest' => \App\Middleware\Guest::class,
+        'api' => \App\Middleware\Api::class,
     ];
 
 
     /*
-     public function __construct(...$args)
+    public function __construct(...$args)
     {
         parent::__construct(...$args);
-
         #before bootstrapping
-
         #...code
-
         //$this->paths['envFile'] = '.env';
-
-
     }
-    */
+     */
 
-    protected function afterBootstrap()
+    protected function afterBootstrap(): void
     {
         if (inConsole()) {
             Console::setCommand([
@@ -50,28 +42,9 @@ class Application extends App
             ]);
         }
 
+        // example singleton
         // $this->singleton('myClass',function($app){
         //     return new MyClass();
         // });
     }
-
-
-    /*
-     // ovveride framework routing function
-    public function routing(): \TT\Engine\Http\Response
-    {
-        $route = self::get('route');
-
-        $route->setMiddlewareAliases($this->routeMiddleware);
-
-        if (file_exists($file = $this->routesCacheFile())) {
-            $route->setRoutes(require $file);
-        } else {
-            $route->importRouteFiles(
-                glob($this->path('routes') . '/*')
-            );
-        }
-        return CONSOLE ? self::get('response') : $route->run();
-    }
-    */
 }

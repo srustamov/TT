@@ -7,7 +7,7 @@ use TT\Engine\Http\Request;
 use TT\Facades\Response;
 
 
-class CorsMiddleware
+class Cors
 {
     /**
      * @param Request $request

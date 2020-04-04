@@ -6,8 +6,10 @@ use RuntimeException;
 use TT\Engine\Http\Request;
 use TT\Facades\Cookie;
 use TT\Facades\Config;
+use Closure;
 
-class CsrfProtected
+
+class CSRF
 {
     private $except = [
         '/api/.*'
@@ -15,7 +17,7 @@ class CsrfProtected
 
 
 
-    public function handle(Request $request, \Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         if (
             CONSOLE ||
@@ -91,6 +93,12 @@ class CsrfProtected
 
     protected function addCookie(Request $request)
     {
-        Cookie::set('XSRF-TOKEN', $request->session('_token'), Config::get('session.lifetime'));
+        if(!CONSOLE) {
+            Cookie::set(
+                'XSRF-TOKEN', 
+                $request->session('_token'), 
+                Config::get('session.lifetime')
+            );
+        }
     }
 }

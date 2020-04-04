@@ -3,6 +3,7 @@
 
 namespace App\Middleware;
 
+use Closure;
 use TT\Engine\Http\Request;
 
 class TrimString
@@ -14,10 +15,10 @@ class TrimString
 
     /**
      * @param Request $request
-     * @param \Closure $next
+     * @param Closure $next
      * @return mixed
      */
-    public function handle(Request $request, \Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         return $next($this->trimString($request));
     }

@@ -16,7 +16,7 @@ use App\Models\User;
 
 
 
-class ApiMiddleware
+class Api
 {
     /**
      * @param Request $request
@@ -28,10 +28,12 @@ class ApiMiddleware
         $token = $this->getAuthToken($request);
         if ($token) {
             $jwt = Jwt::make($token);
-            if ($jwt->validate() && $user_id = $jwt->get('user_id')) {
-                if ($user = User::find($user_id)) {
-                    Auth::user($user);
-                }
+            if (
+                $jwt->validate() &&
+                ($user_id = $jwt->get('user_id')) &&
+                ($user = User::find($user_id))
+            ) {
+                Auth::user($user);
             }
         }
         /*

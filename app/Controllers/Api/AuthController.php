@@ -18,9 +18,14 @@ class AuthController extends Controller
 {
 
 
+    /**
+     * @param Request $request
+     * @return mixed
+     * @throws \Exception
+     */
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->only(['email', 'password']);
 
         $validate = validator($credentials, [
             'email' => 'required|email',
@@ -33,7 +38,6 @@ class AuthController extends Controller
                 $validate->messages()
             ], 400);
         }
-
 
         if ($token = $this->attempt($credentials)) {
             return response()->json([
@@ -48,11 +52,19 @@ class AuthController extends Controller
     }
 
 
+    /**
+     * @param $user
+     * @return string
+     */
     private function getAccessToken($user): string
     {
         return (string) Jwt::set('user_id', $user->id)->getToken();
     }
 
+    /**
+     * @param $credit
+     * @return bool|string
+     */
     private function attempt($credit)
     {
         $user = User::find(['email' => $credit['email']]);
@@ -65,6 +77,11 @@ class AuthController extends Controller
     }
 
 
+    /**
+     * @param Request $request
+     * @return mixed
+     * @throws \Exception
+     */
     public function refresh(Request $request)
     {
         $token = $this->getAccessToken($request->user());

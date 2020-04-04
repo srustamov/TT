@@ -10,7 +10,6 @@ namespace App\Controllers\Api;
 use App\Controllers\Controller;
 use App\Models\Article;
 use TT\Facades\Response;
-use TT\Facades\Auth;
 
 class ArticleController extends Controller
 {
@@ -19,22 +18,26 @@ class ArticleController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
+
         return Response::json(
             $this->transform(
-                Auth::user()->articles
+                $user->articles ?? [] , $user
             )
         );
     }
 
     public function show($id)
     {
+        $user = auth()->user();
+
         $article = Article::find([
-            'user_id' => Auth::user()->id,
+            'user_id' => $user->id,
             'id' => $id
         ]);
 
         if ($article) {
-            return Response::json($this->transform($article));
+            return Response::json($this->transform($article,$user, true));
         }
 
         return Response::json(['success' => false], 404);
@@ -45,22 +48,35 @@ class ArticleController extends Controller
      * @param object|array $data
      * @return array
      */
-    public function transform($data): array
+    public function transform($data, $user, $one = false): array
     {
-        $articles = is_array($data) ? $data : [$data];
-
         $transform = [];
 
-        $author = Auth::user()->name;
+        $author = $user->name;
 
         $transform['success'] = true;
 
-        foreach ($articles as $article) {
-            $transform['data'][] = [
-                'id' => $article->id,
-                'author' => $author
+        if (!$one) {
+            $transform['data'] = array_map(function ($article) use ($author) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'content' => $article->content,
+                    'published date' => $article->created_at,
+                    'author' => $author,
+                ];
+            }, $data);
+        } else {
+            $transform['data'] = [
+                'id' => $data->id,
+                'title' => $data->title,
+                'content' => $data->content,
+                'published date' => $data->created_at,
+                'author' => $author,
             ];
         }
+
+
 
         $transform['version'] = '1.3.0';
 

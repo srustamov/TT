@@ -14,7 +14,8 @@ class MaintenanceMode
             '/',
             '/login',
             '/home/?(.*)/any-url'
-         */];
+         */
+        ];
 
     protected $options = [
         'message' => 'Service Unavailable',
@@ -36,9 +37,7 @@ class MaintenanceMode
             return $next($request);
         }
 
-        $response = $next($request);
-
-        $response->make(view('framework.maintenance', [
+        response()->make(view('framework.maintenance', [
             'message' => $this->options['message']
         ])->getContent(), 503)->send();
 
@@ -52,10 +51,7 @@ class MaintenanceMode
      */
     public function check($request): bool
     {
-        if ($this->checkAllowed($request)) {
-            return false;
-        }
-        return true;
+        return !$this->checkAllowed($request);
     }
 
 

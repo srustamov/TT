@@ -15,9 +15,9 @@ namespace App\Controllers\Auth;
 use App\Controllers\Controller;
 use TT\Engine\Http\Request;
 use TT\Facades\Validator;
-use TT\Facades\Redirect;
 use TT\Facades\Hash;
 use App\Models\User;
+use TT\View\View;
 
 class RegisterController extends Controller
 {
@@ -28,7 +28,7 @@ class RegisterController extends Controller
      *
      * @throws \Exception
      */
-    public function show()
+    public function show():View
     {
         return view('auth.register');
     }
@@ -38,12 +38,12 @@ class RegisterController extends Controller
      * RegisterController register method.Post data validate and Create user
      *
      * @param Request $request
-     * @return \TT\Libraries\Redirect
+     * @return \TT\Redirect
      * @throws \Exception
      */
-    public function register(Request $request)
+    public function register(Request $request): \TT\Redirect
     {
-        /**@var $validation \TT\Libraries\Validator*/
+        /**@var $validation \TT\Validator*/
         $validation =  Validator::make($request->all(), [
                 'email'    => 'required|email|unique:users',
                 'password' => 'required|min:6',
