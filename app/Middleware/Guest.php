@@ -15,10 +15,13 @@ use TT\Facades\Redirect;
 use TT\Engine\Http\Request;
 use TT\Facades\Response;
 use TT\Facades\Route;
-use App\Controllers\Auth\LoginController;
 
 class Guest
 {
+
+    private $except = [
+        [\App\Controllers\Auth\LoginController::class, 'logout']
+    ];
 
 
     /**
@@ -43,13 +46,9 @@ class Guest
 
     private function checkExcept()
     {
-        if($route = Route::getCurrent()->getController(true)) {
-
-            [$controller,$method] = $route;
-
-            return !($controller == LoginController::class && $method == 'logout');
-        }
-
-        return true;
+        return !(in_array(
+            Route::getCurrent()->getController(true),
+            $this->except
+        ));
     }
 }
