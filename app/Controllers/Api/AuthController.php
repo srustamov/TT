@@ -36,7 +36,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 $validate->messages()
-            ], 400);
+            ], 422);
         }
 
         if ($token = $this->attempt($credentials)) {

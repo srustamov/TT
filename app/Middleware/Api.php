@@ -33,7 +33,7 @@ class Api
                 ($user_id = $jwt->get('user_id')) &&
                 ($user = User::find($user_id))
             ) {
-                Auth::user($user);
+                Auth::login($user);
             }
         }
         /*

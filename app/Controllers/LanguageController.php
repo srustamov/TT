@@ -1,4 +1,6 @@
-<?php  namespace App\Controllers;
+<?php
+
+namespace App\Controllers;
 
 
 /**
@@ -14,13 +16,12 @@ use App\Controllers\Controller;
 class LanguageController extends Controller
 {
 
-    public function change($lang,Redirect $redirect,Translator $translator)
+    public function change($lang, Redirect $redirect, Translator $translator)
     {
-        if (in_array($lang, array('az','en','tr'))) {
-            $translator->locale($lang);
+        if (in_array($lang, array('az', 'en', 'tr'))) {
+            $translator->setLocale($lang);
         }
 
         return $redirect->back();
     }
-
 }

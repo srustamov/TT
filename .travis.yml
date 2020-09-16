@@ -4,7 +4,7 @@ php:
 
 before_script:
   - sh -c "composer install"
-  - sh -c "cp .config.example .config"
+  - sh -c "cp .env.example .env"
   - sh -c "php manage key:generate"
 
 script: ./vendor/bin/phpunit

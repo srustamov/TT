@@ -129,7 +129,7 @@ class DebugBar
             'url' => $request->url(),
             'ip' => $request->ip(),
             'document-root' => basename($request->server('document_root')),
-            'locale' => $request->app('translator')->locale(),
+            'locale' => $request->app('translator')->getLocale(),
             'protocol' => $request->server('server_protocol'),
             'software' => $request->server('server_software')
         );
