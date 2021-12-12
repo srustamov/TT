@@ -27,3 +27,4 @@ app/Controllers/FWTestController.php
 !.vscode/extensions.json
 
 .history
+.env
