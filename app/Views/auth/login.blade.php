@@ -77,7 +77,7 @@
           @endif
         </div>
         <form action="{{url('auth/login')}}" method="post">
-          @csrf
+          <input type="hidden" name="_token" value="{!! csrf_token() !!}" />
           <div class="card-body">
             <div class="form-group">
               <label for="">Email</label>

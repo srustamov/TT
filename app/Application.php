@@ -8,13 +8,13 @@ use TT\Engine\Cli\Console;
 class Application extends App
 {
     // application bootstrapping middleware
-    protected $middleware = [
+    protected array $middleware = [
         // \App\Middleware\MaintenanceMode::class,
         // \App\Middleware\TrimString::class,
         \App\Middleware\DebugBar::class,
     ];
 
-    protected $routeMiddleware = [
+    protected array $routeMiddleware = [
         'start_session' => \App\Middleware\StartSession::class,
         'cors' => \App\Middleware\Cors::class,
         'csrf' => \App\Middleware\CSRF::class,

@@ -12,12 +12,12 @@
     }
   ],
   "require": {
-    "php": ">=7.2.5",
+    "php": ">=7.4|8.0",
     "srustamov/framework": "dev-master"
   },
   "require-dev": {
-    "symfony/var-dumper": "^4.3",
-    "phpunit/phpunit": "^9.0"
+    "symfony/var-dumper": "^v6.0.0",
+    "phpunit/phpunit": "^9.5.10"
   },
   "config": {
     "optimize-autoloader": true

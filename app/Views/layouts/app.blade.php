@@ -24,14 +24,14 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        @auth
+        @if(Auth::check())
         <li class="nav-item">
-          <a class="nav-link" href="{{route('home')}}">@lang('home.home')</a>
+          <a class="nav-link" href="{{route('home')}}">{{lang('home.home')}}</a>
         </li>
         @else
-        <li class="nav-item"><a class="nav-link" href="{{route('register')}}">@lang('home.register')</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{route('login')}}">@lang('home.login')</a></li>
-        @endauth
+        <li class="nav-item"><a class="nav-link" href="{{route('register')}}">{{lang('home.register')}}</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{route('login')}}">{{lang('home.login')}}</a></li>
+        @endif
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="nav-item">
@@ -43,7 +43,7 @@
         <li class="nav-item">
           <a class="nav-link text-uppercase font-weight-bold lang" href="{{route('lang',['lang' => 'tr'])}}">tr</a>
         </li>
-        @auth
+        @if(Auth::check())
         <li class="nav-item btn-group">
           <button class="btn btn-success rounded-0 shadow-sm">
             {{ ucfirst(Auth::name()) }}
@@ -52,7 +52,7 @@
             Logout
           </button>
         </li>
-        @endauth
+        @endif
       </ul>
     </div>
   </nav>

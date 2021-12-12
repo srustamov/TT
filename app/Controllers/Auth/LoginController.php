@@ -54,7 +54,7 @@ class LoginController extends Controller
             return redirect()->route('login')->withErrors($validation->messages());
         }
 
-        if (Auth::attempt($request->only('email', 'password'), $request->remember)) {
+        if (Auth::attempt($request->only('email', 'password'), (bool)$request->remember)) {
             return redirect()->route('home');
         }
 

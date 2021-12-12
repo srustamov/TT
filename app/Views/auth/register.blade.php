@@ -16,7 +16,7 @@
           <h3 class="card-title">Register User </h3>
         </div>
         <form action="{{url('auth/register')}}" method="post" id="register-form" onsubmit="return false;">
-          @csrf
+          <input type="hidden" name="_token" value="{!! csrf_token() !!}" />
           <div class="card-body">
             <div class="form-group">
               <label for="">Name</label>
